@@ -4,6 +4,9 @@ module ResqueDaemon
   # Wraps a Resque::Worker object with methods and attributes for managing the
   # spawned worker processes. This class handles forking off an individual
   # long-lived worker process as well as reaping its exit status.
+  #
+  # The ResqueDaemon::Master class is primarily responsible for creating and
+  # maintaining Worker objects.
   class Worker
     # The worker number. This ranges from 1 to Master#worker_process.
     attr_reader   :number
