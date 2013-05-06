@@ -7,6 +7,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    json (1.7.7)
     minitest (4.7.4)
     mono_logger (1.0.1)
     multi_json (1.7.3)
@@ -35,6 +36,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  json (~> 1.7.7)
   minitest
   rake
   resqued!
