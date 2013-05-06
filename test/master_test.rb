@@ -49,11 +49,41 @@ class MasterTest < MiniTest::Unit::TestCase
     assert_equal expected_queues, master.fixed_concurrency_queues
   end
 
-  def test_building_workers
-    queues = { 'critical' => 2 }
+  def test_build_workers
+    queues = { 'critical' => 5 }
     master = ResqueDaemon::Master.new(queues, :worker_processes => 5)
     master.build_workers
     assert_equal 5, master.workers.size
     5.times { |i| assert_equal i + 1, master.workers[i].number }
+  end
+
+  def test_build_workers_with_reduced_queue_levels
+    queues = { 'critical' => 3, 'test' => 2, 'other' => 1 }
+    master = ResqueDaemon::Master.new(queues, :worker_processes => 3)
+    master.build_workers
+    assert_equal 3, master.workers.size
+    assert_equal ['critical', 'test', 'other'], master.workers[0].queues
+    assert_equal ['critical', 'test'], master.workers[1].queues
+    assert_equal ['critical'], master.workers[2].queues
+  end
+
+  def test_build_workers_with_reduced_queue_levels_and_priority_levels
+    queues = { 'critical' => 1, 'test' => 3, 'other' => 1 }
+    master = ResqueDaemon::Master.new(queues, :worker_processes => 3)
+    master.build_workers
+    assert_equal 3, master.workers.size
+    assert_equal ['critical', 'test', 'other'], master.workers[0].queues
+    assert_equal ['test'], master.workers[1].queues
+    assert_equal ['test'], master.workers[2].queues
+  end
+
+  def test_build_workers_less_concurrency_than_workers
+    queues = { 'critical' => 3, 'test' => 2, 'other' => 1 }
+    master = ResqueDaemon::Master.new(queues, :worker_processes => 5)
+    master.build_workers
+    assert_equal 3, master.workers.size
+    assert_equal ['critical', 'test', 'other'], master.workers[0].queues
+    assert_equal ['critical', 'test'], master.workers[1].queues
+    assert_equal ['critical'], master.workers[2].queues
   end
 end

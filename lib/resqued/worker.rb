@@ -18,11 +18,14 @@ module ResqueDaemon
     # available after the worker has been reaped.
     attr_reader   :status
 
+    attr_reader   :queues
+
     # Create a new Worker. The number is assigned by the Master. The queues and
     # options are passed to the Resque::Worker, which manages the child process
     # side of the process.
     def initialize(number, queues = [], options = {})
       @number = number
+      @queues = queues
       @pid = nil
       @status = nil
 

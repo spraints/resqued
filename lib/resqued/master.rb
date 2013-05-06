@@ -48,12 +48,13 @@ module ResqueDaemon
         if worker.nil? || worker.reaped?
           worker_num = slot + 1
           queue_names = queues.
-            select { |name, concurrency| concurrency <= worker_num }.
+            select { |name, concurrency| concurrency >= worker_num }.
             map    { |name, _| name }
           worker = ResqueDaemon::Worker.new(worker_num, queue_names, options)
         end
         workers[slot] = worker
       end
+      workers.pop while workers.last.queues.empty?
     end
 
     # Internal: Fork off any unspawned worker processes. Ignore worker processes
