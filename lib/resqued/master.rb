@@ -40,7 +40,7 @@ module ResqueDaemon
         rescue Exception => boom
           logger.error "ERROR IN MASTER RUN LOOP: #{boom.class} #{boom.to_s}"
           logger.debug boom.backtrace.join("\n")
-          @shutdown = 'TERM'
+          shutdown('TERM')
         end
         break if !workers.any? { |w| w.running? }
       end
