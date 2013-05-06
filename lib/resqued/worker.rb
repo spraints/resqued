@@ -57,15 +57,16 @@ module ResqueDaemon
     end
 
     # Fork off the worker process and record the new process's pid.
-    def spawn
+    def spawn(&block)
       fail "Attempt to spawn worker with assigned pid" if pid?
-      @pid = fork { main }
+      @pid = fork { main(&block) }
     end
 
     # Called in the newly forked worker process, immediately after spawning.
     def main
+      yield if block_given?
       @worker.reconnect
-      @worker.work
+      @worker.work(@options[:interval])
       exit!
     rescue Exception => boom
       exit! 1
