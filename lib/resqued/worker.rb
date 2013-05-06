@@ -30,6 +30,7 @@ module ResqueDaemon
 
       @worker = Resque::Worker.new(*queues)
       @worker.cant_fork = true
+      @worker.term_child = true
     end
 
     # Array of queue names this worker process will pull jobs from.
