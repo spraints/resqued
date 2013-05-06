@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = "resqued"
-  s.version     = "1.0"
+  s.version     = "0.1"
   s.platform    = Gem::Platform::RUBY
   s.authors     = %w[@rtomayko]
   s.email       = ["rtomayko@gmail.com"]

@@ -6,6 +6,13 @@ It manages a configurable number of worker processes spawned from a single
 master and supports a number of signals for controlling worker process
 concurrency and lifecycle.
 
+### Status
+
+Still very experimental, not fully built out yet, and has not been used in a
+production environment. That said, my priority with the project is getting it
+operational in GitHub's resque-heavy production environment so things should
+stable up fairly quickly from real usage.
+
 ### Features
 
  - Environment preloading, fast worker spawning, and COW memory sharing via

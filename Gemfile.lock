@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    resqued (1.0)
+    resqued (0.1)
       resque
 
 GEM
