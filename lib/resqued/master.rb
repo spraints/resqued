@@ -91,7 +91,7 @@ module ResqueDaemon
       return if @shutdown
       workers.each do |worker|
         next if worker.pid?
-        logger.debug "master spawning worker #{worker.number}"
+        logger.debug "master spawning worker #{worker.number} on queues: #{worker.queues.join(', ')}"
         worker.spawn { uninstall_signal_handlers }
       end
     end
