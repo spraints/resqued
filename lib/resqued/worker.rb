@@ -72,6 +72,16 @@ module ResqueDaemon
       exit! 1
     end
 
+    # Kill the running worker process with the given signal. Does not attempt to
+    # reap the process's exit status.
+    def kill(signal)
+      fail "worker not running" if !running?
+      Process.kill(signal, pid)
+      true
+    rescue Errno::ESRCH
+      false
+    end
+
     # Attempt to collect a running worker process's exit status. Returns
     # immediately if the process has not yet been spawned or has already been
     # reaped.

@@ -22,16 +22,26 @@ module ResqueDaemon
 
       @worker_processes ||= 1
       @workers = []
+
+      @shutdown = nil
+      @shutdown_time = nil
     end
 
     # The main run loop. Maintains the worker pool.
     def run
       install_signal_handlers
       while true
-        reap_workers
-        build_workers
-        spawn_workers
-        sleep 0.100
+        begin
+          process_signals
+          reap_workers
+          build_workers
+          spawn_workers
+          sleep 0.100
+        rescue Exception => boom
+          warn "ERROR IN MASTER RUN LOOP: #{boom.class} #{boom.to_s}"
+          @shutdown = 'TERM'
+        end
+        break if !workers.any? { |w| w.running? }
       end
     ensure
       uninstall_signal_handlers
@@ -45,6 +55,7 @@ module ResqueDaemon
     #
     # Returns nothing.
     def build_workers
+      return if @shutdown
       queues = fixed_concurrency_queues
       worker_processes.times do |slot|
         worker = workers[slot]
@@ -67,6 +78,7 @@ module ResqueDaemon
     # that have already been spawned, even if their process isn't running
     # anymore.
     def spawn_workers
+      return if @shutdown
       workers.each do |worker|
         next if worker.pid?
         worker.spawn { uninstall_signal_handlers }
@@ -107,11 +119,28 @@ module ResqueDaemon
       end
     end
 
+    # Internal: Send a signal to all running working processes.
+    def kill_workers(signal)
+      running = workers.select { |w| w.running? }
+      running.each { |worker| worker.kill(signal) }
+    end
+
+    # Internal: Process any pending signal states. If the @shutdown flag is set
+    # but the workers have not yet been signaled, do that now.
+    def process_signals
+      return if @shutdown.nil?
+
+      if @shutdown_time.nil?
+        @shutdown_time = Time.now
+        kill_workers(@shutdown)
+      end
+    end
+
     # Internal: Install signal handler traps for managing the worker pool.
     def install_signal_handlers
-      trap('INT')  { @shutdown = true }
-      trap('TERM') { @shutdown = true }
-      trap('QUIT') { @graceful = true }
+      trap('INT')  { @shutdown = 'TERM'; @shutdown_time = nil }
+      trap('TERM') { @shutdown = 'TERM'; @shutdown_time = nil }
+      trap('QUIT') { @shutdown = 'QUIT'; @shutdown_time = nil }
       trap('HUP')  { @reload = true }
       trap('USR1') { @reopen = true }
       trap('USR2') { @reexec = true }
