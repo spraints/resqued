@@ -12,7 +12,10 @@ module ResqueDaemon
     # See Resque::Worker for a list of supported options and values.
     attr_reader :options
 
-    def initialize(queues = {}, options = {})
+    # Access the ResqueDaemon::Worker objects we're managing.
+    attr_reader :workers
+
+    def initialize(queues = {'*' => 1.0}, options = {})
       @queues = queues
       @options = options.dup
       options.keys.each { |k| respond_to?("#{k}=") && send("#{k}=", @options.delete(k)) }
@@ -43,11 +46,11 @@ module ResqueDaemon
       worker_processes.times do |slot|
         worker = workers[slot]
         if worker.nil? || worker.reaped?
+          worker_num = slot + 1
           queue_names = queues.
-            select { |name, concurrency| concurrency <= worker_number }.
+            select { |name, concurrency| concurrency <= worker_num }.
             map    { |name, _| name }
-          opts = default_worker_options.merge(@options)
-          worker = ResqueDaemon::Worker.new(slot + 1, queue_names, opts)
+          worker = ResqueDaemon::Worker.new(worker_num, queue_names, options)
         end
         workers[slot] = worker
       end
