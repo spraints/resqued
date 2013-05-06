@@ -1,36 +1,43 @@
 #!/usr/bin/env ruby
-#/ Usage: resqued [-D] [-n <count>] [-c <config>] [-q <name>[=<workers>]]...
-#/ Start a resque daemon.
+#/ Usage: resqued [-D] [-r <lib>] [-n <count>] [--queue <name>[=<num>%]]...
+#/ Start the resque process manager and spawn worker processes.
 #/
 #/ Options
-#/   -D, --daemonize             Run daemonized in the background.
-#/   -c, --config <config>       Load resqued config file at <config>
-#/   -n, --workers <count>       Number of workers to start for all queues.
-#/   -q, --queue <name>[=<val>]  Process the queue with a percentage (10%)
-#/                               or fixed number (10) of workers.
+#/   -n, --workers <count>         Number of worker processes for all queues.
+#/       --queue <name>[=<num>]    Work queue with a percentage (10%) or fixed
+#/                                 number (10) of workers.
+#/       --redis <url>             Connect to redis server at <url>.
+#/   -r, --require <lib>           Require ruby library in master.
+#/   -D, --daemonize               Run daemonized in the background.
+#/   -v, --verbose                 Increase log verbosity; lots of debug info.
+#/   -q, --quiet                   Decrease log verbosity; errors only.
 #/
 #/ Queues added first are processed fully before subsequent queues. Backlog on
 #/ the first queue means workers will not visit the second queue.
 require 'optparse'
 $stderr.sync = true
 
+# Command line option variables
 daemonize        = false
 worker_processes = 1
-config_file      = nil
 queue_defs       = []
-redis            = "redis://localhost:6379"
-verbose          = 5
+require_libs     = []
+redis            = nil
 
-# parse arguments
+# Logging stuff
+log_levels       = [:debug, :info, :warn, :error, :fatal, :unknown]
+verbose          = log_levels.index(:warn)
+
+# Parse arguments
 file = __FILE__
 ARGV.options do |opts|
   opts.on("-D", "--daemonize")             { |val| daemonize = val }
   opts.on("-n", "--workers=val", Integer)  { |val| worker_processes = val }
-  opts.on("-c", "--config=val", String)    { |val| config_file = val }
-  opts.on("-r", "--require=val", String)   { |val| require(val) }
-  opts.on("-q", "--queue=val", String)     { |val| queue_defs << val }
+  opts.on("-r", "--require=val", String)   { |val| require_libs << val }
+  opts.on("-Q", "--queue=val", String)     { |val| queue_defs << val }
   opts.on("--redis=val", String)           { |val| redis = val }
-  opts.on("-v", "--verbose")               { |val| verbose = 0 }
+  opts.on("-v", "--verbose")               { |val| verbose = log_levels.index(:debug) }
+  opts.on("-q", "--quiet")                 { |val| verbose = log_levels.index(:error) }
   opts.on_tail("-h", "--help")             { exec "grep ^#/<'#{file}'|cut -c4-" }
   opts.parse!
 end
@@ -52,8 +59,11 @@ end
 require 'resque'
 Resque.logger.level = verbose
 Resque.logger.formatter = Resque::VeryVerboseFormatter.new
-Resque.logger.debug "establishing redis connection: #{redis}"
-Resque.redis = redis
+Resque.logger.info "establishing redis connection: #{redis}"
+Resque.redis = redis if redis
+
+# Require any libraries requested with --require
+require_libs.each { |lib| require(lib) }
 
 # Build options
 options = {
@@ -61,6 +71,7 @@ options = {
   :worker_processes => worker_processes
 }
 
+# Create the master and start spawning workers
 require 'resqued'
 master = ResqueDaemon::Master.new(queues, options)
 master.run
