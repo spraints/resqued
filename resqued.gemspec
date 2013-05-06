@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- test`.split("\n").select { |f| f =~ /_test.rb$/ }
-  s.executables   = `git ls-files -- bin`.split("\n").map { |f| File.basename(f) }
+  s.bindir        = "script"
+  s.executables   = %w[resqued]
   s.require_paths = %w[lib]
 end
