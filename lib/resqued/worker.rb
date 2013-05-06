@@ -65,7 +65,6 @@ module ResqueDaemon
     # Called in the newly forked worker process, immediately after spawning.
     def main
       yield if block_given?
-      $0 = "resqued worker [#{number}] booting ..."
       @worker.reconnect
       @worker.work(@options[:interval])
       exit!
