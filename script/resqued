@@ -18,6 +18,7 @@ daemonize        = false
 worker_processes = 1
 config_file      = nil
 queue_defs       = []
+verbose          = 5
 
 # parse arguments
 file = __FILE__
@@ -26,6 +27,7 @@ ARGV.options do |opts|
   opts.on("-n", "--workers=val", Integer)  { |val| worker_processes = val }
   opts.on("-c", "--config=val", String)    { |val| config_file = val }
   opts.on("-q", "--queue=val", String)     { |val| queue_defs << val }
+  opts.on("-v", "--verbose")               { |val| verbose = 0 }
   opts.on_tail("-h", "--help")             { exec "grep ^#/<'#{file}'|cut -c4-" }
   opts.parse!
 end
@@ -42,6 +44,11 @@ queue_defs.each do |string|
     else             concurrency.to_i
     end
 end
+
+# Configure some basic resque stuff
+require 'resque'
+Resque.logger.level = verbose
+Resque.logger.formatter = Resque::VeryVerboseFormatter.new
 
 # Build options
 options = {

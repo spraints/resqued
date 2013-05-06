@@ -38,13 +38,23 @@ module ResqueDaemon
           spawn_workers
           sleep 0.100
         rescue Exception => boom
-          warn "ERROR IN MASTER RUN LOOP: #{boom.class} #{boom.to_s}"
+          logger.error "ERROR IN MASTER RUN LOOP: #{boom.class} #{boom.to_s}"
+          logger.debug boom.backtrace.join("\n")
           @shutdown = 'TERM'
         end
         break if !workers.any? { |w| w.running? }
       end
     ensure
       uninstall_signal_handlers
+    end
+
+    # Initiate shutdown for the master and all worker processes. The method
+    # returns immediately. The #run method will exit after all worker processes
+    # have been cleaned up.
+    def shutdown(signal = 'TERM')
+      logger.info "master received #{signal}, initiating shutdown"
+      @shutdown = signal
+      @shutdown_time = nil
     end
 
     # Internal: Build an array of Worker objects with queue lists configured based
@@ -81,6 +91,7 @@ module ResqueDaemon
       return if @shutdown
       workers.each do |worker|
         next if worker.pid?
+        logger.debug "master spawning worker #{worker.number}"
         worker.spawn { uninstall_signal_handlers }
       end
     end
@@ -90,8 +101,11 @@ module ResqueDaemon
     # reaped.
     def reap_workers
       workers.each do |worker|
-        next if !worker.running?
-        worker.reap
+        if !worker.running?
+          next
+        elsif status = worker.reap
+          logger.debug "master reaped worker #{worker.number} (pid=#{worker.pid}, status=#{status.exitstatus})"
+        end
       end
     end
 
@@ -122,6 +136,7 @@ module ResqueDaemon
     # Internal: Send a signal to all running working processes.
     def kill_workers(signal)
       running = workers.select { |w| w.running? }
+      logger.debug "master sending SIG#{signal} to #{running.size} workers"
       running.each { |worker| worker.kill(signal) }
     end
 
@@ -138,9 +153,9 @@ module ResqueDaemon
 
     # Internal: Install signal handler traps for managing the worker pool.
     def install_signal_handlers
-      trap('INT')  { @shutdown = 'TERM'; @shutdown_time = nil }
-      trap('TERM') { @shutdown = 'TERM'; @shutdown_time = nil }
-      trap('QUIT') { @shutdown = 'QUIT'; @shutdown_time = nil }
+      %w[INT TERM QUIT].each do |signal|
+        trap(signal) { shutdown(signal) }
+      end
       trap('HUP')  { @reload = true }
       trap('USR1') { @reopen = true }
       trap('USR2') { @reexec = true }
@@ -151,6 +166,10 @@ module ResqueDaemon
       %w[INT TERM QUIT HUP USR1 USR2].each do |signal|
         trap(signal, 'DEFAULT')
       end
+    end
+
+    def logger
+      Resque.logger
     end
   end
 end
