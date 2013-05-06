@@ -26,12 +26,15 @@ module ResqueDaemon
 
     # The main run loop. Maintains the worker pool.
     def run
+      install_signal_handlers
       while true
         reap_workers
         build_workers
         spawn_workers
         sleep 0.100
       end
+    ensure
+      uninstall_signal_handlers
     end
 
     # Internal: Build an array of Worker objects with queue lists configured based
@@ -66,7 +69,7 @@ module ResqueDaemon
     def spawn_workers
       workers.each do |worker|
         next if worker.pid?
-        worker.spawn
+        worker.spawn { uninstall_signal_handlers }
       end
     end
 
@@ -101,6 +104,23 @@ module ResqueDaemon
         (worker_processes * value).to_i
       else
         raise TypeError, "Unknown concurrency value: #{value.inspect}"
+      end
+    end
+
+    # Internal: Install signal handler traps for managing the worker pool.
+    def install_signal_handlers
+      trap('INT')  { @shutdown = true }
+      trap('TERM') { @shutdown = true }
+      trap('QUIT') { @graceful = true }
+      trap('HUP')  { @reload = true }
+      trap('USR1') { @reopen = true }
+      trap('USR2') { @reexec = true }
+    end
+
+    # Internal: Reset all signal handlers back to their defaults.
+    def uninstall_signal_handlers
+      %w[INT TERM QUIT HUP USR1 USR2].each do |signal|
+        trap(signal, 'DEFAULT')
       end
     end
   end
