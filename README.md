@@ -47,7 +47,7 @@ To run the same fleet of workers with resqorn, create a config file
 
 Run it like this:
 
-    resqorn -c config/resqorn.rb
+    resqorn config/resqorn.rb
 
 When resqorn is running, it has the following processes:
 

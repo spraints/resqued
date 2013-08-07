@@ -1,3 +1,11 @@
 #!/usr/bin/env ruby
 
-puts 'todo'
+if ARGV.size != 1
+  puts "Usage: resqorn config.rb"
+  exit 1
+end
+
+require 'resqorn'
+
+config = Resqorn::Config.load_file(ARGV[0])
+p config
