@@ -18,8 +18,6 @@ module Resqorn
       @config ||= Config.load_file(@config_path)
     end
 
-    # Private: Write
-
     # Public: Run the main loop.
     def run
       @listening = true
@@ -44,7 +42,7 @@ module Resqorn
       # All done
     end
 
-    # Private.
+    # Temporary.
     def listen_for_jobs
       # totally fake implementation, good for getting process control worked out.
       while @listening do

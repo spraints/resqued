@@ -137,7 +137,6 @@ module Resqorn
       @self_pipe ||= Kgio::Pipe.new.each { |io| io.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) }
     end
 
-
     def yawn(duration)
       inputs = [ self_pipe[0] ] + all_listeners.map { |l| l.read_pipe }
       IO.select(inputs, nil, nil, duration) or return
