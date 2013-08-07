@@ -49,7 +49,12 @@ module Resqorn
 
     # Public: Get the list of workers running from this listener.
     def running_workers
-      @running_workers ||= []
+      worker_pids.map { |pid, queue| { :pid => pid, :queue => queue } }
+    end
+
+    # Private: Map worker pids to queue names
+    def worker_pids
+      @worker_pids ||= {}
     end
 
     # Public: Check for updates on running worker information.
@@ -59,13 +64,15 @@ module Resqorn
         IO.select([@from_listener_pipe], nil, nil, 0) or return
         line = @from_listener_pipe.readline
         if line =~ /^\+(\d+),(.*)\n/
-          running_workers.push(:pid => $1, :queue => $2)
+          worker_pids[$1] = $2
         elsif line =~ /^-(\d+)\n/
+          worker_pids.delete($1)
           on_finished.call($1)
         else
           log "Malformed data from listener: #{line.inspect}"
         end
       end
+    rescue EOFError
     end
 
     # Public: Report that a worker finished.
