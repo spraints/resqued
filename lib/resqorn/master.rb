@@ -1,3 +1,5 @@
+require 'kgio'
+
 require 'resqorn/config'
 require 'resqorn/listener'
 
@@ -22,7 +24,7 @@ module Resqorn
       handle_signals
     end
 
-    MIN_BACKOFF = 4.0
+    MIN_BACKOFF = 1.0
     MAX_BACKOFF = 64.0
 
     def start_listener
@@ -30,12 +32,13 @@ module Resqorn
         return
       end
       if @listener_started_at && @listener_backoff && Time.now - @listener_started_at < @listener_backoff
-        @backoff = true
+        log "Waiting #{@listener_backoff}s before respawning..." if @backoff_remaining.nil?
+        @backoff_remaining = @listener_backoff - (Time.now - @listener_started_at)
         return
       end
       @listener_started_at = Time.now
-      @listener_backoff = @backoff ? [@listener_backoff * 2, MAX_BACKOFF].min : MIN_BACKOFF
-      @backoff = false
+      @listener_backoff = @backoff_remaining.nil? ? MIN_BACKOFF : [@listener_backoff * 2, MAX_BACKOFF].min
+      @backoff_remaining = nil
       if @listener_pid = fork
         # master
         log "Started listener #{@listener_pid}"
@@ -59,9 +62,7 @@ module Resqorn
     def wait_listener
       if @listener_pid
         pid, status = Process.waitpid2(@listener_pid)
-        if status.exitstatus != 0
-          log "Listener exited #{status}"
-        end
+        log "Listener exited #{status}"
         @listener_pid = nil
       end
     end
@@ -75,7 +76,7 @@ module Resqorn
         start_listener
         case signal = SIGNAL_QUEUE.shift
         when nil
-          sleep 1
+          yawn(@backoff_remaining || 30.0)
         when :CHLD
           log "Child died!"
           wait_listener
@@ -97,11 +98,24 @@ module Resqorn
     end
 
     def install_signal_handlers
-      SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal } }
+      SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
     end
 
     def uninstall_signal_handlers
       SIGNALS.each { |signal| trap(signal, 'DEFAULT') }
+    end
+
+    def self_pipe
+      @self_pipe ||= Kgio::Pipe.new
+    end
+
+    def yawn(duration)
+      IO.select([ self_pipe[0] ], nil, nil, duration) or return
+      self_pipe[0].kgio_tryread(11)
+    end
+
+    def awake
+      self_pipe[1].kgio_trywrite('.')
     end
 
     def write_pid

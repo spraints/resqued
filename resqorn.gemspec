@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
   s.executables = %w(
     resqorn
   )
+  s.add_dependency 'kgio', '~> 2.6'
   s.add_dependency 'resque'
   s.add_development_dependency 'rspec', '~> 2.0'
   s.add_development_dependency 'rake', '~> 0.9.0'
