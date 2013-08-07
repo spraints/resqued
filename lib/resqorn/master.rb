@@ -1,6 +1,8 @@
+require 'fcntl'
 require 'kgio'
 
 require 'resqorn/listener'
+require 'resqorn/logging'
 
 module Resqorn
   # The master process.
@@ -8,6 +10,8 @@ module Resqorn
   # * Tracks all work. (IO pipe from listener.)
   # * Handles signals.
   class Master
+    include Resqorn::Logging
+
     def initialize(options)
       @config_path = options.fetch(:config_path)
       @pidfile     = options.fetch(:pidfile) { nil }
@@ -38,13 +42,19 @@ module Resqorn
       @listener_started_at = Time.now
       @listener_backoff = @backoff_remaining.nil? ? MIN_BACKOFF : [@listener_backoff * 2, MAX_BACKOFF].min
       @backoff_remaining = nil
+      listener_read, listener_write = Kgio::Pipe.new
       if @listener_pid = fork
         # master
         log "Started listener #{@listener_pid}"
+        listener_write.close
+        listener_read.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
+        @listener_read = listener_read
       else
         uninstall_signal_handlers
+        listener_read.close
+        listener_write.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
         # Load the config in the listener process so that, if it does a 'require' or something, it only pollutes the listener.
-        Listener.new(:config_path => @config_path, :running_workers => @running_workers).run
+        Listener.new(:config_path => @config_path, :running_workers => @running_workers).run(listener_write)
         exit
       end
     end
@@ -62,6 +72,7 @@ module Resqorn
         pid, status = Process.waitpid2(@listener_pid)
         log "Listener exited #{status}"
         @listener_pid = nil
+        @listener_read = nil
       end
     end
 
@@ -72,6 +83,7 @@ module Resqorn
     def handle_signals
       loop do
         start_listener
+        read_listener
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn(@backoff_remaining || 30.0)
@@ -79,7 +91,7 @@ module Resqorn
           log "Child died!"
           wait_listener
         when :HUP
-          log "Reloading configuration and application."
+          log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
         when :INT, :TERM
           log "Shutting down now."
@@ -104,11 +116,20 @@ module Resqorn
     end
 
     def self_pipe
-      @self_pipe ||= Kgio::Pipe.new
+      @self_pipe ||= Kgio::Pipe.new.each { |io| io.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) }
+    end
+
+    def read_listener
+      if @listener_read
+        loop do
+          IO.select([ @listener_read ], nil, nil, 0) or break
+          log @listener_read.readline
+        end
+      end
     end
 
     def yawn(duration)
-      IO.select([ self_pipe[0] ], nil, nil, duration) or return
+      IO.select([ self_pipe[0], @listener_read ].compact, nil, nil, duration) or return
       self_pipe[0].kgio_tryread(11)
     end
 
@@ -129,10 +150,6 @@ module Resqorn
 
     def write_procline
       $0 = "resqorn master #{ARGV.join(' ')}"
-    end
-
-    def log(message)
-      puts "[#{$$} #{Time.now.strftime('%H:%M:%D')}] #{message}"
     end
   end
 end
