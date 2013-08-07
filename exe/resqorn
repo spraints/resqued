@@ -7,5 +7,4 @@ end
 
 require 'resqorn'
 
-config = Resqorn::Config.load_file(ARGV[0])
-p config
+Resqorn::Master.new(:config_path => File.expand_path(ARGV[0])).run

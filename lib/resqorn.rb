@@ -1,1 +1,2 @@
-require 'resqorn/config'
+require 'resqorn/master'
+require 'resqorn/version'
