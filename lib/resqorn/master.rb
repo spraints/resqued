@@ -76,6 +76,17 @@ module Resqorn
       end
     end
 
+    def wait_for_workers
+      while worker = @running_workers.shift
+        log "Waiting for #{worker.inspect}"
+        system 'ps', '-p', worker[:pid].to_s
+        pid, status = Process.waitpid2(worker[:pid])
+        log status
+      end
+    rescue
+      sleep 10
+    end
+
     SIGNALS = [ :HUP, :INT, :TERM, :QUIT, :CHLD ]
 
     SIGNAL_QUEUE = []
@@ -101,7 +112,7 @@ module Resqorn
         when :QUIT
           log "Shutting down when work is finished."
           kill_listener(signal)
-          #wait_for_workers
+          wait_for_workers
           break
         end
       end
@@ -123,7 +134,8 @@ module Resqorn
       if @listener_read
         loop do
           IO.select([ @listener_read ], nil, nil, 0) or break
-          log @listener_read.readline
+          worker_pid, queue = @listener_read.readline.chomp.split(',', 2)
+          @running_workers << { :pid => worker_pid.to_i, :queue => queue, :started_at => Time.now }
         end
       end
     end

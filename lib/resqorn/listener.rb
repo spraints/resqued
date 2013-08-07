@@ -16,7 +16,8 @@ module Resqorn
 
     def run(process_log = $stdout)
       write_procline
-      #install_signal_handlers
+      @listening = true
+      trap(:QUIT) { @listening = false }
       load_environment
       listen_for_jobs(process_log)
     end
@@ -24,7 +25,7 @@ module Resqorn
     # Private.
     def listen_for_jobs(process_log)
       # totally fake implementation, good for getting process control worked out.
-      loop do
+      while @listening do
         busy_work(process_log)
         sleep 5
       end
@@ -33,12 +34,13 @@ module Resqorn
     # Temporary.
     def busy_work(process_log)
       @worker_pid = fork do
+        $0 = 'resqorn FAKE WORKER'
         log 'WORK'
         sleep 20
         log 'DONE'
       end
       process_log.puts "#@worker_pid,queue_name"
-      process_log.puts "#@worker_pid,queue_name"
+      #process_log.puts "#@worker_pid,queue_name,hi"
     end
 
     # Private: load the application.
