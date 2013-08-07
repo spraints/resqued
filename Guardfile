@@ -2,7 +2,7 @@ notification :off
 
 guard 'bundler', :cli => '--local' do
   watch('Gemfile')
-  watch('git-import.gemspec')
+  watch('resqorn.gemspec')
 end
 
 rspec_options = {
