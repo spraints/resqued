@@ -1,7 +1,7 @@
 require 'fcntl'
 require 'kgio'
 
-require 'resqorn/listener'
+require 'resqorn/listener_proxy'
 require 'resqorn/logging'
 
 module Resqorn
@@ -15,7 +15,6 @@ module Resqorn
     def initialize(options)
       @config_path = options.fetch(:config_path)
       @pidfile     = options.fetch(:pidfile) { nil }
-      @running_workers = []
     end
 
     # Public: Starts the master process.
@@ -23,100 +22,104 @@ module Resqorn
       write_pid
       write_procline
       install_signal_handlers
-      start_listener
-      handle_signals
+      go_ham
     end
 
-    MIN_BACKOFF = 1.0
-    MAX_BACKOFF = 64.0
-
-    def start_listener
-      if @listener_pid
-        return
-      end
-      if @listener_started_at && @listener_backoff && Time.now - @listener_started_at < @listener_backoff
-        log "Waiting #{@listener_backoff}s before respawning..." if @backoff_remaining.nil?
-        @backoff_remaining = @listener_backoff - (Time.now - @listener_started_at)
-        return
-      end
-      @listener_started_at = Time.now
-      @listener_backoff = @backoff_remaining.nil? ? MIN_BACKOFF : [@listener_backoff * 2, MAX_BACKOFF].min
-      @backoff_remaining = nil
-      listener_read, listener_write = Kgio::Pipe.new
-      if @listener_pid = fork
-        # master
-        log "Started listener #{@listener_pid}"
-        listener_write.close
-        listener_read.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
-        @listener_read = listener_read
-      else
-        uninstall_signal_handlers
-        listener_read.close
-        listener_write.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
-        # Load the config in the listener process so that, if it does a 'require' or something, it only pollutes the listener.
-        Listener.new(:config_path => @config_path, :running_workers => @running_workers).run(listener_write)
-        exit
-      end
-    end
-
-    def kill_listener(signal)
-      if @listener_pid
-        log "Killing listener #{@listener_pid} with #{signal}"
-        Process.kill(signal.to_s, @listener_pid)
-        wait_listener
-      end
-    end
-
-    def wait_listener
-      if @listener_pid
-        pid, status = Process.waitpid2(@listener_pid)
-        log "Listener exited #{status}"
-        @listener_pid = nil
-        @listener_read = nil
-      end
-    end
-
-    def wait_for_workers
-      while worker = @running_workers.shift
-        log "Waiting for #{worker.inspect}"
-        system 'ps', '-p', worker[:pid].to_s
-        pid, status = Process.waitpid2(worker[:pid])
-        log status
-      end
-    rescue
-      sleep 10
-    end
-
-    SIGNALS = [ :HUP, :INT, :TERM, :QUIT, :CHLD ]
-
-    SIGNAL_QUEUE = []
-
-    def handle_signals
+    # Private: dat main loop.
+    def go_ham
       loop do
         start_listener
-        read_listener
+        read_listeners
+        reap_all_listeners
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn(@backoff_remaining || 30.0)
-        when :CHLD
-          log "Child died!"
-          wait_listener
         when :HUP
           log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
         when :INT, :TERM
           log "Shutting down now."
-          #kill_workers(signal)
-          kill_listener(signal)
+          kill_all_listeners(signal)
           break
         when :QUIT
           log "Shutting down when work is finished."
-          kill_listener(signal)
+          kill_all_listeners(signal)
           wait_for_workers
           break
         end
       end
     end
+
+    MIN_BACKOFF = 1.0
+    MAX_BACKOFF = 64.0
+
+    def all_listeners
+      @all_listeners ||= {}
+    end
+
+    attr_reader :config_path
+    attr_reader :pidfile
+
+    def start_listener
+      return if @current_listener
+
+      if @listener_started_at && @listener_backoff && Time.now - @listener_started_at < @listener_backoff
+        log "Waiting #{@listener_backoff}s before respawning..." if @backoff_remaining.nil?
+        @backoff_remaining = @listener_backoff - (Time.now - @listener_started_at)
+        return
+      end
+
+      @listener_started_at = Time.now
+      @listener_backoff = @backoff_remaining.nil? ? MIN_BACKOFF : [@listener_backoff * 2, MAX_BACKOFF].min
+      @backoff_remaining = nil
+
+      @current_listener = ListenerProxy.new(:config_path => @config_path, :running_workers => all_listeners.map { |l| running_workers }.flatten)
+      @current_listener.start
+      @all_listeners[@current_listener.pid] = @current_listener
+    end
+
+    def read_listeners
+      all_listeners.values.each { |l| l.read_worker_status }
+    end
+
+    def kill_listener(signal)
+      if @current_listener
+        @current_listener.kill(signal)
+        @current_listener = nil
+      end
+    end
+
+    def kill_all_listeners(signal)
+      all_listeners.values.each do |l|
+        l.kill(signal)
+      end
+    end
+
+    def wait_for_workers
+      while all_listeners.any?
+        reap_all_listeners
+        yawn(30.0)
+      end
+    end
+
+    def reap_all_listeners
+      begin
+        lpid, status = Process.waitpid2(-1, Process::WNOHANG)
+        if lpid
+          log "Listener exited #{status}"
+          @current_listener = nil if @current_listener.pid == lpid
+          all_listeners.delete(lpid)
+        else
+          return
+        end
+      rescue Errno::ECHILD
+        return
+      end while true
+    end
+
+    SIGNALS = [ :HUP, :INT, :TERM, :QUIT, :CHLD ]
+
+    SIGNAL_QUEUE = []
 
     def install_signal_handlers
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
@@ -130,18 +133,10 @@ module Resqorn
       @self_pipe ||= Kgio::Pipe.new.each { |io| io.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) }
     end
 
-    def read_listener
-      if @listener_read
-        loop do
-          IO.select([ @listener_read ], nil, nil, 0) or break
-          worker_pid, queue = @listener_read.readline.chomp.split(',', 2)
-          @running_workers << { :pid => worker_pid.to_i, :queue => queue, :started_at => Time.now }
-        end
-      end
-    end
 
     def yawn(duration)
-      IO.select([ self_pipe[0], @listener_read ].compact, nil, nil, duration) or return
+      inputs = [ self_pipe[0] ] + all_listeners.map { |l| l.read_pipe }
+      IO.select(inputs, nil, nil, duration) or return
       self_pipe[0].kgio_tryread(11)
     end
 
