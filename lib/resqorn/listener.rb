@@ -5,10 +5,11 @@ module Resqorn
 
     def run
       write_procline
-      loop do
-        sleep 10
-        break
-      end
+      #sleep 5
+      #loop do
+      #  sleep 10
+      #  break
+      #end
       #load_environment
       #install_sigquit_handler
       #wait_for_jobs

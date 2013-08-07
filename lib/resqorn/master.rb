@@ -22,12 +22,20 @@ module Resqorn
       handle_signals
     end
 
+    MIN_BACKOFF = 4.0
+    MAX_BACKOFF = 64.0
+
     def start_listener
       if @listener_pid
-        log "Listener is already running!"
+        return
+      end
+      if @listener_started_at && @listener_backoff && Time.now - @listener_started_at < @listener_backoff
+        @backoff = true
         return
       end
       @listener_started_at = Time.now
+      @listener_backoff = @backoff ? [@listener_backoff * 2, MAX_BACKOFF].min : MIN_BACKOFF
+      @backoff = false
       if @listener_pid = fork
         # master
         log "Started listener #{@listener_pid}"
@@ -64,17 +72,16 @@ module Resqorn
 
     def handle_signals
       loop do
+        start_listener
         case signal = SIGNAL_QUEUE.shift
         when nil
           sleep 1
         when :CHLD
           log "Child died!"
           wait_listener
-          start_listener
         when :HUP
           log "Reloading configuration and application."
           kill_listener(:QUIT)
-          start_listener
         when :INT, :TERM
           log "Shutting down now."
           #kill_workers(signal)
