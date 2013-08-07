@@ -1,5 +1,6 @@
 require 'resqorn/config'
 require 'resqorn/logging'
+require 'resqorn/worker'
 
 module Resqorn
   # A listener process. Watches resque queues and forks workers.
@@ -9,6 +10,7 @@ module Resqorn
     # Configure a new listener object.
     def initialize(options)
       @config_path = options.fetch(:config_path)
+      @running_workers = options.fetch(:running_workers) { [] }
       @from_master_pipe = options.fetch(:from_master)
       @to_master_pipe = options.fetch(:to_master)
     end
@@ -28,7 +30,13 @@ module Resqorn
       listen_for_jobs
 
       write_procline('shutdown')
+      @from_master_pipe.close
       reap_workers
+    end
+
+    # Private: all available workers
+    def workers
+      @workers ||= init_workers
     end
 
     # Private: Check for workers that have stopped running
@@ -36,31 +44,44 @@ module Resqorn
       loop do
         worker_pid, status = Process.waitpid2(-1, waitpidflags)
         return if worker_pid.nil?
+        workers.each do |worker|
+          if worker.pid == worker_pid
+            worker.finished!(status)
+          end
+        end
         report_worker("-#{worker_pid}")
       end
     rescue Errno::ECHILD
       # All done
     end
 
-    # Temporary.
+    # Private.
     def listen_for_jobs
-      # totally fake implementation, good for getting process control worked out.
       while @listening do
         reap_workers(Process::WNOHANG)
-        busy_work
+        workers.each do |worker|
+          if worker.idle?
+            worker.try_start
+          end
+        end
         sleep 5
       end
     end
 
-    # Temporary.
-    def busy_work
-      worker_pid = fork do
-        $0 = 'resqorn FAKE WORKER'
-        log 'WORK'
-        sleep 20
-        log 'DONE'
+    # Private.
+    def init_workers
+      workers = []
+      config.workers.each do |worker_config|
+        worker_config[:size].times do
+          workers << Worker.new(worker_config)
+        end
       end
-      report_worker("+#{worker_pid},queue_name")
+      @running_workers.each do |running_worker|
+        if blocked_worker = workers.detect { |worker| worker.idle? && worker.watches_queue?(running_worker[:queue]) }
+          blocked_worker.wait_for(running_worker[:pid])
+        end
+      end
+      workers
     end
 
     # Private: Report child process status.
@@ -80,6 +101,7 @@ module Resqorn
     # * Maybe make the specific app environment configurable (i.e. load rails, load rackup, load some custom thing)
     def load_environment
       require File.expand_path('config/environment.rb')
+      Rails.application.eager_load!
     end
 
     # Private.
