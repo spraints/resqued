@@ -28,9 +28,9 @@ module Resqorn
     # Private: dat main loop.
     def go_ham
       loop do
-        start_listener
         read_listeners
         reap_all_listeners
+        start_listener
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn(@backoff_remaining || 30.0)
@@ -53,8 +53,14 @@ module Resqorn
     MIN_BACKOFF = 1.0
     MAX_BACKOFF = 64.0
 
+    # Private: Map listener pids to ListenerProxy objects.
+    def listener_pids
+      @listener_pids ||= {}
+    end
+
+    # Private: All the ListenerProxy objects.
     def all_listeners
-      @all_listeners ||= {}
+      listener_pids.values
     end
 
     attr_reader :config_path
@@ -73,13 +79,15 @@ module Resqorn
       @listener_backoff = @backoff_remaining.nil? ? MIN_BACKOFF : [@listener_backoff * 2, MAX_BACKOFF].min
       @backoff_remaining = nil
 
-      @current_listener = ListenerProxy.new(:config_path => @config_path, :running_workers => all_listeners.map { |l| running_workers }.flatten)
-      @current_listener.start
-      @all_listeners[@current_listener.pid] = @current_listener
+      @current_listener = ListenerProxy.new(:config_path => @config_path, :running_workers => all_listeners.map { |l| l.running_workers }.flatten)
+      @current_listener.run
+      listener_pids[@current_listener.pid] = @current_listener
     end
 
     def read_listeners
-      all_listeners.values.each { |l| l.read_worker_status }
+      all_listeners.each do |l|
+        l.read_worker_status(:on_finished => lambda { |pid| all_listeners.each { |other| other.worker_finished(pid) } })
+      end
     end
 
     def kill_listener(signal)
@@ -90,13 +98,13 @@ module Resqorn
     end
 
     def kill_all_listeners(signal)
-      all_listeners.values.each do |l|
+      all_listeners.each do |l|
         l.kill(signal)
       end
     end
 
     def wait_for_workers
-      while all_listeners.any?
+      while listener_pids.any?
         reap_all_listeners
         yawn(30.0)
       end
@@ -107,8 +115,8 @@ module Resqorn
         lpid, status = Process.waitpid2(-1, Process::WNOHANG)
         if lpid
           log "Listener exited #{status}"
-          @current_listener = nil if @current_listener.pid == lpid
-          all_listeners.delete(lpid)
+          @current_listener = nil if @current_listener && @current_listener.pid == lpid
+          listener_pids.delete(lpid) # This may leak workers.
         else
           return
         end
@@ -123,10 +131,6 @@ module Resqorn
 
     def install_signal_handlers
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
-    end
-
-    def uninstall_signal_handlers
-      SIGNALS.each { |signal| trap(signal, 'DEFAULT') }
     end
 
     def self_pipe
