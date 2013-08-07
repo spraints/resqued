@@ -1,11 +1,13 @@
 require 'resqorn/config'
 require 'resqorn/logging'
+require 'resqorn/sleepy'
 require 'resqorn/worker'
 
 module Resqorn
   # A listener process. Watches resque queues and forks workers.
   class Listener
     include Resqorn::Logging
+    include Resqorn::Sleepy
 
     # Configure a new listener object.
     def initialize(options)
@@ -20,78 +22,77 @@ module Resqorn
       @config ||= Config.load_file(@config_path)
     end
 
+    SIGNALS = [ :QUIT, :CHLD ]
+
+    SIGNAL_QUEUE = []
+
     # Public: Run the main loop.
     def run
-      @listening = true
-      trap(:QUIT) { @listening = false }
+      SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awaken } }
 
       write_procline('running')
-      load_environment
-      listen_for_jobs
+      spin_up_workers
+      loop do
+        recycle_workers
+        case signal << SIGNAL_QUEUE.shift
+        when nil
+          yawn(30.0)
+        when :QUIT
+          write_procline('shutdown')
+          @from_master_pipe.close
+          kill_all_workers(signal)
+          wait_for_shutdown
+          return
+        end
+      end
+    end
 
-      write_procline('shutdown')
-      @from_master_pipe.close
+    # Private.
+    def spin_up_workers
+      running_workers = @running_workers.each_with_object(Hash.new { |h,k| h[k] = [] }) { |running_worker, h| h[running_worker[:queue]] << running_worker[:pid] }
+      @running_workers = {} # pid of resque worker => worker that should be running
+      @waiting_workers = {} # pid of old worker    => worker to start
+      @stopped_workers = []
+      config.workers.each do |worker_config|
+        worker_config[:size].times do
+          worker = Worker.new(worker_config)
+          queues = worker_config[:queues].sort.join(',')
+          #queues = worker.queue_key
+          if old_pid = running_workers[queues]
+            @waiting_workers[old_pid] = worker
+          else
+            @stopped_workers << worker
+          end
+        end
+      end
+    end
+
+    # Private.
+    def recycle_workers
+      reap_workers(Process::WNOHANG)
+      raise 'todo: check for dead procs from master'
+      while worker = @stopped_worker.shift
+        worker.run
+        @to_master_pipe.puts "+#{worker.pid},#{queues}"
+        @running_workers[worker.pid] = worker
+      end
+    end
+
+    # Private.
+    def kill_all_workers(signal)
+      @running_workers.values.each do |worker|
+        worker.kill(signal)
+      end
+    end
+
+    # Private.
+    def wait_for_shutdown
       reap_workers
     end
 
-    # Private: all available workers
-    def workers
-      @workers ||= init_workers
-    end
-
-    # Private: Check for workers that have stopped running
-    def reap_workers(waitpidflags = 0)
-      loop do
-        worker_pid, status = Process.waitpid2(-1, waitpidflags)
-        return if worker_pid.nil?
-        workers.each do |worker|
-          if worker.pid == worker_pid
-            worker.finished!(status)
-          end
-        end
-        report_worker("-#{worker_pid}")
-      end
-    rescue Errno::ECHILD
-      # All done
-    end
-
     # Private.
-    def listen_for_jobs
-      while @listening do
-        reap_workers(Process::WNOHANG)
-        workers.each do |worker|
-          if worker.idle?
-            worker.try_start
-          end
-        end
-        sleep 5
-      end
-    end
-
-    # Private.
-    def init_workers
-      workers = []
-      config.workers.each do |worker_config|
-        worker_config[:size].times do
-          workers << Worker.new(worker_config)
-        end
-      end
-      @running_workers.each do |running_worker|
-        if blocked_worker = workers.detect { |worker| worker.idle? && worker.watches_queue?(running_worker[:queue]) }
-          blocked_worker.wait_for(running_worker[:pid])
-        end
-      end
-      workers
-    end
-
-    # Private: Report child process status.
-    #
-    # Examples:
-    #
-    #     report_worker("+12345,queue")  # Worker process PID:12345 started, working on a job from "queue".
-    #     report_worker("-12345")        # Worker process PID:12345 exited.
-    def report_worker(status)
-      @to_master_pipe.puts(status)
+    def yawn(duration)
+      super(duration, [@from_master_pipe])
     end
 
     # Private: load the application.

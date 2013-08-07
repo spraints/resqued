@@ -1,8 +1,6 @@
-require 'fcntl'
-require 'kgio'
-
 require 'resqorn/listener_proxy'
 require 'resqorn/logging'
+require 'resqorn/sleepy'
 
 module Resqorn
   # The master process.
@@ -11,6 +9,7 @@ module Resqorn
   # * Handles signals.
   class Master
     include Resqorn::Logging
+    include Resqorn::Sleepy
 
     def initialize(options)
       @config_path = options.fetch(:config_path)
@@ -133,18 +132,10 @@ module Resqorn
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
     end
 
-    def self_pipe
-      @self_pipe ||= Kgio::Pipe.new.each { |io| io.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) }
-    end
 
     def yawn(duration)
       inputs = [ self_pipe[0] ] + all_listeners.map { |l| l.read_pipe }
-      IO.select(inputs, nil, nil, duration) or return
-      self_pipe[0].kgio_tryread(11)
-    end
-
-    def awake
-      self_pipe[1].kgio_trywrite('.')
+      super(duration, inputs)
     end
 
     def write_pid
