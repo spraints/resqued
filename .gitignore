@@ -1,4 +1,5 @@
 Gemfile.lock
-.bundle
-vendor/cache
-bin
+.bundle/
+vendor/cache/
+bin/
+tmp/

@@ -42,8 +42,7 @@ To run the same fleet of workers with resqorn, create a config file
     end
 
     worker do
-      queue 'medium'
-      queue 'low'
+      queues 'medium', 'low'
     end
 
 Run it like this:
