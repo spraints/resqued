@@ -1,6 +1,5 @@
 require 'kgio'
 
-require 'resqorn/config'
 require 'resqorn/listener'
 
 module Resqorn
@@ -45,8 +44,7 @@ module Resqorn
       else
         uninstall_signal_handlers
         # Load the config in the listener process so that, if it does a 'require' or something, it only pollutes the listener.
-        config = Config.load_file(@config_path)
-        Listener.new(:config => config, :running_workers => @running_workers).run
+        Listener.new(:config_path => @config_path, :running_workers => @running_workers).run
         exit
       end
     end
