@@ -59,7 +59,7 @@ module Resqorn
           queues = worker_config[:queues].sort.join(',')
           #queues = worker.queue_key
           if old_pid = running_workers[queues]
-            @waiting_workers[old_pid] = worker
+            @waiting_workers[old_pid.to_i] = worker
           else
             @stopped_workers << worker
           end
@@ -76,6 +76,18 @@ module Resqorn
         @to_master_pipe.puts "+#{worker.pid},#{queues}"
         @running_workers[worker.pid] = worker
       end
+    end
+
+    # Private.
+    def reap_workers(waitpidflags=0)
+      loop do
+        worker_pid, status = Process.waitpid2(-1, waitpidflags)
+        return if worker_pid.nil?
+        if worker = (@runningworkers[worker_pid] || @waiting_workers[worker_pid])
+          @stopped_workers << worker
+        end
+      end
+    rescue Errno::ECHILD
     end
 
     # Private.
