@@ -1,3 +1,5 @@
+require 'resque'
+
 module Resqorn
   # Models a worker process.
   class Worker
@@ -37,13 +39,22 @@ module Resqorn
     def try_start
       @self_started = true
       @pid = fork do
-        # todo! start resque worker!
+        $0 = "STARTING RESQUE FOR #{queues.join(',')}"
+        resque_worker = Resque::Worker.new(*queues)
+        resque_worker.term_child = true
+        resque_worker.term_timeout = 999999999
+        resque_worker.log "Starting worker #{resque_worker}"
+        resque_worker.work(5)
       end
     end
 
     # Public: Shut this worker down.
     def kill(signal)
-      Process.kill(signal.to_s, pid) if pid && @self_started
+      signal = signal.to_s
+      # Use the new resque worker signals.
+      signal = 'INT' if signal == 'TERM'
+      signal = 'TERM' if signal == 'QUIT'
+      Process.kill(signal, pid) if pid && @self_started
     end
   end
 end

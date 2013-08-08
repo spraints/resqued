@@ -124,11 +124,12 @@ module Resqorn
       end while true
     end
 
-    SIGNALS = [ :HUP, :INT, :TERM, :QUIT, :CHLD ]
+    SIGNALS = [ :HUP, :INT, :TERM, :QUIT ]
 
     SIGNAL_QUEUE = []
 
     def install_signal_handlers
+      trap(:CHLD) { awake }
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
     end
 

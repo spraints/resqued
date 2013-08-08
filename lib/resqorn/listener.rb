@@ -22,12 +22,13 @@ module Resqorn
       @config ||= Config.load_file(@config_path)
     end
 
-    SIGNALS = [ :QUIT, :CHLD ]
+    SIGNALS = [ :QUIT ]
 
     SIGNAL_QUEUE = []
 
     # Public: Run the main loop.
     def run
+      trap(:CHLD) { awake }
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
 
       write_procline('running')
@@ -51,6 +52,7 @@ module Resqorn
           yawn(60.0)
         when :QUIT
           workers.each { |worker| worker.kill(signal) }
+          return
         end
       end
     end
@@ -112,7 +114,7 @@ module Resqorn
         end
       end
       @running_workers.each do |running_worker|
-        if blocked_worker = workers.detect { |worker| worker.idle? && worker.queue_key == running_worker[:queue]) }
+        if blocked_worker = workers.detect { |worker| worker.idle? && worker.queue_key == running_worker[:queue] }
           blocked_worker.wait_for(running_worker[:pid].to_i)
         end
       end
