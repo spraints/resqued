@@ -38,6 +38,7 @@ module Resqorn
 
       write_procline('shutdown')
       @from_master_pipe.close
+      @from_master_pipe = nil
       reap_workers
     end
 
@@ -79,11 +80,14 @@ module Resqorn
 
     # Private: Check if master reports any dead workers.
     def check_for_expired_workers
+      return unless @from_master_pipe
       loop do
         IO.select([@from_master_pipe], nil, nil, 0) or return
         line = @from_master_pipe.readline
         finish_worker(line.to_i, nil)
       end
+    rescue EOFError
+      @from_master_pipe = nil
     end
 
     # Private.

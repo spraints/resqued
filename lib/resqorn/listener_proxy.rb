@@ -77,7 +77,9 @@ module Resqorn
 
     # Public: Report that a worker finished.
     def worker_finished(pid)
-      @to_listener_pipe.puts pid
+      @to_listener_pipe.puts(pid) if @to_listener_pipe
+    rescue EOFError, Errno::EPIPE
+      @to_listener_pipe = nil
     end
   end
 end
