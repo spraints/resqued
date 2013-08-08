@@ -17,22 +17,33 @@ module Resqorn
     end
 
     # Public: Checks if this worker works on jobs from the queue.
-    def watches_queue?(queue)
-      queues.include?(queue)
+    def queue_key
+      queues.sort.join(';')
     end
 
     # Public: Claim this worker for another listener's worker.
     def wait_for(pid)
-      @pid = pid.to_i
+      raise "Already running #{@pid} (can't wait for #{pid})" if @pid
+      @self_started = nil
+      @pid = pid
     end
 
-    # Public: The worker process finished!
+    # Public: The old worker process finished!
     def finished!(process_status)
       @pid = nil
     end
 
     # Public: Start a job, if there's one waiting in one of my queues.
     def try_start
+      @self_started = true
+      @pid = fork do
+        # todo! start resque worker!
+      end
+    end
+
+    # Public: Shut this worker down.
+    def kill(signal)
+      Process.kill(signal.to_s, pid) if pid && @self_started
     end
   end
 end

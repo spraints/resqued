@@ -134,8 +134,7 @@ module Resqorn
 
 
     def yawn(duration)
-      inputs = [ self_pipe[0] ] + all_listeners.map { |l| l.read_pipe }
-      super(duration, inputs)
+      super(duration, all_listeners.map { |l| l.read_pipe })
     end
 
     def write_pid

@@ -7,7 +7,8 @@ module Resqorn
       @self_pipe ||= Kgio::Pipe.new.each { |io| io.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) }
     end
 
-    def yawn(duration, inputs)
+    def yawn(duration, *inputs)
+      inputs = [self_pipe[0]] + [inputs].flatten.compact
       IO.select(inputs, nil, nil, duration) or return
       self_pipe[0].kgio_tryread(11)
     end
