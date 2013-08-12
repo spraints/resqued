@@ -8,8 +8,8 @@ module Resqorn
     def started
       check!
       @backoff_duration = @backing_off ? [@backoff_duration * 2, 64.0].min : 1.0
-      @last_started_at = @time.now
-      @backing_off = false
+      @last_started_at = now
+      @backing_off = @next_start_at = nil
     end
 
     # Public: Check if we should wait before starting again.
@@ -26,19 +26,24 @@ module Resqorn
     # Public: How much longer until `ok?` will be true?
     def how_long?
       check!
-      next_start_at > @time.now ? next_start_at - @time.now : nil
+      next_start_at > now ? next_start_at - now : nil
     end
 
     private
 
     # Private: Check the current state.
     def check!
-      @backing_off ||= next_start_at > @time.now
+      @backing_off ||= next_start_at > now
     end
 
     # Private: Get the time when we can start again.
     def next_start_at
-      (@last_started_at && @backoff_duration) ? (@last_started_at + @backoff_duration) : @time.now
+      @next_start_at ||= (@last_started_at && @backoff_duration) ? (@last_started_at + @backoff_duration) : now
+    end
+
+    # Private.
+    def now
+      @time.now
     end
   end
 end
