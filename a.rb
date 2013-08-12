@@ -18,7 +18,8 @@ def main
     wait_for_child('normal')
   else
     parent.close
-    be_a_child(child)
+    exec "ruby #{$0} child #{child.fileno}"
+    #be_a_child(child)
   end
 end
 
@@ -41,10 +42,7 @@ rescue Errno::ECHILD => e
 end
 
 if ARGV[0] == 'child'
-  fd = ARGV[1].to_i - 1
-  p [fd, f = IO.for_fd(ARGV[1].to_i, 'w')]
-  puts "I AM FAKE"
-  writer(f)
+  be_a_child(Socket.for_fd(ARGV[1].to_i))
 else
   main
 end
