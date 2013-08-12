@@ -1,3 +1,4 @@
+require 'resqorn/backoff'
 require 'resqorn/listener_proxy'
 require 'resqorn/logging'
 require 'resqorn/sleepy'
@@ -14,6 +15,7 @@ module Resqorn
     def initialize(options)
       @config_path = options.fetch(:config_path)
       @pidfile     = options.fetch(:pidfile) { nil }
+      @listener_backoff = Backoff.new
     end
 
     # Public: Starts the master process.
@@ -32,7 +34,7 @@ module Resqorn
         start_listener
         case signal = SIGNAL_QUEUE.shift
         when nil
-          yawn(@backoff_remaining || 30.0)
+          yawn(@listener_backoff.how_long? || 30.0)
         when :HUP
           log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
@@ -49,9 +51,6 @@ module Resqorn
       end
     end
 
-    MIN_BACKOFF = 1.0
-    MAX_BACKOFF = 64.0
-
     # Private: Map listener pids to ListenerProxy objects.
     def listener_pids
       @listener_pids ||= {}
@@ -66,20 +65,10 @@ module Resqorn
     attr_reader :pidfile
 
     def start_listener
-      return if @current_listener
-
-      if @listener_started_at && @listener_backoff && Time.now - @listener_started_at < @listener_backoff
-        log "Waiting #{@listener_backoff}s before respawning..." if @backoff_remaining.nil?
-        @backoff_remaining = @listener_backoff - (Time.now - @listener_started_at)
-        return
-      end
-
-      @listener_started_at = Time.now
-      @listener_backoff = @backoff_remaining.nil? ? MIN_BACKOFF : [@listener_backoff * 2, MAX_BACKOFF].min
-      @backoff_remaining = nil
-
+      return if @current_listener || @listener_backoff.wait?
       @current_listener = ListenerProxy.new(:config_path => @config_path, :running_workers => all_listeners.map { |l| l.running_workers }.flatten)
       @current_listener.run
+      @listener_backoff.started
       listener_pids[@current_listener.pid] = @current_listener
     end
 
