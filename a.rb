@@ -1,7 +1,9 @@
+require 'socket'
+
 def main
-  r,w = IO.pipe
+  r,w = Socket.socketpair(:UNIX, :DGRAM, 0)
   if fork
-    trap(:CHLD) { wait_for_child('signal') ; exit }
+    trap(:CHLD) { wait_for_child('signal') }
     p [:parent, $$]
     w.close
     reader(r)
@@ -20,12 +22,13 @@ def wait_for_child(reason)
 end
 
 def writer(w)
-  w.puts "#$$ I AM THE WRITER"
+  w.send "#$$ I AM THE WRITER", 0
+  sleep 2
   w.close
 end
 
 def reader(r)
-  puts "#$$ reads: #{r.readline}"
+  puts "#$$ reads: #{r.recv(100)}"
 end
 
 if ARGV[0] == 'child'
