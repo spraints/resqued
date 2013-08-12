@@ -58,10 +58,10 @@ module Resqued
         load_environment
         init_workers
         run_workers_run
-
-        write_procline('shutdown')
-        reap_workers
       end
+
+      write_procline('shutdown')
+      reap_workers
     end
 
     # Private.
