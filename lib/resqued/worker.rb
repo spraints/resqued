@@ -51,11 +51,10 @@ module Resqued
       @self_started = true
       @pid = fork do
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
-        resque_worker = Resque::Worker.new(*queues)
-        resque_worker.term_child = true
-        resque_worker.term_timeout = 999999999
-        resque_worker.log "Starting worker #{resque_worker}"
-        resque_worker.work(5)
+        ENV['QUEUES'] = queues.join(',')
+        ENV['TERM_CHILD'] = 'y'
+        ENV['RESQUE_TERM_TIMEOUT'] ||= '999999999'
+        exec "bundle exec rake resque:work"
       end
     end
 
