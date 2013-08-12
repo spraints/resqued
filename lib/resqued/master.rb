@@ -19,10 +19,14 @@ module Resqued
     end
 
     # Public: Starts the master process.
-    def run
+    def run(ready_pipe = nil)
       write_pid
       write_procline
       install_signal_handlers
+      if ready_pipe
+        ready_pipe.syswrite($$.to_s)
+        ready_pipe.close rescue nil
+      end
       go_ham
     end
 
