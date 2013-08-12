@@ -3,6 +3,8 @@ def main
   if fork
     r.close
     parent(w)
+    res = Process.waitpid2
+    p [$$, res]
   else
     w.close
     child(r)
