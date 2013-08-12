@@ -57,10 +57,11 @@ module Resqued
 
     # Public: Check for updates on running worker information.
     def read_worker_status(options)
+      return if @master_socket.nil?
       on_finished = options.fetch(:on_finished) { lambda { |pid| } }
       loop do
         IO.select([@master_socket], nil, nil, 0) or return
-        line = @master_socket.recv(100)
+        line = @master_socket.readline
         if line =~ /^\+(\d+),(.*)$/
           worker_pids[$1] = $2
         elsif line =~ /^-(\d+)$/
@@ -72,11 +73,14 @@ module Resqued
           log "Malformed data from listener: #{line.inspect}"
         end
       end
+    rescue EOFError
+      @master_socket.close
+      @master_socket = nil
     end
 
     # Public: Report that a worker finished.
     def worker_finished(pid)
-      @master_socket.send("#{pid}", 0)
+      @master_socket.puts(pid)
     end
   end
 end

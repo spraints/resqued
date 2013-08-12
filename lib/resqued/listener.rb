@@ -102,9 +102,11 @@ module Resqued
     def check_for_expired_workers
       loop do
         IO.select([@socket], nil, nil, 0) or return
-        line = @socket.recv(100)
+        line = @socket.readline
         finish_worker(line.to_i, nil)
       end
+    rescue EOFError
+      log "eof from master"
     end
 
     # Private.
@@ -151,7 +153,7 @@ module Resqued
     #     report_to_master("+12345,queue")  # Worker process PID:12345 started, working on a job from "queue".
     #     report_to_master("-12345")        # Worker process PID:12345 exited.
     def report_to_master(status)
-      @socket.send(status, 0)
+      @socket.puts(status)
     end
 
     # Private: load the application.
