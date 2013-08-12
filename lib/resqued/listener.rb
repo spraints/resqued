@@ -13,8 +13,7 @@ module Resqued
     def initialize(options)
       @config_path = options.fetch(:config_path)
       @running_workers = options.fetch(:running_workers) { [] }
-      @from_master_pipe = options.fetch(:from_master)
-      @to_master_pipe = options.fetch(:to_master)
+      @socket = options.fetch(:socket)
     end
 
     # Private: memoizes the worker configuration.
@@ -37,8 +36,6 @@ module Resqued
       run_workers_run
 
       write_procline('shutdown')
-      @from_master_pipe.close
-      @from_master_pipe = nil
       reap_workers
     end
 
@@ -65,7 +62,7 @@ module Resqued
     def yawn
       sleep_times = [60.0] + workers.map { |worker| worker.backing_off_for }
       sleep_time = [sleep_times.compact.min, 0.0].max
-      super(sleep_time, @from_master_pipe)
+      super(sleep_time, @socket)
     end
 
     # Private: Check for workers that have stopped running
@@ -82,14 +79,11 @@ module Resqued
 
     # Private: Check if master reports any dead workers.
     def check_for_expired_workers
-      return unless @from_master_pipe
       loop do
-        IO.select([@from_master_pipe], nil, nil, 0) or return
-        line = @from_master_pipe.readline
+        IO.select([@socket], nil, nil, 0) or return
+        line = @socket.recv(100)
         finish_worker(line.to_i, nil)
       end
-    rescue EOFError
-      @from_master_pipe = nil
     end
 
     # Private.
@@ -136,7 +130,7 @@ module Resqued
     #     report_to_master("+12345,queue")  # Worker process PID:12345 started, working on a job from "queue".
     #     report_to_master("-12345")        # Worker process PID:12345 exited.
     def report_to_master(status)
-      @to_master_pipe.puts(status)
+      @socket.send(status, 0)
     end
 
     # Private: load the application.
