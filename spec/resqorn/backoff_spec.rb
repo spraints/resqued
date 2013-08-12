@@ -9,6 +9,10 @@ describe Resqorn::Backoff do
     expect(backoff.ok?).to be_true
   end
 
+  it 'has no waiting at first' do
+    expect(backoff.how_long?).to be_nil
+  end
+
   context 'after one quick exit' do
     before { 1.times { backoff.started } }
     it { expect(backoff.ok?).to be_false }
@@ -48,5 +52,6 @@ describe Resqorn::Backoff do
       @time_now = @time_now + 31
     end
     it { expect(backoff.ok?).to be_true }
+    it { expect(backoff.how_long?).to be_nil }
   end
 end
