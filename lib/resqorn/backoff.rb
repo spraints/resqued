@@ -6,39 +6,34 @@ module Resqorn
 
     # Public: Tell backoff that the thing we might want to back off from just started.
     def started
-      check!
-      @backoff_duration = @backing_off ? [@backoff_duration * 2, 64.0].min : 1.0
       @last_started_at = now
-      @backing_off = @next_start_at = nil
+      @backoff_duration = @backoff_duration ? [@backoff_duration * 2.0, 64.0].min : 1.0
+    end
+
+    def finished
+      @backoff_duration = nil if ok?
     end
 
     # Public: Check if we should wait before starting again.
     def wait?
-      ! ok?
+      @last_started_at && next_start_at > now
     end
 
     # Public: Check if we are ok to start (i.e. we don't need to back off).
     def ok?
-      check!
-      how_long?.nil?
+      ! wait?
     end
 
     # Public: How much longer until `ok?` will be true?
     def how_long?
-      check!
-      next_start_at > now ? next_start_at - now : nil
+      ok? ? nil : next_start_at - now
     end
 
     private
 
-    # Private: Check the current state.
-    def check!
-      @backing_off ||= next_start_at > now
-    end
-
-    # Private: Get the time when we can start again.
+    # Private: The next time when you're allowed to start a process.
     def next_start_at
-      @next_start_at ||= (@last_started_at && @backoff_duration) ? (@last_started_at + @backoff_duration) : now
+      @last_started_at && @backoff_duration ? @last_started_at + @backoff_duration : now
     end
 
     # Private.

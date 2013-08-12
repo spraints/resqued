@@ -103,7 +103,10 @@ module Resqorn
         lpid, status = Process.waitpid2(-1, Process::WNOHANG)
         if lpid
           log "Listener exited #{status}"
-          @current_listener = nil if @current_listener && @current_listener.pid == lpid
+          if @current_listener && @current_listener.pid == lpid
+            @listener_backoff.finished
+            @current_listener = nil
+          end
           listener_pids.delete(lpid) # This may leak workers.
         else
           return
