@@ -49,6 +49,10 @@ Run it like this:
 
     resqued config/resqued.rb
 
+Or like this to daemonize it:
+
+    resqued -p tmp/pids/resqued-master.pid -D config/resqued.rb
+
 When resqued is running, it has the following processes:
 
 * master - brokers signals to child processes.
