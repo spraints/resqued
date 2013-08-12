@@ -16,7 +16,7 @@ module Resqued
 
     def initialize(options)
       @config_path = options.fetch(:config_path)
-      @pidfile     = options.fetch(:pidfile) { nil }
+      @pidfile     = options.fetch(:master_pidfile) { nil }
       @listener_backoff = Backoff.new
     end
 
