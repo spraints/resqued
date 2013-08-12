@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+require 'resqued/listener'
+Resqued::Listener.exec(ARGV)

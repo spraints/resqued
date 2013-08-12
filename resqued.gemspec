@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.bindir  = 'exe'
   s.executables = %w(
     resqued
+    resqued-listener
   )
   s.add_dependency 'kgio', '~> 2.6'
   s.add_dependency 'resque', '>= 1.22.0'

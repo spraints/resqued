@@ -1,3 +1,5 @@
+require 'socket'
+
 require 'resqued/config'
 require 'resqued/logging'
 require 'resqued/sleepy'
@@ -14,6 +16,24 @@ module Resqued
       @config_path = options.fetch(:config_path)
       @running_workers = options.fetch(:running_workers) { [] }
       @socket = options.fetch(:socket)
+    end
+
+    # Public: As an alternative to #run, exec a new ruby instance for this listener.
+    def exec
+      command = ['resqued-listener']
+      command << @socket.fileno.to_s
+      command << @config_path
+      command << (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
+      Kernel.exec(*command)
+    end
+
+    # Public: Given args from #exec, start this listener.
+    def self.exec(argv)
+      options = {}
+      options[:socket] = Socket.for_fd(argv.shift.to_i)
+      options[:config_path] = argv.shift
+      options[:running_workers] = argv.shift.split('||').map { |s| Hash[[:pid,:queue].zip(s.split('|'))] }
+      new(options).run
     end
 
     # Private: memoizes the worker configuration.
