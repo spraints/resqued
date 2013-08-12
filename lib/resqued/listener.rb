@@ -29,6 +29,7 @@ module Resqued
     def run
       trap(:CHLD) { awake }
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
+      @socket.close_on_exec = true
 
       write_procline('running')
       load_environment

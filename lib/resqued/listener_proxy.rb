@@ -34,7 +34,6 @@ module Resqued
       else
         # listener
         master_socket.close
-        listener_socket.close_on_exec = true
         Master::SIGNALS.each { |signal| trap(signal, 'DEFAULT') }
         Listener.new(@options.merge(:socket => listener_socket)).run
         exit
