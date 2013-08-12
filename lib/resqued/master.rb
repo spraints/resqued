@@ -30,7 +30,7 @@ module Resqued
     def go_ham
       loop do
         read_listeners
-        reap_all_listeners
+        reap_all_listeners(Process::WNOHANG)
         start_listener
         case signal = SIGNAL_QUEUE.shift
         when nil
@@ -38,12 +38,8 @@ module Resqued
         when :HUP
           log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
-        when :INT, :TERM
-          log "Shutting down now."
-          kill_all_listeners(signal)
-          break
-        when :QUIT
-          log "Shutting down when work is finished."
+        when :INT, :TERM, :QUIT
+          log "Shutting down..."
           kill_all_listeners(signal)
           wait_for_workers
           break
@@ -92,15 +88,12 @@ module Resqued
     end
 
     def wait_for_workers
-      while listener_pids.any?
-        reap_all_listeners
-        yawn(30.0)
-      end
+      reap_all_listeners
     end
 
-    def reap_all_listeners
+    def reap_all_listeners(waitpid_flags = 0)
       begin
-        lpid, status = Process.waitpid2(-1, Process::WNOHANG)
+        lpid, status = Process.waitpid2(-1, waitpid_flags)
         if lpid
           log "Listener exited #{status}"
           if @current_listener && @current_listener.pid == lpid
