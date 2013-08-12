@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-require 'resqued'
 
 options = {}
+daemonize = false
 
 opts = OptionParser.new do |opts|
   opts.banner = "Usage: resqued [options] resqued-config-file"
@@ -13,12 +13,18 @@ opts = OptionParser.new do |opts|
     exit
   end
 
+  opts.on '-v', '--version', 'Show the version' do
+    require 'resqued/version'
+    puts Resqued::VERSION
+    exit
+  end
+
   opts.on '-p', '--pidfile PIDFILE', 'Store the pid of the master process in PIDFILE' do |v|
     options[:master_pidfile] = v
   end
 
   opts.on '-D', '--daemonize', 'Run daemonized in the background' do
-    options[:daemonize] = true
+    daemonize = true
   end
 end
 
@@ -29,4 +35,10 @@ unless options[:config_path] = ARGV[0]
   exit 1
 end
 
-Resqued::Master.new(:config_path => File.expand_path(ARGV[0])).run
+require 'resqued/master'
+resqued = Resqued::Master.new(options)
+if daemonize
+  require 'resqued/daemon'
+  resqued = Resqued::Daemon.new(resqued)
+end
+resqued.run
