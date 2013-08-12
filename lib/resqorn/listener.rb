@@ -50,7 +50,7 @@ module Resqorn
         start_idle_workers
         case signal = SIGNAL_QUEUE.shift
         when nil
-          yawn(60.0)
+          yawn
         when :QUIT
           workers.each { |worker| worker.kill(signal) }
           return
@@ -62,8 +62,10 @@ module Resqorn
     attr_reader :workers
 
     # Private.
-    def yawn(duration)
-      super(duration, @from_master_pipe)
+    def yawn
+      sleep_times = [60.0] + workers.map { |worker| worker.backing_off_for }
+      sleep_time = [sleep_times.compact.min, 0.0].max
+      super(sleep_time, @from_master_pipe)
     end
 
     # Private: Check for workers that have stopped running
@@ -104,7 +106,9 @@ module Resqorn
       workers.each do |worker|
         if worker.idle?
           worker.try_start
-          report_to_master("+#{worker.pid},#{worker.queue_key}")
+          if pid = worker.pid
+            report_to_master("+#{pid},#{worker.queue_key}")
+          end
         end
       end
     end

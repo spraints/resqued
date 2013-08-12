@@ -1,10 +1,13 @@
 require 'resque'
 
+require 'resqorn/backoff'
+
 module Resqorn
   # Models a worker process.
   class Worker
     def initialize(options)
       @queues = options.fetch(:queues)
+      @backoff = Backoff.new
     end
 
     # Public: The pid of the worker process.
@@ -33,10 +36,18 @@ module Resqorn
     # Public: The old worker process finished!
     def finished!(process_status)
       @pid = nil
+      @backoff.finished
+    end
+
+    # Public: The amount of time we need to wait before starting a new worker.
+    def backing_off_for
+      @pid ? nil : @backoff.how_long?
     end
 
     # Public: Start a job, if there's one waiting in one of my queues.
     def try_start
+      return if @backoff.wait?
+      @backoff.started
       @self_started = true
       @pid = fork do
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
