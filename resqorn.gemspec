@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
     resqorn
   )
   s.add_dependency 'kgio', '~> 2.6'
-  s.add_dependency 'resque'
+  s.add_dependency 'resque', '>= 1.22.0'
   s.add_development_dependency 'rspec', '~> 2.0'
   s.add_development_dependency 'rake', '~> 0.9.0'
   s.add_development_dependency 'guard-rspec', '~> 2.4.1'
