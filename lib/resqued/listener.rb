@@ -2,6 +2,7 @@ require 'socket'
 
 require 'resqued/config'
 require 'resqued/logging'
+require 'resqued/pidfile'
 require 'resqued/sleepy'
 require 'resqued/worker'
 
@@ -9,6 +10,7 @@ module Resqued
   # A listener process. Watches resque queues and forks workers.
   class Listener
     include Resqued::Logging
+    include Resqued::Pidfile
     include Resqued::Sleepy
 
     # Configure a new listener object.
@@ -51,13 +53,15 @@ module Resqued
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
       @socket.close_on_exec = true
 
-      write_procline('running')
-      load_environment
-      init_workers
-      run_workers_run
+      with_pidfile(config.pidfile) do
+        write_procline('running')
+        load_environment
+        init_workers
+        run_workers_run
 
-      write_procline('shutdown')
-      reap_workers
+        write_procline('shutdown')
+        reap_workers
+      end
     end
 
     # Private.

@@ -1,6 +1,7 @@
 require 'resqued/backoff'
 require 'resqued/listener_proxy'
 require 'resqued/logging'
+require 'resqued/pidfile'
 require 'resqued/sleepy'
 
 module Resqued
@@ -10,6 +11,7 @@ module Resqued
   # * Handles signals.
   class Master
     include Resqued::Logging
+    include Resqued::Pidfile
     include Resqued::Sleepy
 
     def initialize(options)
@@ -20,14 +22,15 @@ module Resqued
 
     # Public: Starts the master process.
     def run(ready_pipe = nil)
-      write_pid
-      write_procline
-      install_signal_handlers
-      if ready_pipe
-        ready_pipe.syswrite($$.to_s)
-        ready_pipe.close rescue nil
+      with_pidfile(@pidfile) do
+        write_procline
+        install_signal_handlers
+        if ready_pipe
+          ready_pipe.syswrite($$.to_s)
+          ready_pipe.close rescue nil
+        end
+        go_ham
       end
-      go_ham
     end
 
     # Private: dat main loop.
@@ -125,17 +128,6 @@ module Resqued
 
     def yawn(duration)
       super(duration, all_listeners.map { |l| l.read_pipe })
-    end
-
-    def write_pid
-      if @pidfile
-        if File.exists?(@pidfile)
-          raise "#{@pidfile} already exists!"
-        end
-        File.open(@pidfile, File::RDWR|File::CREAT|File::EXCL, 0644) do |f|
-          f.syswrite("#{$$}\n")
-        end
-      end
     end
 
     def write_procline
