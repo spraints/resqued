@@ -1,10 +1,32 @@
 #!/usr/bin/env ruby
 
-if ARGV.size != 1
-  puts "Usage: resqorn config.rb"
+require 'optparse'
+require 'resqued'
+
+options = {}
+
+opts = OptionParser.new do |opts|
+  opts.banner = "Usage: resqued [options] resqued-config-file"
+
+  opts.on '-h', '--help', 'Show this message' do
+    puts opts
+    exit
+  end
+
+  opts.on '-p', '--pidfile PIDFILE', 'Store the pid of the master process in PIDFILE' do |v|
+    options[:master_pidfile] = v
+  end
+
+  opts.on '-D', '--daemonize', 'Run daemonized in the background' do
+    options[:daemonize] = true
+  end
+end
+
+opts.parse!
+
+unless options[:config_path] = ARGV[0]
+  puts opts
   exit 1
 end
 
-require 'resqorn'
-
-Resqorn::Master.new(:config_path => File.expand_path(ARGV[0])).run
+Resqued::Master.new(:config_path => File.expand_path(ARGV[0])).run
