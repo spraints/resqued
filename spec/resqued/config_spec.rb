@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'resqorn/config'
+require 'resqued/config'
 
-describe Resqorn::Config do
+describe Resqued::Config do
   let(:config) { described_class.load_string(config_string, config_file_path) }
 
   let(:config_string) { <<-CONFIG }
@@ -15,13 +15,13 @@ describe Resqorn::Config do
     end
   CONFIG
 
-  let(:config_file_path) { '/path/to/config/resqorn.rb' }
+  let(:config_file_path) { '/path/to/config/resqued.rb' }
 
   it { expect(config.pidfile).to eq('/path/to/config/my.pid') }
   it { expect(config.workers).to eq([ {:queues => ['minimal'], :size => 1}, {:queues => ['a', 'b'], :size => 2} ]) }
 
   context 'with no filename' do
     let(:config_file_path) { nil }
-    it('works') { expect(config.pidfile).to match(/my.pid$/) }
+    it('raises no error') { expect(config.pidfile).to match(/my.pid$/) }
   end
 end

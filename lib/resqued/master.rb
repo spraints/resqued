@@ -1,36 +1,43 @@
-require 'resqorn/backoff'
-require 'resqorn/listener_proxy'
-require 'resqorn/logging'
-require 'resqorn/sleepy'
+require 'resqued/backoff'
+require 'resqued/listener_proxy'
+require 'resqued/logging'
+require 'resqued/pidfile'
+require 'resqued/sleepy'
 
-module Resqorn
+module Resqued
   # The master process.
   # * Spawns a listener.
   # * Tracks all work. (IO pipe from listener.)
   # * Handles signals.
   class Master
-    include Resqorn::Logging
-    include Resqorn::Sleepy
+    include Resqued::Logging
+    include Resqued::Pidfile
+    include Resqued::Sleepy
 
     def initialize(options)
       @config_path = options.fetch(:config_path)
-      @pidfile     = options.fetch(:pidfile) { nil }
+      @pidfile     = options.fetch(:master_pidfile) { nil }
       @listener_backoff = Backoff.new
     end
 
     # Public: Starts the master process.
-    def run
-      write_pid
-      write_procline
-      install_signal_handlers
-      go_ham
+    def run(ready_pipe = nil)
+      with_pidfile(@pidfile) do
+        write_procline
+        install_signal_handlers
+        if ready_pipe
+          ready_pipe.syswrite($$.to_s)
+          ready_pipe.close rescue nil
+        end
+        go_ham
+      end
     end
 
     # Private: dat main loop.
     def go_ham
       loop do
         read_listeners
-        reap_all_listeners
+        reap_all_listeners(Process::WNOHANG)
         start_listener
         case signal = SIGNAL_QUEUE.shift
         when nil
@@ -38,12 +45,8 @@ module Resqorn
         when :HUP
           log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
-        when :INT, :TERM
-          log "Shutting down now."
-          kill_all_listeners(signal)
-          break
-        when :QUIT
-          log "Shutting down when work is finished."
+        when :INT, :TERM, :QUIT
+          log "Shutting down..."
           kill_all_listeners(signal)
           wait_for_workers
           break
@@ -92,15 +95,12 @@ module Resqorn
     end
 
     def wait_for_workers
-      while listener_pids.any?
-        reap_all_listeners
-        yawn(30.0)
-      end
+      reap_all_listeners
     end
 
-    def reap_all_listeners
+    def reap_all_listeners(waitpid_flags = 0)
       begin
-        lpid, status = Process.waitpid2(-1, Process::WNOHANG)
+        lpid, status = Process.waitpid2(-1, waitpid_flags)
         if lpid
           log "Listener exited #{status}"
           if @current_listener && @current_listener.pid == lpid
@@ -130,19 +130,8 @@ module Resqorn
       super(duration, all_listeners.map { |l| l.read_pipe })
     end
 
-    def write_pid
-      if @pidfile
-        if File.exists?(@pidfile)
-          raise "#{@pidfile} already exists!"
-        end
-        File.open(@pidfile, File::RDWR|File::CREAT|File::EXCL, 0644) do |f|
-          f.syswrite("#{$$}\n")
-        end
-      end
-    end
-
     def write_procline
-      $0 = "resqorn master #{ARGV.join(' ')}"
+      $0 = "resqued master #{ARGV.join(' ')}"
     end
   end
 end

@@ -1,20 +1,41 @@
-require 'resqorn/config'
-require 'resqorn/logging'
-require 'resqorn/sleepy'
-require 'resqorn/worker'
+require 'socket'
 
-module Resqorn
+require 'resqued/config'
+require 'resqued/logging'
+require 'resqued/pidfile'
+require 'resqued/sleepy'
+require 'resqued/worker'
+
+module Resqued
   # A listener process. Watches resque queues and forks workers.
   class Listener
-    include Resqorn::Logging
-    include Resqorn::Sleepy
+    include Resqued::Logging
+    include Resqued::Pidfile
+    include Resqued::Sleepy
 
     # Configure a new listener object.
     def initialize(options)
       @config_path = options.fetch(:config_path)
       @running_workers = options.fetch(:running_workers) { [] }
-      @from_master_pipe = options.fetch(:from_master)
-      @to_master_pipe = options.fetch(:to_master)
+      @socket = options.fetch(:socket)
+    end
+
+    # Public: As an alternative to #run, exec a new ruby instance for this listener.
+    def exec
+      command = ['resqued-listener']
+      command << @socket.fileno.to_s
+      command << @config_path
+      command << (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
+      Kernel.exec(*command)
+    end
+
+    # Public: Given args from #exec, start this listener.
+    def self.exec(argv)
+      options = {}
+      options[:socket] = Socket.for_fd(argv.shift.to_i)
+      options[:config_path] = argv.shift
+      options[:running_workers] = argv.shift.split('||').map { |s| Hash[[:pid,:queue].zip(s.split('|'))] }
+      new(options).run
     end
 
     # Private: memoizes the worker configuration.
@@ -30,15 +51,16 @@ module Resqorn
     def run
       trap(:CHLD) { awake }
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
+      @socket.close_on_exec = true
 
-      write_procline('running')
-      load_environment
-      init_workers
-      run_workers_run
+      with_pidfile(config.pidfile) do
+        write_procline('running')
+        load_environment
+        init_workers
+        run_workers_run
+      end
 
       write_procline('shutdown')
-      @from_master_pipe.close
-      @from_master_pipe = nil
       reap_workers
     end
 
@@ -65,7 +87,7 @@ module Resqorn
     def yawn
       sleep_times = [60.0] + workers.map { |worker| worker.backing_off_for }
       sleep_time = [sleep_times.compact.min, 0.0].max
-      super(sleep_time, @from_master_pipe)
+      super(sleep_time, @socket)
     end
 
     # Private: Check for workers that have stopped running
@@ -82,14 +104,13 @@ module Resqorn
 
     # Private: Check if master reports any dead workers.
     def check_for_expired_workers
-      return unless @from_master_pipe
       loop do
-        IO.select([@from_master_pipe], nil, nil, 0) or return
-        line = @from_master_pipe.readline
+        IO.select([@socket], nil, nil, 0) or return
+        line = @socket.readline
         finish_worker(line.to_i, nil)
       end
     rescue EOFError
-      @from_master_pipe = nil
+      log "eof from master"
     end
 
     # Private.
@@ -136,13 +157,13 @@ module Resqorn
     #     report_to_master("+12345,queue")  # Worker process PID:12345 started, working on a job from "queue".
     #     report_to_master("-12345")        # Worker process PID:12345 exited.
     def report_to_master(status)
-      @to_master_pipe.puts(status)
+      @socket.puts(status)
     end
 
     # Private: load the application.
     #
     # To do:
-    # * Does this reload correctly if the bundle changes and `bundle exec resqorn config/resqorn.rb`?
+    # * Does this reload correctly if the bundle changes and `bundle exec resqued config/resqued.rb`?
     # * Maybe make the specific app environment configurable (i.e. load rails, load rackup, load some custom thing)
     def load_environment
       require File.expand_path('config/environment.rb')
@@ -151,7 +172,7 @@ module Resqorn
 
     # Private.
     def write_procline(status)
-      $0 = "resqorn listener[#{status}] #{@config_path}"
+      $0 = "resqued listener[#{status}] #{@config_path}"
     end
   end
 end

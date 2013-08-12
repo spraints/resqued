@@ -1,13 +1,15 @@
-module Resqorn
+module Resqued
   class Backoff
     def initialize(options = {})
       @time = options.fetch(:time) { Time }
+      @min  = options.fetch(:min) { 1.0 }
+      @max  = options.fetch(:max) { 16.0 }
     end
 
     # Public: Tell backoff that the thing we might want to back off from just started.
     def started
       @last_started_at = now
-      @backoff_duration = @backoff_duration ? [@backoff_duration * 2.0, 64.0].min : 1.0
+      @backoff_duration = @backoff_duration ? [@backoff_duration * 2.0, @max].min : @min
     end
 
     def finished

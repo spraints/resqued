@@ -1,7 +1,7 @@
 require 'fcntl'
 require 'kgio'
 
-module Resqorn
+module Resqued
   module Sleepy
     def self_pipe
       @self_pipe ||= Kgio::Pipe.new.each { |io| io.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) }

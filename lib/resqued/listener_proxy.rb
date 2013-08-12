@@ -1,11 +1,12 @@
 require 'fcntl'
+require 'socket'
 
-require 'resqorn/listener'
-require 'resqorn/logging'
+require 'resqued/listener'
+require 'resqued/logging'
 
-module Resqorn
+module Resqued
   class ListenerProxy
-    include Resqorn::Logging
+    include Resqued::Logging
 
     # Public.
     def initialize(options)
@@ -14,7 +15,7 @@ module Resqorn
 
     # Public: An IO to select on to check if there is incoming data available.
     def read_pipe
-      @from_listener_pipe
+      @master_socket
     end
 
     # Public: The pid of the running listener process.
@@ -23,21 +24,18 @@ module Resqorn
     # Public: Start the listener process.
     def run
       return if pid
-      @from_listener_pipe, @to_master_pipe = IO.pipe
-      @from_master_pipe, @to_listener_pipe = IO.pipe
-      listener_pipes = [@to_master_pipe,   @from_master_pipe]
-      master_pipes   = [@to_listener_pipe, @from_listener_pipe]
+      listener_socket, master_socket = UNIXSocket.pair
       if @pid = fork
         # master
+        listener_socket.close
+        master_socket.close_on_exec = true
         log "Started listener #{@pid}"
-        listener_pipes.each { |p| p.close }
-        master_pipes.each { |p| p.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) }
+        @master_socket = master_socket
       else
         # listener
+        master_socket.close
         Master::SIGNALS.each { |signal| trap(signal, 'DEFAULT') }
-        master_pipes.each { |p| p.close }
-        listener_pipes.each { |p| p.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) }
-        Listener.new(@options.merge(:to_master => @to_master_pipe, :from_master => @from_master_pipe)).run
+        Listener.new(@options.merge(:socket => listener_socket)).exec
         exit
       end
     end
@@ -59,27 +57,30 @@ module Resqorn
 
     # Public: Check for updates on running worker information.
     def read_worker_status(options)
+      return if @master_socket.nil?
       on_finished = options.fetch(:on_finished) { lambda { |pid| } }
       loop do
-        IO.select([@from_listener_pipe], nil, nil, 0) or return
-        line = @from_listener_pipe.readline
-        if line =~ /^\+(\d+),(.*)\n/
+        IO.select([@master_socket], nil, nil, 0) or return
+        line = @master_socket.readline
+        if line =~ /^\+(\d+),(.*)$/
           worker_pids[$1] = $2
-        elsif line =~ /^-(\d+)\n/
+        elsif line =~ /^-(\d+)$/
           worker_pids.delete($1)
           on_finished.call($1)
+        elsif line == ''
+          break
         else
           log "Malformed data from listener: #{line.inspect}"
         end
       end
     rescue EOFError
+      @master_socket.close
+      @master_socket = nil
     end
 
     # Public: Report that a worker finished.
     def worker_finished(pid)
-      @to_listener_pipe.puts(pid) if @to_listener_pipe
-    rescue EOFError, Errno::EPIPE
-      @to_listener_pipe = nil
+      @master_socket.puts(pid)
     end
   end
 end

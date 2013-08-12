@@ -1,4 +1,4 @@
-module Resqorn
+module Resqued
   class Config
     # Public: Build a new config instance from the given file.
     def self.load_file(filename)

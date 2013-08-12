@@ -1,8 +1,8 @@
 require 'resque'
 
-require 'resqorn/backoff'
+require 'resqued/backoff'
 
-module Resqorn
+module Resqued
   # Models a worker process.
   class Worker
     def initialize(options)
@@ -62,9 +62,13 @@ module Resqorn
     # Public: Shut this worker down.
     def kill(signal)
       signal = signal.to_s
-      # Use the new resque worker signals.
-      signal = 'INT' if signal == 'TERM'
-      signal = 'TERM' if signal == 'QUIT'
+      # Convert resqued semantics to resque's new semantics.
+      signal =
+        case signal
+        when 'TERM' then 'INT'
+        when 'QUIT' then 'TERM'
+        else signal
+        end
       Process.kill(signal, pid) if pid && @self_started
     end
   end
