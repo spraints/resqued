@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-require 'resqorn/backoff'
+require 'resqued/backoff'
 
-describe Resqorn::Backoff do
+describe Resqued::Backoff do
   let(:backoff) { described_class.new }
 
   it 'can start on the first try' do

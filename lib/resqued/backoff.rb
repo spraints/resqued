@@ -1,4 +1,4 @@
-module Resqorn
+module Resqued
   class Backoff
     def initialize(options = {})
       @time = options.fetch(:time) { Time }

@@ -1,8 +1,8 @@
 require 'resque'
 
-require 'resqorn/backoff'
+require 'resqued/backoff'
 
-module Resqorn
+module Resqued
   # Models a worker process.
   class Worker
     def initialize(options)

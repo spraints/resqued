@@ -1,13 +1,13 @@
-require 'resqorn/config'
-require 'resqorn/logging'
-require 'resqorn/sleepy'
-require 'resqorn/worker'
+require 'resqued/config'
+require 'resqued/logging'
+require 'resqued/sleepy'
+require 'resqued/worker'
 
-module Resqorn
+module Resqued
   # A listener process. Watches resque queues and forks workers.
   class Listener
-    include Resqorn::Logging
-    include Resqorn::Sleepy
+    include Resqued::Logging
+    include Resqued::Sleepy
 
     # Configure a new listener object.
     def initialize(options)
@@ -142,7 +142,7 @@ module Resqorn
     # Private: load the application.
     #
     # To do:
-    # * Does this reload correctly if the bundle changes and `bundle exec resqorn config/resqorn.rb`?
+    # * Does this reload correctly if the bundle changes and `bundle exec resqued config/resqued.rb`?
     # * Maybe make the specific app environment configurable (i.e. load rails, load rackup, load some custom thing)
     def load_environment
       require File.expand_path('config/environment.rb')
@@ -151,7 +151,7 @@ module Resqorn
 
     # Private.
     def write_procline(status)
-      $0 = "resqorn listener[#{status}] #{@config_path}"
+      $0 = "resqued listener[#{status}] #{@config_path}"
     end
   end
 end

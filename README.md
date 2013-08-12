@@ -1,15 +1,15 @@
-# resqorn - unicorn-style resque worker
+# resqued - a long-running daemon for resque workers.
 
 [image of a ninja rescuing an ear of corn]
 
-resqorn provides a resque worker that works well with
+resqued provides a resque worker that works well with
 slow jobs and continuous delivery.
 
 ## Installation
 
-Install by adding resqorn to your Gemfile
+Install by adding resqued to your Gemfile
 
-    gem 'resqorn'
+    gem 'resqued'
 
 ## Set up
 
@@ -21,11 +21,11 @@ Let's say you were running workers like this:
     rake resque:work QUEUE=medium      &
     rake resque:work QUEUE=medium,low  &
 
-To run the same fleet of workers with resqorn, create a config file
-`config/resqorn.rb` like this:
+To run the same fleet of workers with resqued, create a config file
+`config/resqued.rb` like this:
 
     base = File.expand_path('..', File.dirname(__FILE__))
-    pidfile File.join(base, 'tmp/pids/resqorn.pid')
+    pidfile File.join(base, 'tmp/pids/resqued-listener.pid')
 
     worker do
       workers 2
@@ -47,15 +47,15 @@ To run the same fleet of workers with resqorn, create a config file
 
 Run it like this:
 
-    resqorn config/resqorn.rb
+    resqued config/resqued.rb
 
-When resqorn is running, it has the following processes:
+When resqued is running, it has the following processes:
 
 * master - brokers signals to child processes.
 * queue reader - retrieves jobs from queues and forks worker processes.
 * worker - runs a single job.
 
-The following signals are handled by the resqorn master process:
+The following signals are handled by the resqued master process:
 
 * HUP - reread config file and restart all workers.
 * INT / TERM - immediately kill all workers and shut down.

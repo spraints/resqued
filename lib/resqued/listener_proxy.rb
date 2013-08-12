@@ -1,11 +1,11 @@
 require 'fcntl'
 
-require 'resqorn/listener'
-require 'resqorn/logging'
+require 'resqued/listener'
+require 'resqued/logging'
 
-module Resqorn
+module Resqued
   class ListenerProxy
-    include Resqorn::Logging
+    include Resqued::Logging
 
     # Public.
     def initialize(options)

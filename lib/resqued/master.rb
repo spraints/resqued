@@ -1,16 +1,16 @@
-require 'resqorn/backoff'
-require 'resqorn/listener_proxy'
-require 'resqorn/logging'
-require 'resqorn/sleepy'
+require 'resqued/backoff'
+require 'resqued/listener_proxy'
+require 'resqued/logging'
+require 'resqued/sleepy'
 
-module Resqorn
+module Resqued
   # The master process.
   # * Spawns a listener.
   # * Tracks all work. (IO pipe from listener.)
   # * Handles signals.
   class Master
-    include Resqorn::Logging
-    include Resqorn::Sleepy
+    include Resqued::Logging
+    include Resqued::Sleepy
 
     def initialize(options)
       @config_path = options.fetch(:config_path)
@@ -142,7 +142,7 @@ module Resqorn
     end
 
     def write_procline
-      $0 = "resqorn master #{ARGV.join(' ')}"
+      $0 = "resqued master #{ARGV.join(' ')}"
     end
   end
 end
