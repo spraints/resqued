@@ -26,25 +26,19 @@ module Resqorn
     # Public: How much longer until `ok?` will be true?
     def how_long?
       check!
-      if @last_started_at && @backoff_duration
-        answer = @backoff_duration - (@time.now - @last_started_at)
-        if answer > 0.0
-          answer
-        else
-          nil
-        end
-      else
-        nil
-      end
+      next_start_at > @time.now ? next_start_at - @time.now : nil
     end
 
     private
 
     # Private: Check the current state.
     def check!
-      if @last_started_at && @backoff_duration && !@backing_off
-        @backing_off = (@time.now - @last_started_at) < @backoff_duration
-      end
+      @backing_off ||= next_start_at > @time.now
+    end
+
+    # Private: Get the time when we can start again.
+    def next_start_at
+      (@last_started_at && @backoff_duration) ? (@last_started_at + @backoff_duration) : @time.now
     end
   end
 end
