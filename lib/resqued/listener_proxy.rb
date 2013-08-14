@@ -58,7 +58,7 @@ module Resqued
     # Public: Check for updates on running worker information.
     def read_worker_status(options)
       return if @master_socket.nil?
-      on_finished = options.fetch(:on_finished) { lambda { |pid| } }
+      on_finished = options[:on_finished]
       loop do
         IO.select([@master_socket], nil, nil, 0) or return
         line = @master_socket.readline
@@ -66,7 +66,7 @@ module Resqued
           worker_pids[$1] = $2
         elsif line =~ /^-(\d+)$/
           worker_pids.delete($1)
-          on_finished.call($1)
+          on_finished.worker_finished($1) if on_finished
         elsif line == ''
           break
         else

@@ -77,7 +77,13 @@ module Resqued
 
     def read_listeners
       all_listeners.each do |l|
-        l.read_worker_status(:on_finished => lambda { |pid| all_listeners.each { |other| other.worker_finished(pid) } })
+        l.read_worker_status(:on_finished => self)
+      end
+    end
+
+    def worker_finished(pid)
+      all_listeners.each do |other|
+        other.worker_finished(pid)
       end
     end
 
