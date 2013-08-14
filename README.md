@@ -61,6 +61,6 @@ When resqued is running, it has the following processes:
 
 The following signals are handled by the resqued master process:
 
-* HUP - reread config file and restart all workers.
+* HUP - reread config file and gracefully restart all workers.
 * INT / TERM - immediately kill all workers and shut down.
-* QUIT - graceful shutdown. Waits for workers to finish or time out before shutting down.
+* QUIT - graceful shutdown. Waits for workers to finish.

@@ -52,24 +52,27 @@ module Resqued
       @pid = fork do
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
         resque_worker = Resque::Worker.new(*queues)
-        resque_worker.term_child = true
-        resque_worker.term_timeout = 999999999
         resque_worker.log "Starting worker #{resque_worker}"
         resque_worker.work(5)
       end
     end
 
     # Public: Shut this worker down.
+    #
+    # We are using these signal semantics:
+    # HUP: restart (QUIT workers)
+    # INT/TERM: immediately exit
+    # QUIT: graceful shutdown
+    #
+    # Resque uses these (compatible) signal semantics:
+    # TERM: Shutdown immediately, stop processing jobs.
+    #  INT: Shutdown immediately, stop processing jobs.
+    # QUIT: Shutdown after the current job has finished processing.
+    # USR1: Kill the forked child immediately, continue processing jobs.
+    # USR2: Don't process any new jobs
+    # CONT: Start processing jobs again after a USR2
     def kill(signal)
-      signal = signal.to_s
-      # Convert resqued semantics to resque's new semantics.
-      signal =
-        case signal
-        when 'TERM' then 'INT'
-        when 'QUIT' then 'TERM'
-        else signal
-        end
-      Process.kill(signal, pid) if pid && @self_started
+      Process.kill(signal.to_s, pid) if pid && @self_started
     end
   end
 end
