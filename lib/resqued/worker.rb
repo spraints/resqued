@@ -49,13 +49,14 @@ module Resqued
       return if @backoff.wait?
       @backoff.started
       @self_started = true
-      @pid = fork do
+      unless @pid = fork
         # In case we get a signal before the process is all the way up.
-        [:QUIT, :TERM, :INT].each { |signal| trap(signal) { exit } }
+        [:QUIT, :TERM, :INT].each { |signal| trap(signal) { exit 1 } }
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
         resque_worker = Resque::Worker.new(*queues)
         resque_worker.log "Starting worker #{resque_worker}"
         resque_worker.work(5)
+        exit 0
       end
     end
 
