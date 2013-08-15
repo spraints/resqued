@@ -18,6 +18,7 @@ module Resqued
       @config_path     = options.fetch(:config_path)
       @running_workers = options.fetch(:running_workers) { [] }
       @socket          = options.fetch(:socket)
+      @listener_id     = options.fetch(:listener_id) { nil }
     end
 
     # Public: As an alternative to #run, exec a new ruby instance for this listener.
@@ -25,6 +26,7 @@ module Resqued
       ENV['RESQUED_SOCKET']      = @socket.fileno.to_s
       ENV['RESQUED_CONFIG_PATH'] = @config_path
       ENV['RESQUED_STATE']       = (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
+      ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
       Kernel.exec('resqued-listener')
     end
 
@@ -39,6 +41,9 @@ module Resqued
       end
       if state = ENV['RESQUED_STATE']
         options[:running_workers] = state.split('||').map { |s| Hash[[:pid,:queue].zip(s.split('|'))] }
+      end
+      if listener_id = ENV['RESQUED_LISTENER_ID']
+        options[:listener_id] = listener_id
       end
       new(options).run
     end
@@ -177,7 +182,11 @@ module Resqued
 
     # Private.
     def write_procline(status)
-      $0 = "resqued listener[#{status}] #{@config_path}"
+      procline = "rescued listener"
+      procline << " #{@listener_id}" if @listener_id
+      procline << " [#{status}]"
+      procline << " #{@config_path}"
+      $0 = procline
     end
   end
 end

@@ -18,6 +18,7 @@ module Resqued
       @config_path = options.fetch(:config_path)
       @pidfile     = options.fetch(:master_pidfile) { nil }
       @listener_backoff = Backoff.new
+      @listeners_created = 0
     end
 
     # Public: Starts the master process.
@@ -69,10 +70,15 @@ module Resqued
 
     def start_listener
       return if @current_listener || @listener_backoff.wait?
-      @current_listener = ListenerProxy.new(:config_path => @config_path, :running_workers => all_listeners.map { |l| l.running_workers }.flatten)
+      @current_listener = ListenerProxy.new(:config_path => @config_path, :running_workers => all_listeners.map { |l| l.running_workers }.flatten, :listener_id => next_listener_id)
       @current_listener.run
       @listener_backoff.started
       listener_pids[@current_listener.pid] = @current_listener
+      write_procline
+    end
+
+    def next_listener_id
+      @listeners_created += 1
     end
 
     def read_listeners
@@ -114,6 +120,7 @@ module Resqued
             @current_listener = nil
           end
           listener_pids.delete(lpid) # This may leak workers.
+          write_procline
         else
           return
         end
@@ -137,7 +144,7 @@ module Resqued
     end
 
     def write_procline
-      $0 = "resqued master #{ARGV.join(' ')}"
+      $0 = "resqued master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
     end
   end
 end
