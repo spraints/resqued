@@ -93,14 +93,10 @@ module Resqued
     # Resque workers have gaps in their signal-handling ability.
     def burn_down_workers(signal)
       loop do
-        reap_workers(Process::WNOHANG)
-        if running_workers.empty?
-          break
-        else
-          running_workers.each { |worker| worker.kill(signal) }
-          yawn(5) unless SIGNAL_QUEUE.any?
-          SIGNAL_QUEUE.clear
-        end
+        break if :no_child == reap_workers(Process::WNOHANG)
+        running_workers.each { |worker| worker.kill(signal) }
+        yawn(5) unless SIGNAL_QUEUE.any?
+        SIGNAL_QUEUE.clear
       end
       # One last time.
       reap_workers
@@ -128,12 +124,13 @@ module Resqued
     def reap_workers(waitpidflags = 0)
       loop do
         worker_pid, status = Process.waitpid2(-1, waitpidflags)
-        return if worker_pid.nil?
+        return :none_ready if worker_pid.nil?
         finish_worker(worker_pid, status)
         report_to_master("-#{worker_pid}")
       end
     rescue Errno::ECHILD
       # All done
+      :no_child
     end
 
     # Private: Check if master reports any dead workers.
