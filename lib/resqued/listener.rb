@@ -15,26 +15,31 @@ module Resqued
 
     # Configure a new listener object.
     def initialize(options)
-      @config_path = options.fetch(:config_path)
+      @config_path     = options.fetch(:config_path)
       @running_workers = options.fetch(:running_workers) { [] }
-      @socket = options.fetch(:socket)
+      @socket          = options.fetch(:socket)
     end
 
     # Public: As an alternative to #run, exec a new ruby instance for this listener.
     def exec
-      command = ['resqued-listener']
-      command << @socket.fileno.to_s
-      command << @config_path
-      command << (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
-      Kernel.exec(*command)
+      ENV['RESQUED_SOCKET']      = @socket.fileno.to_s
+      ENV['RESQUED_CONFIG_PATH'] = @config_path
+      ENV['RESQUED_STATE']       = (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
+      Kernel.exec('resqued-listener')
     end
 
     # Public: Given args from #exec, start this listener.
-    def self.exec(argv)
+    def self.exec!
       options = {}
-      options[:socket] = Socket.for_fd(argv.shift.to_i)
-      options[:config_path] = argv.shift
-      options[:running_workers] = argv.shift.split('||').map { |s| Hash[[:pid,:queue].zip(s.split('|'))] }
+      if socket = ENV['RESQUED_SOCKET']
+        options[:socket] = Socket.for_fd(socket.to_i)
+      end
+      if path = ENV['RESQUED_CONFIG_PATH']
+        options[:config_path] = path
+      end
+      if state = ENV['RESQUED_STATE']
+        options[:running_workers] = state.split('||').map { |s| Hash[[:pid,:queue].zip(s.split('|'))] }
+      end
       new(options).run
     end
 
