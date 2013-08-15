@@ -69,9 +69,6 @@ module Resqued
         init_workers
         run_workers_run
       end
-
-      write_procline('shutdown')
-      reap_workers
     end
 
     # Private.
@@ -84,19 +81,46 @@ module Resqued
         when nil
           yawn
         when :QUIT
-          workers.each { |worker| worker.kill(signal) }
+          write_procline('shutdown')
+          burn_down_workers(:QUIT)
           return
         end
       end
     end
 
+    # Private: make sure all the workers stop.
+    #
+    # Resque workers have gaps in their signal-handling ability.
+    def burn_down_workers(signal)
+      loop do
+        reap_workers(Process::WNOHANG)
+        if running_workers.empty?
+          break
+        else
+          running_workers.each { |worker| worker.kill(signal) }
+          yawn(5) unless SIGNAL_QUEUE.any?
+          SIGNAL_QUEUE.clear
+        end
+      end
+      # One last time.
+      reap_workers
+    end
+
     # Private: all available workers
     attr_reader :workers
 
+    # Private: just the running workers.
+    def running_workers
+      workers.select { |worker| ! worker.idle? }
+    end
+
     # Private.
-    def yawn
-      sleep_times = [60.0] + workers.map { |worker| worker.backing_off_for }
-      sleep_time = [sleep_times.compact.min, 0.0].max
+    def yawn(sleep_time = nil)
+      sleep_time ||=
+        begin
+          sleep_times = [60.0] + workers.map { |worker| worker.backing_off_for }
+          [sleep_times.compact.min, 0.0].max
+        end
       super(sleep_time, @socket)
     end
 
