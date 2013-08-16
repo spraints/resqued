@@ -67,10 +67,18 @@ module Resqued
         counts[o.class.name] = count + 1
         total += 1
       end
-      log "#{total} objects. top 10:"
-      counts.sort_by { |name, count| count }.reverse.take(10).each do |name, count|
-        log "   #{count} #{name}"
+      top = 10
+      log "#{total} objects. top #{top}:"
+      counts.sort_by { |name, count| count }.reverse.each_with_index do |(name, count), i|
+        if i < top
+          diff = ""
+          if last = @last_counts && @last_counts[name]
+            diff = " (#{'%+d' % (count - last)})"
+          end
+          log "   #{count} #{name}#{diff}"
+        end
       end
+      @last_counts = counts
       log GC.stat.inspect
     rescue => e
       log "Error while counting objects: #{e}"
