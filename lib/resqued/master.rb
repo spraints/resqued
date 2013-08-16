@@ -43,6 +43,8 @@ module Resqued
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn(@listener_backoff.how_long? || 30.0)
+        when :USR1
+          dump_object_counts
         when :HUP
           log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
@@ -53,6 +55,25 @@ module Resqued
           break
         end
       end
+    end
+
+    # Private.
+    def dump_object_counts
+      log GC.stat.inspect
+      counts = {}
+      total = 0
+      ObjectSpace.each_object do |o|
+        count = counts[o.class.name] || 0
+        counts[o.class.name] = count + 1
+        total += 1
+      end
+      log "#{total} objects. top 10:"
+      counts.sort_by { |name, count| count }.reverse.take(10).each do |name, count|
+        log "   #{count} #{name}"
+      end
+      log GC.stat.inspect
+    rescue => e
+      log "Error while counting objects: #{e}"
     end
 
     # Private: Map listener pids to ListenerProxy objects.
@@ -129,7 +150,7 @@ module Resqued
       end while true
     end
 
-    SIGNALS = [ :HUP, :INT, :TERM, :QUIT ]
+    SIGNALS = [ :HUP, :INT, :TERM, :QUIT, :USR1 ]
 
     SIGNAL_QUEUE = []
 
