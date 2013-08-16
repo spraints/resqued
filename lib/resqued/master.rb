@@ -23,6 +23,7 @@ module Resqued
 
     # Public: Starts the master process.
     def run(ready_pipe = nil)
+      report_unexpected_exits
       with_pidfile(@pidfile) do
         write_procline
         install_signal_handlers
@@ -32,6 +33,7 @@ module Resqued
         end
         go_ham
       end
+      no_more_unexpected_exits
     end
 
     # Private: dat main loop.
@@ -167,6 +169,20 @@ module Resqued
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
     end
 
+    def report_unexpected_exits
+      trap('EXIT') do
+        log("EXIT #{$!.inspect}")
+        if $!
+          $!.backtrace.each do |line|
+            log(line)
+          end
+        end
+      end
+    end
+
+    def no_more_unexpected_exits
+      trap('EXIT', nil)
+    end
 
     def yawn(duration)
       super(duration, all_listeners.map { |l| l.read_pipe })
