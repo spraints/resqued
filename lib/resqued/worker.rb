@@ -58,11 +58,8 @@ module Resqued
         # In case we get a signal before the process is all the way up.
         [:QUIT, :TERM, :INT].each { |signal| trap(signal) { exit 1 } }
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
-        unless log_to_stdout?
-          logging_io.tap do |f|
-            $stdout.reopen(f)
-            f.close
-          end
+        if Resque.respond_to?("logger=") && ! log_to_stdout?
+          Resque.logger = Resque.logger.class.new(logging_io)
         end
         resque_worker = Resque::Worker.new(*queues)
         resque_worker.log "Starting worker #{resque_worker}"
