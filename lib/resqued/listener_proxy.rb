@@ -50,6 +50,7 @@ module Resqued
 
     # Public: Stop the listener process.
     def kill(signal)
+      log "kill -#{signal} #{pid}"
       Process.kill(signal.to_s, pid)
     end
 

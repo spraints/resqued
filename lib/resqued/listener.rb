@@ -94,6 +94,7 @@ module Resqued
     def burn_down_workers(signal)
       loop do
         break if :no_child == reap_workers(Process::WNOHANG)
+        log "kill -#{signal} #{running_workers.map { |r| r.pid }.inspect}"
         running_workers.each { |worker| worker.kill(signal) }
         check_for_expired_workers
         yawn(5) unless SIGNAL_QUEUE.any?
