@@ -13,6 +13,14 @@ module Resqued
       @options = options
     end
 
+    # Public: wrap up all the things, this object is going home.
+    def dispose
+      if @master_socket
+        @master_socket.close
+        @master_socket = nil
+      end
+    end
+
     # Public: An IO to select on to check if there is incoming data available.
     def read_pipe
       @master_socket
@@ -80,6 +88,7 @@ module Resqued
 
     # Public: Report that a worker finished.
     def worker_finished(pid)
+      return if @master_socket.nil?
       @master_socket.puts(pid)
     end
   end

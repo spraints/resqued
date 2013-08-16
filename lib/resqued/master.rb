@@ -119,7 +119,7 @@ module Resqued
             @listener_backoff.finished
             @current_listener = nil
           end
-          listener_pids.delete(lpid) # This may leak workers.
+          listener_pids.delete(lpid).dispose # This may leak workers.
           write_procline
         else
           return
