@@ -97,7 +97,10 @@ module Resqued
         log "kill -#{signal} #{running_workers.map { |r| r.pid }.inspect}"
         running_workers.each { |worker| worker.kill(signal) }
         check_for_expired_workers
-        yawn(5) unless SIGNAL_QUEUE.any?
+        if SIGNAL_QUEUE.empty?
+          sleep 1 # Don't kill any more often than every 1s.
+          yawn 5
+        end
         SIGNAL_QUEUE.clear
       end
       # One last time.
