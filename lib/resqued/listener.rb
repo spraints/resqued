@@ -210,7 +210,7 @@ module Resqued
 
     # Private.
     def write_procline(status)
-      procline = "rescued listener"
+      procline = "resqued listener"
       procline << " #{@listener_id}" if @listener_id
       procline << " [#{status}]"
       procline << " #{@config_path}"
