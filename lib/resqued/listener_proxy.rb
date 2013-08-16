@@ -91,6 +91,9 @@ module Resqued
     def worker_finished(pid)
       return if @master_socket.nil?
       @master_socket.puts(pid)
+    rescue Errno::EPIPE
+      @master_socket.close
+      @master_socket = nil
     end
   end
 end
