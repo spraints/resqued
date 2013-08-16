@@ -95,6 +95,7 @@ module Resqued
       loop do
         break if :no_child == reap_workers(Process::WNOHANG)
         running_workers.each { |worker| worker.kill(signal) }
+        check_for_expired_workers
         yawn(5) unless SIGNAL_QUEUE.any?
         SIGNAL_QUEUE.clear
       end
