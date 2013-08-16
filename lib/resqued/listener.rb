@@ -142,6 +142,7 @@ module Resqued
       end
     rescue EOFError
       log "eof from master"
+      Process.kill(:QUIT, $$)
     end
 
     # Private.
