@@ -94,7 +94,7 @@ module Resqued
     def burn_down_workers(signal)
       loop do
         check_for_expired_workers
-        SIGNAL_QUEUE.empty
+        SIGNAL_QUEUE.clear
 
         break if :no_child == reap_workers(Process::WNOHANG)
 
