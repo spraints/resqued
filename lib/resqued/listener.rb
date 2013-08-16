@@ -93,15 +93,16 @@ module Resqued
     # Resque workers have gaps in their signal-handling ability.
     def burn_down_workers(signal)
       loop do
+        check_for_expired_workers
+        SIGNAL_QUEUE.empty
+
         break if :no_child == reap_workers(Process::WNOHANG)
+
         log "kill -#{signal} #{running_workers.map { |r| r.pid }.inspect}"
         running_workers.each { |worker| worker.kill(signal) }
-        check_for_expired_workers
-        if SIGNAL_QUEUE.empty?
-          sleep 1 # Don't kill any more often than every 1s.
-          yawn 5
-        end
-        SIGNAL_QUEUE.clear
+
+        sleep 1 # Don't kill any more often than every 1s.
+        yawn 5
       end
       # One last time.
       reap_workers
