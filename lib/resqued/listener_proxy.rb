@@ -86,7 +86,7 @@ module Resqued
       @master_socket = nil
     end
 
-    # Public: Report that a worker finished.
+    # Public: Tell the listener process that a worker finished.
     def worker_finished(pid)
       return if @master_socket.nil?
       @master_socket.puts(pid)
