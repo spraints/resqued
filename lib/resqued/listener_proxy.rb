@@ -66,9 +66,9 @@ module Resqued
 
     # Public: Check for updates on running worker information.
     def read_worker_status(options)
-      return if @master_socket.nil?
       on_finished = options[:on_finished]
       loop do
+        return if @master_socket.nil?
         IO.select([@master_socket], nil, nil, 0) or return
         line = @master_socket.readline
         if line =~ /^\+(\d+),(.*)$/
