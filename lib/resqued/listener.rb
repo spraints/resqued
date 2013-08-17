@@ -49,9 +49,7 @@ module Resqued
     end
 
     # Private: memoizes the worker configuration.
-    def config
-      @config ||= Config.load_file(@config_path)
-    end
+    attr_reader :config
 
     SIGNALS = [ :QUIT ]
 
@@ -63,9 +61,9 @@ module Resqued
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
       @socket.close_on_exec = true
 
+      load_environment
       with_pidfile(config.pidfile) do
         write_procline('running')
-        load_environment
         init_workers
         run_workers_run
       end
@@ -202,11 +200,11 @@ module Resqued
     # Private: load the application.
     #
     # To do:
-    # * Does this reload correctly if the bundle changes and `bundle exec resqued config/resqued.rb`?
-    # * Maybe make the specific app environment configurable (i.e. load rails, load rackup, load some custom thing)
+    # * Make the "config" file be an environment file instead. How to deal with the DSL?
     def load_environment
       require File.expand_path('config/environment.rb')
       Rails.application.eager_load!
+      @config = Config.load_file(@config_path)
     end
 
     # Private.
