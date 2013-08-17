@@ -45,7 +45,7 @@ module Resqued
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn(@listener_backoff.how_long? || 30.0)
-        when :USR1
+        when :INFO
           dump_object_counts
         when :HUP
           log "Restarting listener with new configuration and application."
@@ -160,7 +160,7 @@ module Resqued
       end while true
     end
 
-    SIGNALS = [ :HUP, :INT, :TERM, :QUIT, :USR1 ]
+    SIGNALS = [ :HUP, :INT, :TERM, :QUIT, :INFO ]
 
     SIGNAL_QUEUE = []
 
