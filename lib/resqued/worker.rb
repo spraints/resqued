@@ -1,10 +1,13 @@
 require 'resque'
 
 require 'resqued/backoff'
+require 'resqued/logging'
 
 module Resqued
   # Models a worker process.
   class Worker
+    include Resqued::Logging
+
     def initialize(options)
       @queues = options.fetch(:queues)
       @backoff = Backoff.new
@@ -49,11 +52,26 @@ module Resqued
       return if @backoff.wait?
       @backoff.started
       @self_started = true
-      @pid = fork do
+      if @pid = fork
+        # still in the listener
+      else
+        # In case we get a signal before the process is all the way up.
+        [:QUIT, :TERM, :INT].each { |signal| trap(signal) { exit 1 } }
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
+        if ! log_to_stdout?
+          lf = logging_io
+          if Resque.respond_to?("logger=")
+            Resque.logger = Resque.logger.class.new(lf)
+          else
+            $stdout.reopen(lf)
+            lf.close
+          end
+        end
         resque_worker = Resque::Worker.new(*queues)
         resque_worker.log "Starting worker #{resque_worker}"
+        resque_worker.term_child = true # Hopefully do away with those warnings!
         resque_worker.work(5)
+        exit 0
       end
     end
 

@@ -18,10 +18,12 @@ module Resqued
       @config_path = options.fetch(:config_path)
       @pidfile     = options.fetch(:master_pidfile) { nil }
       @listener_backoff = Backoff.new
+      @listeners_created = 0
     end
 
     # Public: Starts the master process.
     def run(ready_pipe = nil)
+      report_unexpected_exits
       with_pidfile(@pidfile) do
         write_procline
         install_signal_handlers
@@ -31,6 +33,7 @@ module Resqued
         end
         go_ham
       end
+      no_more_unexpected_exits
     end
 
     # Private: dat main loop.
@@ -42,6 +45,8 @@ module Resqued
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn(@listener_backoff.how_long? || 30.0)
+        when :INFO
+          dump_object_counts
         when :HUP
           log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
@@ -52,6 +57,33 @@ module Resqued
           break
         end
       end
+    end
+
+    # Private.
+    def dump_object_counts
+      log GC.stat.inspect
+      counts = {}
+      total = 0
+      ObjectSpace.each_object do |o|
+        count = counts[o.class.name] || 0
+        counts[o.class.name] = count + 1
+        total += 1
+      end
+      top = 10
+      log "#{total} objects. top #{top}:"
+      counts.sort_by { |name, count| count }.reverse.each_with_index do |(name, count), i|
+        if i < top
+          diff = ""
+          if last = @last_counts && @last_counts[name]
+            diff = " (#{'%+d' % (count - last)})"
+          end
+          log "   #{count} #{name}#{diff}"
+        end
+      end
+      @last_counts = counts
+      log GC.stat.inspect
+    rescue => e
+      log "Error while counting objects: #{e}"
     end
 
     # Private: Map listener pids to ListenerProxy objects.
@@ -69,10 +101,15 @@ module Resqued
 
     def start_listener
       return if @current_listener || @listener_backoff.wait?
-      @current_listener = ListenerProxy.new(:config_path => @config_path, :running_workers => all_listeners.map { |l| l.running_workers }.flatten)
+      @current_listener = ListenerProxy.new(:config_path => @config_path, :running_workers => all_listeners.map { |l| l.running_workers }.flatten, :listener_id => next_listener_id)
       @current_listener.run
       @listener_backoff.started
       listener_pids[@current_listener.pid] = @current_listener
+      write_procline
+    end
+
+    def next_listener_id
+      @listeners_created += 1
     end
 
     def read_listeners
@@ -113,7 +150,8 @@ module Resqued
             @listener_backoff.finished
             @current_listener = nil
           end
-          listener_pids.delete(lpid) # This may leak workers.
+          listener_pids.delete(lpid).dispose # This may leak workers.
+          write_procline
         else
           return
         end
@@ -122,7 +160,7 @@ module Resqued
       end while true
     end
 
-    SIGNALS = [ :HUP, :INT, :TERM, :QUIT ]
+    SIGNALS = [ :HUP, :INT, :TERM, :QUIT, :INFO ]
 
     SIGNAL_QUEUE = []
 
@@ -131,13 +169,27 @@ module Resqued
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
     end
 
+    def report_unexpected_exits
+      trap('EXIT') do
+        log("EXIT #{$!.inspect}")
+        if $!
+          $!.backtrace.each do |line|
+            log(line)
+          end
+        end
+      end
+    end
+
+    def no_more_unexpected_exits
+      trap('EXIT', nil)
+    end
 
     def yawn(duration)
       super(duration, all_listeners.map { |l| l.read_pipe })
     end
 
     def write_procline
-      $0 = "resqued master #{ARGV.join(' ')}"
+      $0 = "resqued master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
     end
   end
 end

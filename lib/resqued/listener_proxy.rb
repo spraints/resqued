@@ -13,6 +13,14 @@ module Resqued
       @options = options
     end
 
+    # Public: wrap up all the things, this object is going home.
+    def dispose
+      if @master_socket
+        @master_socket.close
+        @master_socket = nil
+      end
+    end
+
     # Public: An IO to select on to check if there is incoming data available.
     def read_pipe
       @master_socket
@@ -42,6 +50,7 @@ module Resqued
 
     # Public: Stop the listener process.
     def kill(signal)
+      log "kill -#{signal} #{pid}"
       Process.kill(signal.to_s, pid)
     end
 
@@ -57,9 +66,8 @@ module Resqued
 
     # Public: Check for updates on running worker information.
     def read_worker_status(options)
-      return if @master_socket.nil?
       on_finished = options[:on_finished]
-      loop do
+      until @master_socket.nil?
         IO.select([@master_socket], nil, nil, 0) or return
         line = @master_socket.readline
         if line =~ /^\+(\d+),(.*)$/
@@ -78,9 +86,13 @@ module Resqued
       @master_socket = nil
     end
 
-    # Public: Report that a worker finished.
+    # Public: Tell the listener process that a worker finished.
     def worker_finished(pid)
+      return if @master_socket.nil?
       @master_socket.puts(pid)
+    rescue Errno::EPIPE
+      @master_socket.close
+      @master_socket = nil
     end
   end
 end

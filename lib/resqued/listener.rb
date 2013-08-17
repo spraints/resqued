@@ -15,26 +15,36 @@ module Resqued
 
     # Configure a new listener object.
     def initialize(options)
-      @config_path = options.fetch(:config_path)
+      @config_path     = options.fetch(:config_path)
       @running_workers = options.fetch(:running_workers) { [] }
-      @socket = options.fetch(:socket)
+      @socket          = options.fetch(:socket)
+      @listener_id     = options.fetch(:listener_id) { nil }
     end
 
     # Public: As an alternative to #run, exec a new ruby instance for this listener.
     def exec
-      command = ['resqued-listener']
-      command << @socket.fileno.to_s
-      command << @config_path
-      command << (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
-      Kernel.exec(*command)
+      ENV['RESQUED_SOCKET']      = @socket.fileno.to_s
+      ENV['RESQUED_CONFIG_PATH'] = @config_path
+      ENV['RESQUED_STATE']       = (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
+      ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
+      Kernel.exec('resqued-listener')
     end
 
     # Public: Given args from #exec, start this listener.
-    def self.exec(argv)
+    def self.exec!
       options = {}
-      options[:socket] = Socket.for_fd(argv.shift.to_i)
-      options[:config_path] = argv.shift
-      options[:running_workers] = argv.shift.split('||').map { |s| Hash[[:pid,:queue].zip(s.split('|'))] }
+      if socket = ENV['RESQUED_SOCKET']
+        options[:socket] = Socket.for_fd(socket.to_i)
+      end
+      if path = ENV['RESQUED_CONFIG_PATH']
+        options[:config_path] = path
+      end
+      if state = ENV['RESQUED_STATE']
+        options[:running_workers] = state.split('||').map { |s| Hash[[:pid,:queue].zip(s.split('|'))] }
+      end
+      if listener_id = ENV['RESQUED_LISTENER_ID']
+        options[:listener_id] = listener_id
+      end
       new(options).run
     end
 
@@ -61,7 +71,7 @@ module Resqued
       end
 
       write_procline('shutdown')
-      reap_workers
+      burn_down_workers(:QUIT)
     end
 
     # Private.
@@ -74,19 +84,46 @@ module Resqued
         when nil
           yawn
         when :QUIT
-          workers.each { |worker| worker.kill(signal) }
           return
         end
       end
     end
 
+    # Private: make sure all the workers stop.
+    #
+    # Resque workers have gaps in their signal-handling ability.
+    def burn_down_workers(signal)
+      loop do
+        check_for_expired_workers
+        SIGNAL_QUEUE.clear
+
+        break if :no_child == reap_workers(Process::WNOHANG)
+
+        log "kill -#{signal} #{running_workers.map { |r| r.pid }.inspect}"
+        running_workers.each { |worker| worker.kill(signal) }
+
+        sleep 1 # Don't kill any more often than every 1s.
+        yawn 5
+      end
+      # One last time.
+      reap_workers
+    end
+
     # Private: all available workers
     attr_reader :workers
 
+    # Private: just the running workers.
+    def running_workers
+      workers.select { |worker| ! worker.idle? }
+    end
+
     # Private.
-    def yawn
-      sleep_times = [60.0] + workers.map { |worker| worker.backing_off_for }
-      sleep_time = [sleep_times.compact.min, 0.0].max
+    def yawn(sleep_time = nil)
+      sleep_time ||=
+        begin
+          sleep_times = [60.0] + workers.map { |worker| worker.backing_off_for }
+          [sleep_times.compact.min, 0.0].max
+        end
       super(sleep_time, @socket)
     end
 
@@ -94,12 +131,13 @@ module Resqued
     def reap_workers(waitpidflags = 0)
       loop do
         worker_pid, status = Process.waitpid2(-1, waitpidflags)
-        return if worker_pid.nil?
+        return :none_ready if worker_pid.nil?
         finish_worker(worker_pid, status)
         report_to_master("-#{worker_pid}")
       end
     rescue Errno::ECHILD
       # All done
+      :no_child
     end
 
     # Private: Check if master reports any dead workers.
@@ -111,6 +149,7 @@ module Resqued
       end
     rescue EOFError
       log "eof from master"
+      Process.kill(:QUIT, $$)
     end
 
     # Private.
@@ -172,7 +211,11 @@ module Resqued
 
     # Private.
     def write_procline(status)
-      $0 = "resqued listener[#{status}] #{@config_path}"
+      procline = "resqued listener"
+      procline << " #{@listener_id}" if @listener_id
+      procline << " [#{status}]"
+      procline << " #{@config_path}"
+      $0 = procline
     end
   end
 end

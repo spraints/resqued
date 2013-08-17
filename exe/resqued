@@ -23,6 +23,11 @@ opts = OptionParser.new do |opts|
     options[:master_pidfile] = v
   end
 
+  opts.on '-l', '--logfile LOGFILE', 'Write output to LOGFILE instead of stdout' do |v|
+    require 'resqued/logging'
+    Resqued::Logging.log_file = v
+  end
+
   opts.on '-D', '--daemonize', 'Run daemonized in the background' do
     daemonize = true
   end
