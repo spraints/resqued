@@ -69,6 +69,9 @@ module Resqued
         init_workers
         run_workers_run
       end
+
+      write_procline('shutdown')
+      burn_down_workers(:QUIT)
     end
 
     # Private.
@@ -81,8 +84,6 @@ module Resqued
         when nil
           yawn
         when :QUIT
-          write_procline('shutdown')
-          burn_down_workers(:QUIT)
           return
         end
       end
