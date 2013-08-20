@@ -82,7 +82,7 @@ module Resqued
           log "Malformed data from listener: #{line.inspect}"
         end
       end
-    rescue EOFError
+    rescue EOFError, Errno::ECONNRESET
       @master_socket.close
       @master_socket = nil
     end
