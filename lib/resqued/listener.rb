@@ -53,7 +53,7 @@ module Resqued
       @config ||= Config.load_file(@config_path)
     end
 
-    SIGNALS = [ :USR1, :QUIT ]
+    SIGNALS = [ :QUIT ]
 
     SIGNAL_QUEUE = []
 
@@ -83,9 +83,6 @@ module Resqued
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn
-        when :USR1
-          reopen_logs
-          kill_all(:QUIT) # restart all the workers.
         when :QUIT
           return
         end

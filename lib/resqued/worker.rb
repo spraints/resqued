@@ -93,7 +93,6 @@ module Resqued
     #                   master    listener    worker
     #                   ------    --------    ------
     # restart            HUP   -> QUIT     -> QUIT
-    # reopen logs       USR1   -> USR1     -> QUIT
     # exit now           INT   ->  INT (default)
     # exit now          TERM   -> TERM (default)
     # exit when ready   QUIT   -> QUIT     -> QUIT
