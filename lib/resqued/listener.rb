@@ -197,6 +197,7 @@ module Resqued
     #     report_to_master("-12345")        # Worker process PID:12345 exited.
     def report_to_master(status)
       @socket.puts(status)
+    rescue Errno::EPIPE
     end
 
     # Private: load the application.
