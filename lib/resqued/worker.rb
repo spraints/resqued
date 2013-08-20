@@ -59,7 +59,7 @@ module Resqued
         [:QUIT, :TERM, :INT].each { |signal| trap(signal) { exit 1 } }
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
         if ! log_to_stdout?
-          lf = logging_io
+          lf = Resqued::Logging.logging_io
           if Resque.respond_to?("logger=")
             Resque.logger = Resque.logger.class.new(lf)
           else
