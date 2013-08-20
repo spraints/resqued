@@ -15,6 +15,11 @@ module Resqued
       Resqued::Logging.log_file.nil?
     end
 
+    # Public: Re-open all log files.
+    def reopen_logs
+      # todo
+    end
+
     # Private (in classes that include this module)
     def log(message)
       logging_io.puts "[#{$$} #{Time.now.strftime('%H:%M:%S')}] #{message}"

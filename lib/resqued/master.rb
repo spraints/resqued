@@ -50,6 +50,9 @@ module Resqued
         when :HUP
           log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
+        when :USR1
+          reopen_logs
+          kill_listener(signal, :keep_current => true)
         when :INT, :TERM, :QUIT
           log "Shutting down..."
           kill_all_listeners(signal)
@@ -124,10 +127,11 @@ module Resqued
       end
     end
 
-    def kill_listener(signal)
+    def kill_listener(signal, options = {})
+      keep_current = options.fetch(:keep_current) { false }
       if @current_listener
         @current_listener.kill(signal)
-        @current_listener = nil
+        @current_listener = nil unless keep_current
       end
     end
 
@@ -160,7 +164,7 @@ module Resqued
       end while true
     end
 
-    SIGNALS = [ :HUP, :INT, :TERM, :QUIT ]
+    SIGNALS = [ :HUP, :USR1, :INT, :TERM, :QUIT ]
     OPTIONAL_SIGNALS = [ :INFO ]
 
     SIGNAL_QUEUE = []

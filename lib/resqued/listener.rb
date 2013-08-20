@@ -53,7 +53,7 @@ module Resqued
       @config ||= Config.load_file(@config_path)
     end
 
-    SIGNALS = [ :QUIT ]
+    SIGNALS = [ :USR1, :QUIT ]
 
     SIGNAL_QUEUE = []
 
@@ -83,6 +83,9 @@ module Resqued
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn
+        when :USR1
+          reopen_logs
+          kill_all(:QUIT) # restart all the workers.
         when :QUIT
           return
         end
@@ -98,15 +101,19 @@ module Resqued
         SIGNAL_QUEUE.clear
 
         break if :no_child == reap_workers(Process::WNOHANG)
-
-        log "kill -#{signal} #{running_workers.map { |r| r.pid }.inspect}"
-        running_workers.each { |worker| worker.kill(signal) }
+        kill_all(signal)
 
         sleep 1 # Don't kill any more often than every 1s.
         yawn 5
       end
       # One last time.
       reap_workers
+    end
+
+    # Private: send a signal to all the workers.
+    def kill_all(signal)
+      log "kill -#{signal} #{running_workers.map { |r| r.pid }.inspect}"
+      running_workers.each { |worker| worker.kill(signal) }
     end
 
     # Private: all available workers

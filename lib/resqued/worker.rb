@@ -79,18 +79,24 @@ module Resqued
 
     # Public: Shut this worker down.
     #
-    # We are using these signal semantics:
-    # HUP: restart (QUIT workers)
-    # INT/TERM: immediately exit
-    # QUIT: graceful shutdown
+    # Resque 1.23.0 uses these signal semantics:
     #
-    # Resque uses these (compatible) signal semantics:
     # TERM: Shutdown immediately, stop processing jobs.
     #  INT: Shutdown immediately, stop processing jobs.
     # QUIT: Shutdown after the current job has finished processing.
     # USR1: Kill the forked child immediately, continue processing jobs.
     # USR2: Don't process any new jobs
     # CONT: Start processing jobs again after a USR2
+    #
+    # This is how the signals flow:
+    #
+    #                   master    listener    worker
+    #                   ------    --------    ------
+    # restart            HUP   -> QUIT     -> QUIT
+    # reopen logs       USR1   -> USR1     -> QUIT
+    # exit now           INT   ->  INT (default)
+    # exit now          TERM   -> TERM (default)
+    # exit when ready   QUIT   -> QUIT     -> QUIT
     def kill(signal)
       Process.kill(signal.to_s, pid) if pid && @self_started
     end
