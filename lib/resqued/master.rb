@@ -125,11 +125,10 @@ module Resqued
       end
     end
 
-    def kill_listener(signal, options = {})
-      keep_current = options.fetch(:keep_current) { false }
+    def kill_listener(signal)
       if @current_listener
         @current_listener.kill(signal)
-        @current_listener = nil unless keep_current
+        @current_listener = nil
       end
     end
 
