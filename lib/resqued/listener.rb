@@ -209,6 +209,7 @@ module Resqued
     def load_environment
       require File.expand_path('config/environment.rb')
       Rails.application.eager_load!
+      ActiveRecord::Base.connection.disconnect!
     end
 
     # Private.
