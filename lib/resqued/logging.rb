@@ -43,7 +43,7 @@ module Resqued
 
     # Public: Re-open all log files.
     def reopen_logs
-      Resqued::Logging.close_log # it gets reopened the next time it gets used.
+      Resqued::Logging.close_log # it gets opened the next time it's needed.
     end
 
     # Private (in classes that include this module)

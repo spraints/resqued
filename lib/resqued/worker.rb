@@ -88,7 +88,7 @@ module Resqued
     # USR2: Don't process any new jobs
     # CONT: Start processing jobs again after a USR2
     #
-    # This is how the signals flow:
+    # This is how the signals flow in resqued:
     #
     #                   master    listener    worker
     #                   ------    --------    ------
