@@ -48,6 +48,7 @@ module Resqued
         when :INFO
           dump_object_counts
         when :HUP
+          reopen_logs
           log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
         when :INT, :TERM, :QUIT
