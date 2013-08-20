@@ -64,3 +64,4 @@ The following signals are handled by the resqued master process:
 * HUP - reread config file and gracefully restart all workers.
 * INT / TERM - immediately kill all workers and shut down.
 * QUIT - graceful shutdown. Waits for workers to finish.
+* USR1 - gracefully restart all workers and reopen all logs.
