@@ -198,6 +198,7 @@ module Resqued
     def report_to_master(status)
       @socket.puts(status)
     rescue Errno::EPIPE
+      Process.kill(:QUIT, $$) # If the master is gone, LIFE IS NOW MEANINGLESS.
     end
 
     # Private: load the application.
