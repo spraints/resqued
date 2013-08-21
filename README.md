@@ -42,6 +42,14 @@ To run the same fleet of workers with resqued, create a config file
       ActiveRecord::Base.establish_connection
     end
 
+Another syntax for workers:
+
+    worker_pool(20) do |x|
+      x.queue 'low', '20%'
+      x.queue 'normal', '70%'
+      x.queue '*'
+    end
+
 Run it like this:
 
     resqued config/resqued.rb
