@@ -122,4 +122,12 @@ describe Resqued::Config::Worker do
     END_CONFIG
     it { expect(result.size).to eq(20) }
   end
+
+  context 'multiple worker configs' do
+    let(:config) { <<-END_CONFIG }
+      workers { |x| }
+      worker_pool(10)
+    END_CONFIG
+    it { expect { result }.to raise_error }
+  end
 end

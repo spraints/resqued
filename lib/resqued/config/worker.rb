@@ -19,6 +19,7 @@ module Resqued
       #       x.work_on 'four', :interval => 20
       #     end
       def workers(options = {})
+        once!
         dsl = LiteralDsl.new(@worker_class, options)
         yield dsl
         @workers = dsl._workers
@@ -32,6 +33,7 @@ module Resqued
       #       x.queue '*'
       #     end
       def worker_pool(count, options = {})
+        once!
         dsl = IntentDsl.new(count, @worker_class, options)
         if block_given?
           yield dsl
@@ -46,6 +48,12 @@ module Resqued
       # Private: The created workers, returned from `Base#apply`.
       def results
         @workers
+      end
+
+      # Private: Raises if this method is called more than once.
+      def once!
+        raise "Only one set of workers may be defined." if @called
+        @called = true
       end
 
       # Object passed to the block in `Worker#workers`.
