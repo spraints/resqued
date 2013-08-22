@@ -1,5 +1,5 @@
 module Resqued
-  class Config
+  module Config
     # Public: Build a new config instance from the given file.
     def self.load_file(filename)
       new.load_file(filename)
@@ -9,6 +9,13 @@ module Resqued
     def self.load_string(config, filename = nil)
       new.load_string(config, filename)
     end
+
+
+    def self.new(*args)
+      D.new(*args)
+    end
+
+    class D
 
     # Public: Build a new config instance.
     def initialize
@@ -83,6 +90,7 @@ module Resqued
       def _push(instance_variable, value)
         @config.instance_variable_get("@#{instance_variable}").push(value)
       end
+    end
     end
   end
 end
