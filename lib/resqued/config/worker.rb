@@ -52,7 +52,7 @@ module Resqued
 
       # Private: Raises if this method is called more than once.
       def once!
-        raise "Only one set of workers may be defined." if @called
+        raise "Only one set of workers may be defined. To define multiple pools, run resqued once for each pool." if @called
         @called = true
       end
 
