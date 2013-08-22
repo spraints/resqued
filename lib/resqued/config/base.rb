@@ -2,7 +2,9 @@ require 'resqued/config/dsl'
 
 module Resqued
   module Config
+    # Base class for config handlers.
     class Base
+      # Implement the DSL on the config handler itself.
       include Dsl
 
       # Public: Apply the configuration in `str`.
