@@ -30,6 +30,8 @@ module Resqued
       #     worker_pool(20, :interval => 3) do |x|
       #       x.queue 'one', '20%'
       #       x.queue 'two', 10
+      #       x.queue 'three', :percent => 50
+      #       x.queue 'four', :count => 5
       #       x.queue '*'
       #     end
       def worker_pool(count, options = {})
@@ -88,9 +90,17 @@ module Resqued
         end
 
         # Public: Define how much of the worker pool should work on a given queue.
-        def queue(queue_name, concurrency = @count)
+        def queue(queue_name, concurrency = nil)
           @queues[queue_name] =
             case concurrency
+            when Hash
+              if percent = concurrency[:percent]
+                percent * 0.01
+              elsif count = concurrency[:count]
+                count
+              else
+                1.0
+              end
             when nil, '';    1.0
             when /%$/;       concurrency.chomp('%').to_i * 0.01
             else             concurrency.to_i

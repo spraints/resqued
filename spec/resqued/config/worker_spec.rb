@@ -16,6 +16,8 @@ describe Resqued::Config::Worker do
   #    worker_pool(20) do |x|
   #      x.queue 'low', '20%'
   #      x.queue 'normal', 10
+  #      x.queue 'low', :percent => 20
+  #      x.queue 'normal', :count => 10
   #      x.queue '*'
   #    end
   #
@@ -65,6 +67,26 @@ describe Resqued::Config::Worker do
       it { expect(result[0]).to eq([['defaults'], {:all => 1, :other => :default}]) }
       it { expect(result[1]).to eq([['custom'], {:all => 1, :other => :custom, :thing => 1}]) }
     end
+  end
+
+  context 'intent' do
+    let(:config) { <<-END_CONFIG }
+      before_fork { }
+      after_fork { }
+      worker_pool(20, :interval => 1) do |x|
+        x.queue 'a', :percent => 20
+        x.queue 'b', :count => 10
+        x.queue 'c'
+      end
+      after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
+    END_CONFIG
+    it { expect(result.size).to eq(20) }
+    it { expect(result[0]).to eq([['a', 'b', 'c'], {:interval => 1}]) }
+    it { expect(result[3]).to eq([['a', 'b', 'c'], {:interval => 1}]) }
+    it { expect(result[4]).to eq([['b', 'c'], {:interval => 1}]) }
+    it { expect(result[9]).to eq([['b', 'c'], {:interval => 1}]) }
+    it { expect(result[10]).to eq([['c'], {:interval => 1}]) }
+    it { expect(result[19]).to eq([['c'], {:interval => 1}]) }
   end
 
   context 'intent' do
