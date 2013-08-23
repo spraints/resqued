@@ -91,15 +91,19 @@ module Resqued
         SIGNAL_QUEUE.clear
 
         break if :no_child == reap_workers(Process::WNOHANG)
-
-        log "kill -#{signal} #{running_workers.map { |r| r.pid }.inspect}"
-        running_workers.each { |worker| worker.kill(signal) }
+        kill_all(signal)
 
         sleep 1 # Don't kill any more often than every 1s.
         yawn 5
       end
       # One last time.
       reap_workers
+    end
+
+    # Private: send a signal to all the workers.
+    def kill_all(signal)
+      log "kill -#{signal} #{running_workers.map { |r| r.pid }.inspect}"
+      running_workers.each { |worker| worker.kill(signal) }
     end
 
     # Private: all available workers
@@ -184,6 +188,8 @@ module Resqued
     #     report_to_master("-12345")        # Worker process PID:12345 exited.
     def report_to_master(status)
       @socket.puts(status)
+    rescue Errno::EPIPE
+      Process.kill(:QUIT, $$) # If the master is gone, LIFE IS NOW MEANINGLESS.
     end
 
     # Private.

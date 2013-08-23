@@ -48,6 +48,7 @@ module Resqued
         when :INFO
           dump_object_counts
         when :HUP
+          reopen_logs
           log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
         when :INT, :TERM, :QUIT
@@ -160,13 +161,15 @@ module Resqued
       end while true
     end
 
-    SIGNALS = [ :HUP, :INT, :TERM, :QUIT, :INFO ]
+    SIGNALS = [ :HUP, :INT, :TERM, :QUIT ]
+    OPTIONAL_SIGNALS = [ :INFO ]
 
     SIGNAL_QUEUE = []
 
     def install_signal_handlers
       trap(:CHLD) { awake }
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
+      OPTIONAL_SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } rescue nil }
     end
 
     def report_unexpected_exits

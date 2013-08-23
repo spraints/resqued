@@ -61,7 +61,7 @@ module Resqued
         [:QUIT, :TERM, :INT].each { |signal| trap(signal) { exit 1 } }
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
         if ! log_to_stdout?
-          lf = logging_io
+          lf = Resqued::Logging.logging_io
           if Resque.respond_to?("logger=")
             Resque.logger = Resque.logger.class.new(lf)
           else
@@ -69,6 +69,8 @@ module Resqued
             lf.close
           end
         end
+        ActiveRecord::Base.establish_connection
+        Resque.redis.client.reconnect
         resque_worker = Resque::Worker.new(*queues)
         resque_worker.log "Starting worker #{resque_worker}"
         resque_worker.term_child = true # Hopefully do away with those warnings!
@@ -79,19 +81,6 @@ module Resqued
     end
 
     # Public: Shut this worker down.
-    #
-    # We are using these signal semantics:
-    # HUP: restart (QUIT workers)
-    # INT/TERM: immediately exit
-    # QUIT: graceful shutdown
-    #
-    # Resque uses these (compatible) signal semantics:
-    # TERM: Shutdown immediately, stop processing jobs.
-    #  INT: Shutdown immediately, stop processing jobs.
-    # QUIT: Shutdown after the current job has finished processing.
-    # USR1: Kill the forked child immediately, continue processing jobs.
-    # USR2: Don't process any new jobs
-    # CONT: Start processing jobs again after a USR2
     def kill(signal)
       Process.kill(signal.to_s, pid) if pid && @self_started
     end

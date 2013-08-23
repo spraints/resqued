@@ -64,8 +64,32 @@ When resqued is running, it has the following processes:
 * queue reader - retrieves jobs from queues and forks worker processes.
 * worker - runs a single job.
 
+## Signals
+
 The following signals are handled by the resqued master process:
 
 * HUP - reread config file and gracefully restart all workers.
 * INT / TERM - immediately kill all workers and shut down.
 * QUIT - graceful shutdown. Waits for workers to finish.
+
+This is how the signals flow:
+
+```
+                  master    listener    worker
+                  ------    --------    ------
+restart            HUP   -> QUIT     -> QUIT
+exit now           INT   ->  INT (default)
+exit now          TERM   -> TERM (default)
+exit when ready   QUIT   -> QUIT     -> QUIT
+```
+
+Resque 1.23.0 uses these signal semantics:
+
+```
+TERM: Shutdown immediately, stop processing jobs.
+ INT: Shutdown immediately, stop processing jobs.
+QUIT: Shutdown after the current job has finished processing.
+USR1: Kill the forked child immediately, continue processing jobs.
+USR2: Don't process any new jobs
+CONT: Start processing jobs again after a USR2
+```
