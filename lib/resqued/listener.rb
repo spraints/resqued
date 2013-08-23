@@ -2,7 +2,6 @@ require 'socket'
 
 require 'resqued/config'
 require 'resqued/logging'
-require 'resqued/pidfile'
 require 'resqued/sleepy'
 require 'resqued/worker'
 
@@ -10,7 +9,6 @@ module Resqued
   # A listener process. Watches resque queues and forks workers.
   class Listener
     include Resqued::Logging
-    include Resqued::Pidfile
     include Resqued::Sleepy
 
     # Configure a new listener object.
@@ -48,11 +46,6 @@ module Resqued
       new(options).run
     end
 
-    # Private: memoizes the worker configuration.
-    def config
-      @config ||= Config.load_file(@config_path)
-    end
-
     SIGNALS = [ :QUIT ]
 
     SIGNAL_QUEUE = []
@@ -63,12 +56,12 @@ module Resqued
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
       @socket.close_on_exec = true
 
-      with_pidfile(config.pidfile) do
-        write_procline('running')
-        load_environment
-        init_workers
-        run_workers_run
-      end
+      config = Resqued::Config.new(@config_path)
+      config.before_fork
+
+      write_procline('running')
+      init_workers(config)
+      run_workers_run
 
       write_procline('shutdown')
       burn_down_workers(:QUIT)
@@ -178,19 +171,13 @@ module Resqued
     end
 
     # Private.
-    def init_workers
-      workers = []
-      config.workers.each do |worker_config|
-        worker_config[:size].times do
-          workers << Worker.new(worker_config)
-        end
-      end
+    def init_workers(config)
+      @workers = config.build_workers
       @running_workers.each do |running_worker|
-        if blocked_worker = workers.detect { |worker| worker.idle? && worker.queue_key == running_worker[:queue] }
+        if blocked_worker = @workers.detect { |worker| worker.idle? && worker.queue_key == running_worker[:queue] }
           blocked_worker.wait_for(running_worker[:pid].to_i)
         end
       end
-      @workers = workers
     end
 
     # Private: Report child process status.
@@ -203,17 +190,6 @@ module Resqued
       @socket.puts(status)
     rescue Errno::EPIPE
       Process.kill(:QUIT, $$) # If the master is gone, LIFE IS NOW MEANINGLESS.
-    end
-
-    # Private: load the application.
-    #
-    # To do:
-    # * Does this reload correctly if the bundle changes and `bundle exec resqued config/resqued.rb`?
-    # * Maybe make the specific app environment configurable (i.e. load rails, load rackup, load some custom thing)
-    def load_environment
-      require File.expand_path('config/environment.rb')
-      Rails.application.eager_load!
-      ActiveRecord::Base.connection.disconnect!
     end
 
     # Private.
