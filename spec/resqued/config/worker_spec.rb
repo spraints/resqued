@@ -4,26 +4,15 @@ require 'resqued/config/worker'
 describe Resqued::Config::Worker do
   # Create a bunch of Resqued::Worker objects from
   #
-  #    workers do |x|
-  #      x.work_on 'queue1'
-  #      x.work_on 'queue2'
-  #      x.work_on 'queue3', 'queue4'
-  #      x.work_on '*'
-  #    end
-  #
-  # and / or
-  #
-  #    worker_pool(20) do |x|
-  #      x.queue 'low', '20%'
-  #      x.queue 'normal', 10
-  #      x.queue 'low', :percent => 20
-  #      x.queue 'normal', :count => 10
-  #      x.queue '*'
-  #    end
-  #
-  # or
-  #
-  #     worker_pool(20) # implies all workers work all queues.
+  #    worker 'one'
+  #    worker 'two', 'three', :interval => 2
+  #    worker # assumes '*' as the queue
+  #    worker_pool 10
+  #    queue 'four', :percent => 20
+  #    queue 'five', :count => 5
+  #    queue 'six', '40%'
+  #    queue 'seven', 3
+  #    queue '*'
   #
   # ignore calls to any other top-level method.
 
@@ -35,16 +24,14 @@ describe Resqued::Config::Worker do
     end
   end
 
-  context 'literal' do
+  context 'individual' do
     let(:config) { <<-END_CONFIG }
       before_fork { }
       after_fork { }
-      workers do |x|
-        2.times { x.work_on 'a' }
-        x.work_on 'b'
-        x.work_on 'c', 'd'
-        x.work_on 'd', 'c'
-      end
+      2.times { worker 'a' }
+      worker 'b'
+      worker 'c', 'd'
+      worker 'd', 'c', :interval => 3
       after_fork { } # So that we don't rely on `workers`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(5) }
@@ -52,32 +39,17 @@ describe Resqued::Config::Worker do
     it { expect(result[1]).to eq([['a'], {}]) }
     it { expect(result[2]).to eq([['b'], {}]) }
     it { expect(result[3]).to eq([['c', 'd'], {}]) }
-    it { expect(result[4]).to eq([['d', 'c'], {}]) }
-
-    context 'options' do
-      let(:config) { <<-END_CONFIG }
-        before_fork { }
-        after_fork { }
-        workers(:all => 1, :other => :default) do |x|
-          x.work_on 'defaults'
-          x.work_on 'custom', :other => :custom, :thing => 1
-        end
-        after_fork { } # So that we don't rely on `workers`'s result falling through.
-      END_CONFIG
-      it { expect(result[0]).to eq([['defaults'], {:all => 1, :other => :default}]) }
-      it { expect(result[1]).to eq([['custom'], {:all => 1, :other => :custom, :thing => 1}]) }
-    end
+    it { expect(result[4]).to eq([['d', 'c'], {:interval => 3}]) }
   end
 
-  context 'intent' do
+  context 'pool (hash for concurrency)' do
     let(:config) { <<-END_CONFIG }
       before_fork { }
       after_fork { }
-      worker_pool(20, :interval => 1) do |x|
-        x.queue 'a', :percent => 20
-        x.queue 'b', :count => 10
-        x.queue 'c'
-      end
+      worker_pool 20, :interval => 1
+      queue 'a', :percent => 20
+      queue 'b', :count => 10
+      queue 'c'
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
@@ -89,15 +61,14 @@ describe Resqued::Config::Worker do
     it { expect(result[19]).to eq([['c'], {:interval => 1}]) }
   end
 
-  context 'intent' do
+  context 'pool (value for concurrency)' do
     let(:config) { <<-END_CONFIG }
       before_fork { }
       after_fork { }
-      worker_pool(20, :interval => 1) do |x|
-        x.queue 'a', '20%'
-        x.queue 'b', 10
-        x.queue 'c'
-      end
+      worker_pool 20, :interval => 1
+      queue 'a', '20%'
+      queue 'b', 10
+      queue 'c'
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
@@ -109,11 +80,11 @@ describe Resqued::Config::Worker do
     it { expect(result[19]).to eq([['c'], {:interval => 1}]) }
   end
 
-  context 'intent, with implied queue' do
+  context 'pool, with implied queue' do
     let(:config) { <<-END_CONFIG }
       before_fork { }
       after_fork { }
-      worker_pool(20)
+      worker_pool 20
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
@@ -121,25 +92,27 @@ describe Resqued::Config::Worker do
     it { expect(result[19]).to eq([['*'], {}]) }
   end
 
-  context 'intent, with fewer queues than workers' do
+  context 'pool, with fewer queues than workers' do
     let(:config) { <<-END_CONFIG }
       before_fork { }
       after_fork { }
-      worker_pool(20) do |x|
-        x.queue 'a', 10
-      end
+      worker_pool 20
+      queue 'a', 10
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
-    it { expect(result.size).to eq(10) }
+    it { expect(result.size).to eq(20) }
+    it { expect(result[0]).to eq([ ['a'], {} ]) }
+    it { expect(result[9]).to eq([ ['a'], {} ]) }
+    it { expect(result[10]).to eq([ ['*'], {} ]) }
+    it { expect(result[19]).to eq([ ['*'], {} ]) }
   end
 
-  context 'intent, with more queues than workers' do
+  context 'pool, with more queues than workers' do
     let(:config) { <<-END_CONFIG }
       before_fork { }
       after_fork { }
-      worker_pool(20) do |x|
-        x.queue 'a', 30
-      end
+      worker_pool 20
+      queue 'a', 30
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
@@ -147,9 +120,14 @@ describe Resqued::Config::Worker do
 
   context 'multiple worker configs' do
     let(:config) { <<-END_CONFIG }
-      workers { |x| }
-      worker_pool(10)
+      worker 'one'
+      worker 'two'
+      worker_pool 2
     END_CONFIG
-    it { expect { result }.to raise_error }
+    it { expect(result.size).to eq(4) }
+    it { expect(result[0]).to eq([ ['one'], {} ]) }
+    it { expect(result[1]).to eq([ ['two'], {} ]) }
+    it { expect(result[2]).to eq([ ['*'], {} ]) }
+    it { expect(result[3]).to eq([ ['*'], {} ]) }
   end
 end

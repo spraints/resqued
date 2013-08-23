@@ -16,8 +16,9 @@ describe do
 
     let(:config) { <<-END_CONFIG }
       before_fork { }
-      workers({}) { |x| }
-      worker_pool(100, {}) { }
+      worker('one')
+      worker_pool(10)
+      queue('*')
 
       after_fork do |worker|
         worker.token = :called
@@ -42,8 +43,9 @@ describe do
 
     let(:config) { <<-END_CONFIG }
       after_fork { |worker| }
-      workers({}) { |x| }
-      worker_pool(100, {}) { }
+      worker('one')
+      worker_pool(10)
+      queue('*')
 
       before_fork do
         $before_fork_called = true
