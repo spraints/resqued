@@ -2,7 +2,6 @@ require 'socket'
 
 require 'resqued/config'
 require 'resqued/logging'
-require 'resqued/pidfile'
 require 'resqued/sleepy'
 require 'resqued/worker'
 
@@ -10,7 +9,6 @@ module Resqued
   # A listener process. Watches resque queues and forks workers.
   class Listener
     include Resqued::Logging
-    include Resqued::Pidfile
     include Resqued::Sleepy
 
     # Configure a new listener object.
@@ -48,9 +46,6 @@ module Resqued
       new(options).run
     end
 
-    # Private: memoizes the worker configuration.
-    attr_reader :config
-
     SIGNALS = [ :QUIT ]
 
     SIGNAL_QUEUE = []
@@ -61,12 +56,12 @@ module Resqued
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
       @socket.close_on_exec = true
 
-      load_environment
-      with_pidfile(config.pidfile) do
-        write_procline('running')
-        init_workers
-        run_workers_run
-      end
+      config = Resqued::Config.new(@config_path)
+      config.before_fork
+
+      write_procline('running')
+      init_workers(config)
+      run_workers_run
 
       write_procline('shutdown')
       burn_down_workers(:QUIT)
@@ -172,19 +167,13 @@ module Resqued
     end
 
     # Private.
-    def init_workers
-      workers = []
-      config.workers.each do |worker_config|
-        worker_config[:size].times do
-          workers << Worker.new(worker_config)
-        end
-      end
+    def init_workers(config)
+      @workers = config.build_workers
       @running_workers.each do |running_worker|
-        if blocked_worker = workers.detect { |worker| worker.idle? && worker.queue_key == running_worker[:queue] }
+        if blocked_worker = @workers.detect { |worker| worker.idle? && worker.queue_key == running_worker[:queue] }
           blocked_worker.wait_for(running_worker[:pid].to_i)
         end
       end
-      @workers = workers
     end
 
     # Private: Report child process status.
@@ -195,16 +184,6 @@ module Resqued
     #     report_to_master("-12345")        # Worker process PID:12345 exited.
     def report_to_master(status)
       @socket.puts(status)
-    end
-
-    # Private: load the application.
-    #
-    # To do:
-    # * Make the "config" file be an environment file instead. How to deal with the DSL?
-    def load_environment
-      require File.expand_path('config/environment.rb')
-      Rails.application.eager_load!
-      @config = Config.load_file(@config_path)
     end
 
     # Private.

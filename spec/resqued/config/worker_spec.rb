@@ -19,8 +19,8 @@ describe Resqued::Config::Worker do
   let(:evaluator) { described_class.new(:worker_class => FakeWorker) }
   let(:result) { evaluator.apply(config) }
   module FakeWorker
-    def self.new(*args)
-      args
+    def self.new(options)
+      options
     end
   end
 
@@ -36,12 +36,12 @@ describe Resqued::Config::Worker do
       after_fork { } # So that we don't rely on `workers`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(6) }
-    it { expect(result[0]).to eq([['a'], {}]) }
-    it { expect(result[1]).to eq([['a'], {}]) }
-    it { expect(result[2]).to eq([['b'], {}]) }
-    it { expect(result[3]).to eq([['c', 'd'], {}]) }
-    it { expect(result[4]).to eq([['d', 'c'], {:interval => 3}]) }
-    it { expect(result[5]).to eq([['*'], {}]) }
+    it { expect(result[0]).to eq(:queues => ['a']) }
+    it { expect(result[1]).to eq(:queues => ['a']) }
+    it { expect(result[2]).to eq(:queues => ['b']) }
+    it { expect(result[3]).to eq(:queues => ['c', 'd']) }
+    it { expect(result[4]).to eq(:queues => ['d', 'c'], :interval => 3) }
+    it { expect(result[5]).to eq(:queues => ['*']) }
   end
 
   context 'pool (hash for concurrency)' do
@@ -55,12 +55,12 @@ describe Resqued::Config::Worker do
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
-    it { expect(result[0]).to eq([['a', 'b', 'c'], {:interval => 1}]) }
-    it { expect(result[3]).to eq([['a', 'b', 'c'], {:interval => 1}]) }
-    it { expect(result[4]).to eq([['b', 'c'], {:interval => 1}]) }
-    it { expect(result[9]).to eq([['b', 'c'], {:interval => 1}]) }
-    it { expect(result[10]).to eq([['c'], {:interval => 1}]) }
-    it { expect(result[19]).to eq([['c'], {:interval => 1}]) }
+    it { expect(result[0]).to eq(:queues => ['a', 'b', 'c'], :interval => 1) }
+    it { expect(result[3]).to eq(:queues => ['a', 'b', 'c'], :interval => 1) }
+    it { expect(result[4]).to eq(:queues => ['b', 'c'], :interval => 1) }
+    it { expect(result[9]).to eq(:queues => ['b', 'c'], :interval => 1) }
+    it { expect(result[10]).to eq(:queues => ['c'], :interval => 1) }
+    it { expect(result[19]).to eq(:queues => ['c'], :interval => 1) }
   end
 
   context 'pool (value for concurrency)' do
@@ -74,12 +74,12 @@ describe Resqued::Config::Worker do
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
-    it { expect(result[0]).to eq([['a', 'b', 'c'], {:interval => 1}]) }
-    it { expect(result[3]).to eq([['a', 'b', 'c'], {:interval => 1}]) }
-    it { expect(result[4]).to eq([['b', 'c'], {:interval => 1}]) }
-    it { expect(result[9]).to eq([['b', 'c'], {:interval => 1}]) }
-    it { expect(result[10]).to eq([['c'], {:interval => 1}]) }
-    it { expect(result[19]).to eq([['c'], {:interval => 1}]) }
+    it { expect(result[0]).to eq(:queues => ['a', 'b', 'c'], :interval => 1) }
+    it { expect(result[3]).to eq(:queues => ['a', 'b', 'c'], :interval => 1) }
+    it { expect(result[4]).to eq(:queues => ['b', 'c'], :interval => 1) }
+    it { expect(result[9]).to eq(:queues => ['b', 'c'], :interval => 1) }
+    it { expect(result[10]).to eq(:queues => ['c'], :interval => 1) }
+    it { expect(result[19]).to eq(:queues => ['c'], :interval => 1) }
   end
 
   context 'pool, with implied queue' do
@@ -90,8 +90,8 @@ describe Resqued::Config::Worker do
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
-    it { expect(result[0]).to eq([['*'], {}]) }
-    it { expect(result[19]).to eq([['*'], {}]) }
+    it { expect(result[0]).to eq(:queues => ['*']) }
+    it { expect(result[19]).to eq(:queues => ['*']) }
   end
 
   context 'pool, with fewer queues than workers' do
@@ -103,10 +103,10 @@ describe Resqued::Config::Worker do
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
-    it { expect(result[0]).to eq([ ['a'], {} ]) }
-    it { expect(result[9]).to eq([ ['a'], {} ]) }
-    it { expect(result[10]).to eq([ ['*'], {} ]) }
-    it { expect(result[19]).to eq([ ['*'], {} ]) }
+    it { expect(result[0]).to eq(:queues => ['a']) }
+    it { expect(result[9]).to eq(:queues => ['a']) }
+    it { expect(result[10]).to eq(:queues => ['*']) }
+    it { expect(result[19]).to eq(:queues => ['*']) }
   end
 
   context 'pool, with more queues than workers' do
@@ -127,9 +127,17 @@ describe Resqued::Config::Worker do
       worker_pool 2
     END_CONFIG
     it { expect(result.size).to eq(4) }
-    it { expect(result[0]).to eq([ ['one'], {} ]) }
-    it { expect(result[1]).to eq([ ['two'], {} ]) }
-    it { expect(result[2]).to eq([ ['*'], {} ]) }
-    it { expect(result[3]).to eq([ ['*'], {} ]) }
+    it { expect(result[0]).to eq(:queues => ['one']) }
+    it { expect(result[1]).to eq(:queues => ['two']) }
+    it { expect(result[2]).to eq(:queues => ['*']) }
+    it { expect(result[3]).to eq(:queues => ['*']) }
+  end
+
+  context 'with default options' do
+    let(:evaluator) { described_class.new(:worker_class => FakeWorker, :config => 'something') }
+    let(:config) { <<-END_CONFIG }
+      worker 'a', :interval => 1
+    END_CONFIG
+    it { expect(result[0]).to eq(:queues => ['a'], :interval => 1, :config => 'something') }
   end
 end

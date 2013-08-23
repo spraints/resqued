@@ -10,6 +10,8 @@ module Resqued
 
     def initialize(options)
       @queues = options.fetch(:queues)
+      @config = options.fetch(:config)
+      @interval = options[:interval]
       @backoff = Backoff.new
     end
 
@@ -24,7 +26,7 @@ module Resqued
       pid.nil?
     end
 
-    # Public: Checks if this worker works on jobs from the queue.
+    # Public: A string that compares if this worker is equivalent to a worker in another Resqued::Listener.
     def queue_key
       queues.sort.join(';')
     end
@@ -32,7 +34,7 @@ module Resqued
     # Public: Claim this worker for another listener's worker.
     def wait_for(pid)
       raise "Already running #{@pid} (can't wait for #{pid})" if @pid
-      @self_started = nil
+      @self_started = false
       @pid = pid
     end
 
@@ -70,7 +72,8 @@ module Resqued
         resque_worker = Resque::Worker.new(*queues)
         resque_worker.log "Starting worker #{resque_worker}"
         resque_worker.term_child = true # Hopefully do away with those warnings!
-        resque_worker.work(5)
+        @config.after_fork(resque_worker)
+        resque_worker.work(@interval || 5)
         exit 0
       end
     end

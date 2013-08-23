@@ -8,7 +8,9 @@ module Resqued
     class Worker < Base
       # Public.
       def initialize(options = {})
-        @worker_class = options.fetch(:worker_class) { Resqued::Worker }
+        options = options.dup
+        @worker_class = options.delete(:worker_class) || Resqued::Worker
+        @worker_options = options
         @workers = []
       end
 
@@ -18,7 +20,7 @@ module Resqued
       def worker(*queues)
         options = queues.last.is_a?(Hash) ? queues.pop : {}
         queues = ['*'] if queues.empty?
-        @workers << @worker_class.new(queues, options)
+        @workers << @worker_class.new(options.merge(@worker_options).merge(:queues => queues.flatten))
       end
 
       # DSL: Set up a pool of workers. Define queues for the members of the pool with `queue`.
@@ -58,25 +60,25 @@ module Resqued
       private
 
       def results
-        @workers + build_pool_workers
+        build_pool_workers!
+        @workers
       end
 
       # Internal: Build and returns the workers.
       #
       # Build an array of Worker objects with queue lists configured based
       # on the concurrency values established and the total number of workers.
-      def build_pool_workers
+      def build_pool_workers!
         return [] unless @pool_size
         queues = _fixed_concurrency_queues
-        1.upto(@pool_size).map do |worker_num|
-          :todo
+        1.upto(@pool_size) do |worker_num|
           queue_names = queues.
             select { |name, concurrency| concurrency >= worker_num }.
             map { |name, _| name }
           if queue_names.any?
-            @worker_class.new(queue_names, @pool_options)
+            worker(queue_names, @pool_options)
           else
-            @worker_class.new(['*'], @pool_options)
+            worker('*', @pool_options)
           end
         end
       end
