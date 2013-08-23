@@ -32,14 +32,16 @@ describe Resqued::Config::Worker do
       worker 'b'
       worker 'c', 'd'
       worker 'd', 'c', :interval => 3
+      worker
       after_fork { } # So that we don't rely on `workers`'s result falling through.
     END_CONFIG
-    it { expect(result.size).to eq(5) }
+    it { expect(result.size).to eq(6) }
     it { expect(result[0]).to eq([['a'], {}]) }
     it { expect(result[1]).to eq([['a'], {}]) }
     it { expect(result[2]).to eq([['b'], {}]) }
     it { expect(result[3]).to eq([['c', 'd'], {}]) }
     it { expect(result[4]).to eq([['d', 'c'], {:interval => 3}]) }
+    it { expect(result[5]).to eq([['*'], {}]) }
   end
 
   context 'pool (hash for concurrency)' do

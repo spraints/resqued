@@ -17,6 +17,7 @@ module Resqued
       #     worker 'one', :interval => 1
       def worker(*queues)
         options = queues.last.is_a?(Hash) ? queues.pop : {}
+        queues = ['*'] if queues.empty?
         @workers << @worker_class.new(queues, options)
       end
 
