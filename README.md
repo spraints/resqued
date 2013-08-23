@@ -24,25 +24,30 @@ Let's say you were running workers like this:
 To run the same fleet of workers with resqued, create a config file
 `config/resqued.rb` like this:
 
-    base = File.expand_path('..', File.dirname(__FILE__))
-    pidfile File.join(base, 'tmp/pids/resqued-listener.pid')
-
-    worker do
-      workers 2
-      queue 'high'
+    workers do |x|
+      2.times { x.work_on 'high' }
+      x.work_on 'slow'
+      x.work_on 'medium'
+      x.work_on 'medium', 'low'
     end
 
-    worker do
-      queue 'slow'
-      timeout -1 # never time out
+    before_fork do
+      require "./config/environment.rb"
+      Rails.application.eager_load!
+      ActiveRecord::Base.connection.disconnect!
     end
 
-    worker do
-      queue 'medium'
+    after_fork do |worker|
+      # `worker.reconnect` already happens
+      ActiveRecord::Base.establish_connection
     end
 
-    worker do
-      queues 'medium', 'low'
+Another syntax for workers:
+
+    worker_pool(20) do |x|
+      x.queue 'low', '20%'
+      x.queue 'normal', '70%'
+      x.queue '*'
     end
 
 Run it like this:
