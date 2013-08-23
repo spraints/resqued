@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export RBENV_VERSION=1.9.3-p231-tcs-github
+./script/bootstrap
+./script/test

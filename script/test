@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./bin/rspec --format documentation --backtrace
