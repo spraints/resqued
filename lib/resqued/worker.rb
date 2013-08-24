@@ -60,6 +60,10 @@ module Resqued
         # In case we get a signal before the process is all the way up.
         [:QUIT, :TERM, :INT].each { |signal| trap(signal) { exit 1 } }
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
+        if Resque.respond_to?("logger")
+          Resque.logger.level = Logger::INFO
+          Resque.logger.formatter = Resque::VerboseFormatter.new
+        end
         if ! log_to_stdout?
           lf = Resqued::Logging.logging_io
           if Resque.respond_to?("logger=")
