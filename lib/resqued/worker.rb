@@ -69,8 +69,6 @@ module Resqued
             lf.close
           end
         end
-        ActiveRecord::Base.establish_connection
-        Resque.redis.client.reconnect
         resque_worker = Resque::Worker.new(*queues)
         resque_worker.log "Starting worker #{resque_worker}"
         resque_worker.term_child = true # Hopefully do away with those warnings!
