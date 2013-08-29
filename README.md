@@ -1,9 +1,6 @@
 # resqued - a long-running daemon for resque workers.
 
-[image of a ninja rescuing an ear of corn]
-
-resqued provides a resque worker that works well with
-slow jobs and continuous delivery.
+Resqued is a multi-process daemon that controls and monitors a pool of resque workers. It works well with slow jobs and continuous delivery.
 
 ## Installation
 
@@ -83,13 +80,4 @@ exit now          TERM   -> TERM (default)
 exit when ready   QUIT   -> QUIT     -> QUIT
 ```
 
-Resque 1.23.0 uses these signal semantics:
-
-```
-TERM: Shutdown immediately, stop processing jobs.
- INT: Shutdown immediately, stop processing jobs.
-QUIT: Shutdown after the current job has finished processing.
-USR1: Kill the forked child immediately, continue processing jobs.
-USR2: Don't process any new jobs
-CONT: Start processing jobs again after a USR2
-```
+For more information about signal handling, please see the [signals documentation](docs/signals.md).
