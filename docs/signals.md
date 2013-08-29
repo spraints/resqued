@@ -12,7 +12,7 @@ The Master process handles several signals.
 
 ## Listener
 
-The Listener process only handles the `QUIT` signal. When it receives `SIGQUIT`, it goes into shutdown mode. It sends `SIGQUIT` to all of its workers. When all workers have exited, the Listener process exits.
+The Listener process handles `SIGINT`, `SIGTERM`, and `SIGQUIT`. When it receives one of these signals, it goes into shutdown mode. It sends the received signal to all of its workers. When all workers have exited, the Listener process exits.
 
 ## Worker
 

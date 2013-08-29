@@ -75,8 +75,8 @@ This is how the signals flow:
                   master    listener    worker
                   ------    --------    ------
 restart            HUP   -> QUIT     -> QUIT
-exit now           INT   ->  INT (default)
-exit now          TERM   -> TERM (default)
+exit now           INT   ->  INT     ->  INT
+exit now          TERM   -> TERM     -> TERM
 exit when ready   QUIT   -> QUIT     -> QUIT
 ```
 
