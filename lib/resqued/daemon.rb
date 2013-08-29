@@ -23,6 +23,7 @@ module Resqued
         exit
       else
         # master
+        rd.close
         @master.run(wr)
       end
     end
