@@ -2,7 +2,7 @@
 
 ## Master / Listener
 
-`Resqued::ListenerProxy` opens a Unix domain socket to communicate between the Master and Listener processes. Resqued uses a socket (instead of a pipe) because the socket is bidirectional. Also, a socket can be transferred between processes more easily, which allows new listeners to reload the environment in a simple way, by starting via `fork`+`exec`, rather than just `fork`.
+`Resqued::ListenerProxy` opens a Unix domain socket to communicate between the Master and Listener processes. Resqued uses a socket (instead of a pipe) because the socket is bidirectional and a socket can be reopened after `exec`.
 
 The Listener process sends information about the lifecycle of worker processes that it controls. When a worker starts, the listener writes `"+#{pid},#{queues}\n"`, e.g. `"+21234,important,*\n"`. When a worker exits, the listener writes `"-#{pid}\n"`.
 
