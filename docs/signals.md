@@ -2,6 +2,19 @@
 
 Signals control restart, reload, and shutdown in resqued. This file documents the signals that resqued's processes handle. You should normally only send signals to the Master process.
 
+Here is a summary of how signals get passed between resqued's processes:
+
+```
+                  master    listener    worker
+                  ------    --------    ------
+restart            HUP   -> QUIT     -> QUIT
+exit now           INT   ->  INT     ->  INT
+exit now          TERM   -> TERM     -> TERM
+exit when ready   QUIT   -> QUIT     -> QUIT
+```
+
+Read on for more information about what the signals mean.
+
 ## Master
 
 The Master process handles several signals.

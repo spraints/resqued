@@ -8,7 +8,15 @@ Install by adding resqued to your Gemfile
 
     gem 'resqued'
 
-## Set up
+Run resqued with a config file, like this:
+
+    resqued config/resqued.rb
+
+Or like this to daemonize it:
+
+    resqued -p tmp/pids/resqued-master.pid -D config/resqued.rb
+
+## Configuration
 
 Let's say you were running workers like this:
 
@@ -41,43 +49,19 @@ To run the same fleet of workers with resqued, create a config file
 
 Another syntax for workers:
 
-    worker_pool(20) do |x|
-      x.queue 'low', '20%'
-      x.queue 'normal', '70%'
-      x.queue '*'
-    end
+    worker_pool 5
+    queue 'low', '20%'
+    queue 'normal', '60%'
+    queue '*'
 
-Run it like this:
+This time, you'd end up with something similar to this:
 
-    resqued config/resqued.rb
+    rake resque:work QUEUE=low,normal,* &
+    rake resque:work QUEUE=normal,*     &
+    rake resque:work QUEUE=normal,*     &
+    rake resque:work QUEUE=*            &
+    rake resque:work QUEUE=*            &
 
-Or like this to daemonize it:
+## See also
 
-    resqued -p tmp/pids/resqued-master.pid -D config/resqued.rb
-
-When resqued is running, it has the following processes:
-
-* master - brokers signals to child processes.
-* queue reader - retrieves jobs from queues and forks worker processes.
-* worker - runs a single job.
-
-## Signals
-
-The following signals are handled by the resqued master process:
-
-* HUP - reread config file and gracefully restart all workers.
-* INT / TERM - immediately kill all workers and shut down.
-* QUIT - graceful shutdown. Waits for workers to finish.
-
-This is how the signals flow:
-
-```
-                  master    listener    worker
-                  ------    --------    ------
-restart            HUP   -> QUIT     -> QUIT
-exit now           INT   ->  INT     ->  INT
-exit now          TERM   -> TERM     -> TERM
-exit when ready   QUIT   -> QUIT     -> QUIT
-```
-
-For more information about signal handling, please see the [signals documentation](docs/signals.md).
+For information about how resqued works, see the [documentation](docs/).
