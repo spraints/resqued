@@ -2,6 +2,14 @@
 
 ## Master / Listener
 
+`Resqued::ListenerProxy` opens a Unix domain socket to communicate between the Master and Listener processes. Resqued uses a socket (instead of a pipe) because the socket is bidirectional. Also, a socket can be transferred between processes more easily, which allows new listeners to reload the environment in a simple way, by starting via `fork`+`exec`, rather than just `fork`.
+
+The Listener process sends information about the lifecycle of worker processes that it controls. When a worker starts, the listener writes `"+#{pid},#{queues}\n"`, e.g. `"+21234,important,*\n"`. When a worker exits, the listener writes `"-#{pid}\n"`.
+
+The Master process broadcasts dead worker PIDs to all running listeners. This allows a new listener to wait for old workers to exit before starting their replacements. These messages are just the pid, `"#{pid}\n"`, e.g. `"21234\n"`.
+
+*Does the dead worker broadcast need to go to all listeners? Or just the current listener?*
+
 ## Listener / Worker
 
 There is no direct communication between the Listener and the Worker.
