@@ -3,7 +3,7 @@ require 'spec_helper'
 require 'resqued/backoff'
 
 describe Resqued::Backoff do
-  let(:backoff) { described_class.new(:min => 1.0, :max => 64.0) }
+  let(:backoff) { described_class.new(:min => 0.5, :max => 64.0) }
 
   it 'can start on the first try' do
     expect(backoff.ok?).to be_true
@@ -15,8 +15,8 @@ describe Resqued::Backoff do
 
   context 'after expected exits' do
     before { 3.times { backoff.started } }
-    it { expect(backoff.ok?).to be_true }
-    it { expect(backoff.how_long?).to be_nil }
+    it { expect(backoff.wait?).to be_true }
+    it { expect(backoff.how_long?).to be_close_to(0.5) }
   end
 
   context 'after one quick exit' do
@@ -56,7 +56,8 @@ describe Resqued::Backoff do
     it 'and resets after an expected exit' do
       backoff.started
       backoff.started
-      expect(backoff.ok?).to be_true
+      expect(backoff.wait?).to be_true
+      expect(backoff.how_long?).to be_close_to(0.5)
     end
   end
 
