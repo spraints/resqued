@@ -12,9 +12,13 @@ module Resqued
       @backoff_duration = @backoff_duration ? [@backoff_duration * 2.0, @max].min : @min
     end
 
-    def finished
+    # Public: Tell backoff that the thing unexpectedly died.
+    def died
       @backoff_duration = nil if ok?
     end
+
+    # Old API.
+    alias finished died
 
     # Public: Check if we should wait before starting again.
     def wait?

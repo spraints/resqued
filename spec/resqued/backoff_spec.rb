@@ -13,32 +13,44 @@ describe Resqued::Backoff do
     expect(backoff.how_long?).to be_nil
   end
 
+  context 'after expected exits' do
+    before { 3.times { backoff.started } }
+    it { expect(backoff.ok?).to be_true }
+    it { expect(backoff.how_long?).to be_nil }
+  end
+
   context 'after one quick exit' do
-    before { 1.times { backoff.started ; backoff.finished } }
+    before { 1.times { backoff.started ; backoff.died } }
     it { expect(backoff.ok?).to be_false }
     it { expect(backoff.how_long?).to be_close_to(1.0) }
   end
 
   context 'after two quick starts' do
-    before { 2.times { backoff.started ; backoff.finished } }
+    before { 2.times { backoff.started ; backoff.died } }
     it { expect(backoff.ok?).to be_false }
     it { expect(backoff.how_long?).to be_close_to(2.0) }
   end
 
   context 'after five quick starts' do
+    before { 6.times { backoff.started ; backoff.died } }
+    it { expect(backoff.ok?).to be_false }
+    it { expect(backoff.how_long?).to be_close_to(32.0) }
+  end
+
+  context 'after five quick starts, old API' do
     before { 6.times { backoff.started ; backoff.finished } }
     it { expect(backoff.ok?).to be_false }
     it { expect(backoff.how_long?).to be_close_to(32.0) }
   end
 
   context 'after six quick starts' do
-    before { 7.times { backoff.started ; backoff.finished } }
+    before { 7.times { backoff.started ; backoff.died } }
     it { expect(backoff.ok?).to be_false }
     it { expect(backoff.how_long?).to be_close_to(64.0) }
   end
 
   context 'does not wait longer than 64s' do
-    before { 8.times { backoff.started ; backoff.finished } }
+    before { 8.times { backoff.started ; backoff.died } }
     it { expect(backoff.ok?).to be_false }
     it { expect(backoff.how_long?).to be_close_to(64.0) }
   end
@@ -48,19 +60,19 @@ describe Resqued::Backoff do
     let(:mock_time) { double('Time').tap { |t| t.stub(:now) { @time_now } } }
     before do
       @time_now = Time.now
-      3.times { backoff.started ; backoff.finished }
+      3.times { backoff.started ; backoff.died }
       expect(backoff.how_long?).to be_close_to(4.0)
       backoff.started
       # These should not affect anything.
       backoff.ok? ; backoff.wait? ; backoff.how_long?
       @time_now = @time_now + 8.01
-      backoff.finished
+      backoff.died
       # We can start, because the child ran long enough.
       expect(backoff.ok?).to be_true
       # This time, we ran longer than the newly-reset backoff duration (1.0s).
       backoff.started
       @time_now = @time_now + 1.01
-      backoff.finished
+      backoff.died
     end
     it { expect(backoff.ok?).to be_true }
     it { expect(backoff.how_long?).to be_nil }
