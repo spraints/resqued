@@ -41,7 +41,7 @@ module Resqued
     # Public: The old worker process finished!
     def finished!(process_status)
       @pid = nil
-      @backoff.finished
+      @backoff.died unless @killed
     end
 
     # Public: The amount of time we need to wait before starting a new worker.
@@ -54,6 +54,7 @@ module Resqued
       return if @backoff.wait?
       @backoff.started
       @self_started = true
+      @killed = false
       if @pid = fork
         # still in the listener
       else
@@ -86,6 +87,7 @@ module Resqued
     # Public: Shut this worker down.
     def kill(signal)
       Process.kill(signal.to_s, pid) if pid && @self_started
+      @killed = true
     end
   end
 end

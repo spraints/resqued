@@ -148,7 +148,7 @@ module Resqued
         if lpid
           log "Listener exited #{status}"
           if @current_listener && @current_listener.pid == lpid
-            @listener_backoff.finished
+            @listener_backoff.died
             @current_listener = nil
           end
           listener_pids.delete(lpid).dispose # This may leak workers.
