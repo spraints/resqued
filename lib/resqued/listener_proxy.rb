@@ -42,8 +42,7 @@ module Resqued
       else
         # listener
         master_socket.close
-        Master::SIGNALS.each { |signal| trap(signal, 'DEFAULT') }
-        Master::OPTIONAL_SIGNALS.each { |signal| trap(signal, 'DEFAULT') rescue nil }
+        Master::TRAPS.each { |signal| trap(signal, 'DEFAULT') rescue nil }
         Listener.new(@options.merge(:socket => listener_socket)).exec
         exit
       end

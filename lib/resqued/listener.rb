@@ -46,7 +46,7 @@ module Resqued
       new(options).run
     end
 
-    SIGNALS = [ :QUIT ]
+    SIGNALS = [ :QUIT, :INT, :TERM ]
 
     SIGNAL_QUEUE = []
 
@@ -61,10 +61,10 @@ module Resqued
 
       write_procline('running')
       init_workers(config)
-      run_workers_run
+      exit_signal = run_workers_run
 
       write_procline('shutdown')
-      burn_down_workers(:QUIT)
+      burn_down_workers(exit_signal || :QUIT)
     end
 
     # Private.
@@ -76,8 +76,8 @@ module Resqued
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn
-        when :QUIT
-          return
+        when :QUIT, :INT, :TERM
+          return signal
         end
       end
     end

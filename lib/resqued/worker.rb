@@ -57,7 +57,7 @@ module Resqued
       if @pid = fork
         # still in the listener
       else
-        # In case we get a signal before the process is all the way up.
+        # In case we get a signal before resque is ready for it.
         [:QUIT, :TERM, :INT].each { |signal| trap(signal) { exit 1 } }
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
         if Resque.respond_to?("logger")
@@ -75,7 +75,8 @@ module Resqued
         end
         resque_worker = Resque::Worker.new(*queues)
         resque_worker.log "Starting worker #{resque_worker}"
-        resque_worker.term_child = true # Hopefully do away with those warnings!
+        resque_worker.term_child = true
+        resque_worker.reconnect
         @config.after_fork(resque_worker)
         resque_worker.work(@interval || 5)
         exit 0
