@@ -20,9 +20,6 @@ module Resqued
       @last_event = :died
     end
 
-    # Old API.
-    alias finished died
-
     # Public: Check if we should wait before starting again.
     def wait?
       @last_started_at && next_start_at > now

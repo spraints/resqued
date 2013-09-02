@@ -37,12 +37,6 @@ describe Resqued::Backoff do
     it { expect(backoff.how_long?).to be_close_to(32.0) }
   end
 
-  context 'after five quick starts, old API' do
-    before { 6.times { backoff.started ; backoff.finished } }
-    it { expect(backoff.wait?).to be_true }
-    it { expect(backoff.how_long?).to be_close_to(32.0) }
-  end
-
   context 'after six quick starts' do
     before { 7.times { backoff.started ; backoff.died } }
     it { expect(backoff.wait?).to be_true }
