@@ -28,14 +28,9 @@ module Resqued
       @last_started_at && next_start_at > now
     end
 
-    # Public: Check if we are ok to start (i.e. we don't need to back off).
-    def ok?
-      ! wait?
-    end
-
-    # Public: How much longer until `ok?` will be true?
+    # Public: How much longer until `wait?` will be false?
     def how_long?
-      ok? ? nil : next_start_at - now
+      wait? ? next_start_at - now : nil
     end
 
     private
