@@ -68,3 +68,5 @@ The Daemon process starts the Master process with a double-fork, the normal daem
 The Master process starts the Listener process with a fork+exec. `bin/resqued-listener` is the process that is executed. Doing a full exec on the listener allows it to load any application changes, including changes to the `Gemfile`, without any special code. In order to keep the exec interface flexible, all initialization data is passed to the listener from the master via environment variables. This information is minimal, and includes the location of the config file and the status of other workers.
 
 The Listener process loads the application configuration (the `before_fork` block in the configuration file) before starting any workers. Worker processes are started by forking, and starting the Resque::Worker run loop.
+
+In the event that a Listener or Worker exits quickly and unexpectedly, resqued will not immediately restart the process.
