@@ -53,29 +53,11 @@ describe Resqued::Backoff do
     before { 8.times { backoff.started ; backoff.died } }
     it { expect(backoff.ok?).to be_false }
     it { expect(backoff.how_long?).to be_close_to(64.0) }
-  end
-
-  context 'if the restarts were far enough apart' do
-    let(:backoff) { backoff = described_class.new(:time => mock_time) }
-    let(:mock_time) { double('Time').tap { |t| t.stub(:now) { @time_now } } }
-    before do
-      @time_now = Time.now
-      3.times { backoff.started ; backoff.died }
-      expect(backoff.how_long?).to be_close_to(4.0)
+    it 'and resets after an expected exit' do
       backoff.started
-      # These should not affect anything.
-      backoff.ok? ; backoff.wait? ; backoff.how_long?
-      @time_now = @time_now + 8.01
-      backoff.died
-      # We can start, because the child ran long enough.
+      backoff.started
       expect(backoff.ok?).to be_true
-      # This time, we ran longer than the newly-reset backoff duration (1.0s).
-      backoff.started
-      @time_now = @time_now + 1.01
-      backoff.died
     end
-    it { expect(backoff.ok?).to be_true }
-    it { expect(backoff.how_long?).to be_nil }
   end
 
   def be_close_to(x)

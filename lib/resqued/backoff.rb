@@ -9,12 +9,14 @@ module Resqued
     # Public: Tell backoff that the thing we might want to back off from just started.
     def started
       @last_started_at = now
-      @backoff_duration = @backoff_duration ? [@backoff_duration * 2.0, @max].min : @min
+      @backoff_duration = nil if @last_event == :start
+      @last_event = :start
     end
 
     # Public: Tell backoff that the thing unexpectedly died.
     def died
-      @backoff_duration = nil if ok?
+      @backoff_duration = @backoff_duration ? [@backoff_duration * 2.0, @max].min : @min
+      @last_event = :died
     end
 
     # Old API.
