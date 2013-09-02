@@ -4,16 +4,20 @@ module Resqued
       @time = options.fetch(:time) { Time }
       @min  = options.fetch(:min) { 1.0 }
       @max  = options.fetch(:max) { 16.0 }
+      @backoff_duration = @min
     end
 
     # Public: Tell backoff that the thing we might want to back off from just started.
     def started
       @last_started_at = now
-      @backoff_duration = @backoff_duration ? [@backoff_duration * 2.0, @max].min : @min
+      @backoff_duration = @min if @last_event == :start
+      @last_event = :start
     end
 
-    def finished
-      @backoff_duration = nil if ok?
+    # Public: Tell backoff that the thing unexpectedly died.
+    def died
+      @backoff_duration = @backoff_duration ? [@backoff_duration * 2.0, @max].min : @min
+      @last_event = :died
     end
 
     # Public: Check if we should wait before starting again.
@@ -21,14 +25,9 @@ module Resqued
       @last_started_at && next_start_at > now
     end
 
-    # Public: Check if we are ok to start (i.e. we don't need to back off).
-    def ok?
-      ! wait?
-    end
-
-    # Public: How much longer until `ok?` will be true?
+    # Public: How much longer until `wait?` will be false?
     def how_long?
-      ok? ? nil : next_start_at - now
+      wait? ? next_start_at - now : nil
     end
 
     private
