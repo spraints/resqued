@@ -5,6 +5,7 @@ require 'resqued/listener'
 require 'resqued/logging'
 
 module Resqued
+  # Controls a listener process from the master process.
   class ListenerProxy
     include Resqued::Logging
 

@@ -12,6 +12,8 @@ module Resqued
     include Resqued::Sleepy
 
     # Configure a new listener object.
+    #
+    # Runs in the master process.
     def initialize(options)
       @config_path     = options.fetch(:config_path)
       @running_workers = options.fetch(:running_workers) { [] }
@@ -20,6 +22,8 @@ module Resqued
     end
 
     # Public: As an alternative to #run, exec a new ruby instance for this listener.
+    #
+    # Runs in the master process.
     def exec
       ENV['RESQUED_SOCKET']      = @socket.fileno.to_s
       ENV['RESQUED_CONFIG_PATH'] = @config_path

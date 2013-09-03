@@ -1,5 +1,7 @@
 module Resqued
+  # Mixin that manages a pidfile for a process.
   module Pidfile
+    # Public: Create a pidfile, execute the block, then remove the pidfile.
     def with_pidfile(filename)
       write_pidfile(filename) if filename
       yield
@@ -7,6 +9,7 @@ module Resqued
       remove_pidfile(filename) if filename
     end
 
+    # Private.
     def write_pidfile(filename)
       pf =
         begin
@@ -20,6 +23,7 @@ module Resqued
       pf.close
     end
 
+    # Private.
     def remove_pidfile(filename)
       (File.read(filename).to_i == $$) and File.unlink(filename) rescue nil
     end

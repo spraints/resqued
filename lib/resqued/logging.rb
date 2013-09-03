@@ -1,4 +1,5 @@
 module Resqued
+  # Mixin for any class that wants to write messages to the log file.
   module Logging
     # Global logging state.
     class << self
