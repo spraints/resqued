@@ -15,8 +15,8 @@ module Resqued
     include Resqued::Sleepy
 
     def initialize(options)
-      @config_path = options.fetch(:config_path)
-      @pidfile     = options.fetch(:master_pidfile) { nil }
+      @config_paths = options.fetch(:config_paths)
+      @pidfile      = options.fetch(:master_pidfile) { nil }
       @listener_backoff = Backoff.new
       @listeners_created = 0
     end
@@ -97,12 +97,9 @@ module Resqued
       listener_pids.values
     end
 
-    attr_reader :config_path
-    attr_reader :pidfile
-
     def start_listener
       return if @current_listener || @listener_backoff.wait?
-      @current_listener = ListenerProxy.new(:config_path => @config_path, :running_workers => all_listeners.map { |l| l.running_workers }.flatten, :listener_id => next_listener_id)
+      @current_listener = ListenerProxy.new(:config_path => @config_paths.first, :running_workers => all_listeners.map { |l| l.running_workers }.flatten, :listener_id => next_listener_id)
       @current_listener.run
       @listener_backoff.started
       listener_pids[@current_listener.pid] = @current_listener

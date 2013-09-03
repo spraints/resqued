@@ -34,8 +34,9 @@ opts = OptionParser.new do |opts|
 end
 
 opts.parse!
+options[:config_paths] = ARGV
 
-unless options[:config_path] = ARGV[0]
+if options[:config_paths].size == 0
   puts opts
   exit 1
 end
