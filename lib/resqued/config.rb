@@ -7,8 +7,8 @@ module Resqued
     # Public: Build a new ConfigFile instance.
     #
     # Resqued::Config is a module because the evaluators say so, so this `new` is a factory for another class.
-    def self.new(*args)
-      ConfigFile.new(*args)
+    def self.new(paths)
+      MultiConfigFile.new(paths.map { |path| ConfigFile.new(path) }
     end
 
     # Does the things that the config file says to do.
@@ -29,8 +29,30 @@ module Resqued
       end
 
       # Public: Builds the workers specified in the config.
+      def build_workers(options = {})
+        Resqued::Config::Worker.new({:config => self}.merge(options)).apply(@contents, @path)
+      end
+    end
+
+    # Multiplexes config things to multiple config files.
+    class MultiConfigFile
+      def initialize(configs)
+        @configs = configs
+      end
+
+      # Public.
+      def before_fork
+        @configs.each { |config| config.before_fork }
+      end
+
+      # Public.
+      def after_fork(worker)
+        @configs.each { |config| config.after_fork(worker) }
+      end
+
+      # Public.
       def build_workers
-        Resqued::Config::Worker.new(:config => self).apply(@contents, @path)
+        @configs.inject([]) { |workers, config| workers + config.build_workers(:config => self) }
       end
     end
   end

@@ -60,7 +60,7 @@ module Resqued
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
       @socket.close_on_exec = true
 
-      config = Resqued::Config.new(@config_paths.first)
+      config = Resqued::Config.new(@config_paths)
       config.before_fork
 
       write_procline('running')
