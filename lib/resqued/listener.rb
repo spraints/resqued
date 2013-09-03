@@ -201,7 +201,7 @@ module Resqued
       procline = "resqued listener"
       procline << " #{@listener_id}" if @listener_id
       procline << " [#{status}]"
-      procline << " #{@config_path}"
+      procline << " #{@config_paths.join(' ')}"
       $0 = procline
     end
   end
