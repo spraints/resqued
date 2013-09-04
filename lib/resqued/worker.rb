@@ -76,8 +76,8 @@ module Resqued
         end
         resque_worker = Resque::Worker.new(*queues)
         resque_worker.log "Starting worker #{resque_worker}"
-        resque_worker.term_child = true
-        resque_worker.reconnect
+        resque_worker.term_child = true if resque_worker.respond_to?('term_child=')
+        Resque.redis.client.reconnect
         @config.after_fork(resque_worker)
         resque_worker.work(@interval || 5)
         exit 0
