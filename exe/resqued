@@ -6,7 +6,7 @@ options = {}
 daemonize = false
 
 opts = OptionParser.new do |opts|
-  opts.banner = "Usage: resqued [options] resqued-config-file"
+  opts.banner = "Usage: resqued [options] resqued-config-files..."
 
   opts.on '-h', '--help', 'Show this message' do
     puts opts
@@ -34,8 +34,9 @@ opts = OptionParser.new do |opts|
 end
 
 opts.parse!
+options[:config_paths] = ARGV
 
-unless options[:config_path] = ARGV[0]
+if options[:config_paths].size == 0
   puts opts
   exit 1
 end

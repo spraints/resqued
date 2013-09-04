@@ -120,6 +120,13 @@ In this example, a Rails application is being set up with 7 workers:
 * normal, * (interval = 1)
 * * (interval = 1)
 
+## Multiple configurations
+
+If your app has several work machines, each with the same application code but different sets of workers, you might want to have a shared config file for the `before_fork` and `after_fork` blocks. You can pass in several config files, and resqued will act as if you concatenated them.
+
+    $ resqued config/shared.rb config/pool-a.rb
+    $ resqued config/shared.rb config/pool-b.rb
+
 ## See also
 
 For information about how resqued works, see the [documentation](docs/).
