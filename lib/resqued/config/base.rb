@@ -15,6 +15,14 @@ module Resqued
         results
       end
 
+      # Public: Apply the configuration from several files.
+      def apply_all(configs)
+        configs.each do |config|
+          instance_eval(config[:content], config[:path])
+        end
+        results
+      end
+
       private
 
       # Private: The results of applying the config.

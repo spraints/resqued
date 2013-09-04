@@ -15,7 +15,7 @@ module Resqued
     #
     # Runs in the master process.
     def initialize(options)
-      @config_path     = options.fetch(:config_path)
+      @config_paths    = options.fetch(:config_paths)
       @running_workers = options.fetch(:running_workers) { [] }
       @socket          = options.fetch(:socket)
       @listener_id     = options.fetch(:listener_id) { nil }
@@ -26,7 +26,7 @@ module Resqued
     # Runs in the master process.
     def exec
       ENV['RESQUED_SOCKET']      = @socket.fileno.to_s
-      ENV['RESQUED_CONFIG_PATH'] = @config_path
+      ENV['RESQUED_CONFIG_PATH'] = @config_paths.join(':')
       ENV['RESQUED_STATE']       = (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
       ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
       Kernel.exec('resqued-listener')
@@ -39,7 +39,7 @@ module Resqued
         options[:socket] = Socket.for_fd(socket.to_i)
       end
       if path = ENV['RESQUED_CONFIG_PATH']
-        options[:config_path] = path
+        options[:config_paths] = path.split(':')
       end
       if state = ENV['RESQUED_STATE']
         options[:running_workers] = state.split('||').map { |s| Hash[[:pid,:queue].zip(s.split('|'))] }
@@ -60,7 +60,7 @@ module Resqued
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
       @socket.close_on_exec = true
 
-      config = Resqued::Config.new(@config_path)
+      config = Resqued::Config.new(@config_paths)
       config.before_fork
 
       write_procline('running')
@@ -201,7 +201,7 @@ module Resqued
       procline = "resqued listener"
       procline << " #{@listener_id}" if @listener_id
       procline << " [#{status}]"
-      procline << " #{@config_path}"
+      procline << " #{@config_paths.join(' ')}"
       $0 = procline
     end
   end
