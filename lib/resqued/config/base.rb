@@ -17,8 +17,8 @@ module Resqued
 
       # Public: Apply the configuration from several files.
       def apply_all(configs)
-        configs.each do |(str, filename)|
-          instance_eval(str, filename)
+        configs.each do |config|
+          instance_eval(config[:content], config[:path])
         end
         results
       end
