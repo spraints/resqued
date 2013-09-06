@@ -4,6 +4,7 @@ require 'optparse'
 
 options = {}
 daemonize = false
+test = false
 
 opts = OptionParser.new do |opts|
   opts.banner = "Usage: resqued [options] resqued-config-files..."
@@ -17,6 +18,10 @@ opts = OptionParser.new do |opts|
     require 'resqued/version'
     puts Resqued::VERSION
     exit
+  end
+
+  opts.on '--test', 'Report which worker would start' do
+    test = true
   end
 
   opts.on '-p', '--pidfile PIDFILE', 'Store the pid of the master process in PIDFILE' do |v|
@@ -41,10 +46,19 @@ if options[:config_paths].size == 0
   exit 1
 end
 
-require 'resqued/master'
-resqued = Resqued::Master.new(options)
-if daemonize
-  require 'resqued/daemon'
-  resqued = Resqued::Daemon.new(resqued)
+if test
+  require 'resqued/config'
+  workers = Resqued::Config.new(options[:config_paths]).build_workers
+  puts "Workers defined in #{options[:config_paths].join(' ')}"
+  workers.each_with_index do |worker, index|
+    puts "#{index + 1}: #{worker.queues.join(',')}"
+  end
+else
+  require 'resqued/master'
+  resqued = Resqued::Master.new(options)
+  if daemonize
+    require 'resqued/daemon'
+    resqued = Resqued::Daemon.new(resqued)
+  end
+  resqued.run
 end
-resqued.run

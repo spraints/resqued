@@ -1,4 +1,5 @@
 require 'resqued/config/base'
+require 'resqued/worker'
 
 module Resqued
   module Config
