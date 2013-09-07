@@ -50,8 +50,16 @@ if test
   require 'resqued/config'
   workers = Resqued::Config.new(options[:config_paths]).build_workers
   puts "Workers defined in #{options[:config_paths].join(' ')}"
+  queues = Hash.new(0)
   workers.each_with_index do |worker, index|
     puts "#{index + 1}: #{worker.queues.join(',')}"
+    worker.queues.each do |queue|
+      queues[queue] += 1
+    end
+  end
+  puts "Queues being worked"
+  queues.each do |queue, count|
+    puts "* #{queue}: #{count}"
   end
 else
   require 'resqued/master'
