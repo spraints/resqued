@@ -133,6 +133,20 @@ describe Resqued::Config::Worker do
     it { expect(result[3]).to eq(:queues => ['*']) }
   end
 
+  context 'unflattened queues' do
+    let(:config) { <<-END_CONFIG }
+      worker 'flattened', 'queues'
+      queues = %w(unflattened queues)
+      worker queues, 'flattened'
+      worker queues
+      worker 'a', queues, 'b', :interval => 3
+    END_CONFIG
+    it { expect(result[0]).to eq(:queues => ['flattened', 'queues']) }
+    it { expect(result[1]).to eq(:queues => ['unflattened', 'queues', 'flattened']) }
+    it { expect(result[2]).to eq(:queues => ['unflattened', 'queues']) }
+    it { expect(result[3]).to eq(:queues => ['a', 'unflattened', 'queues', 'b'], :interval => 3) }
+  end
+
   context 'with default options' do
     let(:evaluator) { described_class.new(:worker_class => FakeWorker, :config => 'something') }
     let(:config) { <<-END_CONFIG }
