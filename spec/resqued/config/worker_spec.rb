@@ -44,6 +44,16 @@ describe Resqued::Config::Worker do
     it { expect(result[5]).to eq(:queues => ['*']) }
   end
 
+  context 'concise pool' do
+    let(:config) { <<-END_CONFIG }
+      worker_pool 2, 'a', 'b', 'c', :interval => 1
+    END_CONFIG
+    it { expect(result).to eq([
+      { :queues => ['a', 'b', 'c'], :interval => 1 },
+      { :queues => ['a', 'b', 'c'], :interval => 1 },
+    ]) }
+  end
+
   context 'pool (hash for concurrency)' do
     let(:config) { <<-END_CONFIG }
       before_fork { }
@@ -118,6 +128,23 @@ describe Resqued::Config::Worker do
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
+  end
+
+  context 'pool, with shuffled queues' do
+    let(:config) { <<-END_CONFIG }
+      worker_pool 20, :shuffle_queues => true
+      queue 'a', 10
+      queue 'b', 15
+    END_CONFIG
+    it { expect(result.size).to eq(20) }
+    it { (0..9).each { |i| expect(result[i][:queues].sort).to eq(['a', 'b']) } }
+    it { (10..14).each { |i| expect(result[i][:queues]).to eq(['b']) } }
+    it { (15..19).each { |i| expect(result[i][:queues]).to eq(['*']) } }
+    it { result.each { |x| expect(x).not_to have_key(:shuffle_queues) } }
+    it do
+      shuffled_queues = result.take(10).map { |x| x[:queues] }
+      expect(shuffled_queues.sort.uniq).to eq([ ['a','b'], ['b','a'] ]) # Some of the queues should be shuffled
+    end
   end
 
   context 'multiple worker configs' do
