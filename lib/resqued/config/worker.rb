@@ -19,9 +19,11 @@ module Resqued
       #
       #     worker 'one', :interval => 1
       def worker(*queues)
-        options = queues.last.is_a?(Hash) ? queues.pop : {}
+        options = queues.last.is_a?(Hash) ? queues.pop.dup : {}
+        queues = queues.flatten
         queues = ['*'] if queues.empty?
-        @workers << @worker_class.new(options.merge(@worker_options).merge(:queues => queues.flatten))
+        queues = queues.shuffle if options.delete(:shuffle_queues)
+        @workers << @worker_class.new(options.merge(@worker_options).merge(:queues => queues))
       end
 
       # DSL: Set up a pool of workers. Define queues for the members of the pool with `queue`.

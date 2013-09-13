@@ -130,6 +130,23 @@ describe Resqued::Config::Worker do
     it { expect(result.size).to eq(20) }
   end
 
+  context 'pool, with shuffled queues' do
+    let(:config) { <<-END_CONFIG }
+      worker_pool 20, :shuffle_queues => true
+      queue 'a', 10
+      queue 'b', 15
+    END_CONFIG
+    it { expect(result.size).to eq(20) }
+    it { (0..9).each { |i| expect(result[i][:queues].sort).to eq(['a', 'b']) } }
+    it { (10..14).each { |i| expect(result[i][:queues]).to eq(['b']) } }
+    it { (15..19).each { |i| expect(result[i][:queues]).to eq(['*']) } }
+    it { result.each { |x| expect(x).not_to have_key(:shuffle_queues) } }
+    it do
+      shuffled_queues = result.take(10).map { |x| x[:queues] }
+      expect(shuffled_queues.sort.uniq).to eq([ ['a','b'], ['b','a'] ]) # Some of the queues should be shuffled
+    end
+  end
+
   context 'multiple worker configs' do
     let(:config) { <<-END_CONFIG }
       worker 'one'
