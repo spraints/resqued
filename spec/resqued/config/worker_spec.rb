@@ -44,6 +44,16 @@ describe Resqued::Config::Worker do
     it { expect(result[5]).to eq(:queues => ['*']) }
   end
 
+  context 'concise pool' do
+    let(:config) { <<-END_CONFIG }
+      worker_pool 2, 'a', 'b', 'c', :interval => 1
+    END_CONFIG
+    it { expect(result).to eq([
+      { :queues => ['a', 'b', 'c'], :interval => 1 },
+      { :queues => ['a', 'b', 'c'], :interval => 1 },
+    ]) }
+  end
+
   context 'pool (hash for concurrency)' do
     let(:config) { <<-END_CONFIG }
       before_fork { }

@@ -27,10 +27,11 @@ module Resqued
       # DSL: Set up a pool of workers. Define queues for the members of the pool with `queue`.
       #
       #     worker_pool 20, :interval => 1
-      def worker_pool(count, options = {})
+      def worker_pool(count, *queues)
         @pool_size = count
-        @pool_options = options
+        @pool_options = queues.last.is_a?(Hash) ? queues.pop : {}
         @pool_queues = {}
+        queues.each { |q| queue q }
       end
 
       # DSL: Define a queue for the worker_pool to work from.

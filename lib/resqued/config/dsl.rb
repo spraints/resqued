@@ -17,7 +17,7 @@ module Resqued
       end
 
       # Public: Define a pool of workers that will work '*', or the queues specified by `queue`.
-      def worker_pool(count, options = {})
+      def worker_pool(count, *queues_and_options)
       end
 
       # Public: Define the queues worked by members of the worker pool.
