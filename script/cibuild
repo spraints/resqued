@@ -4,9 +4,12 @@ test -d "/usr/share/rbenv/shims" && {
   export PATH=/usr/share/rbenv/shims:$PATH
 }
 
-export RBENV_VERSION=1.9.3-p231-tcs-github
-rbenv version
-ruby --version
-bundle --version
-./script/bootstrap
-./script/test
+for v in 1.9.3-p231-tcs-github 2.0.0-github
+do
+  export RBENV_VERSION=$v
+  rbenv version
+  ruby --version
+  bundle --version
+  ./script/bootstrap
+  ./script/test
+done
