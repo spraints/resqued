@@ -25,11 +25,13 @@ module Resqued
     #
     # Runs in the master process.
     def exec
-      ENV['RESQUED_SOCKET']      = @socket.fileno.to_s
+      socket_fd = @socket.to_i
+      ENV['RESQUED_SOCKET']      = socket_fd.to_s
       ENV['RESQUED_CONFIG_PATH'] = @config_paths.join(':')
       ENV['RESQUED_STATE']       = (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
       ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
-      Kernel.exec('resqued-listener')
+      # This may not work in rubies earlier than 1.9.
+      Kernel.exec('resqued-listener', socket_fd => socket_fd)
     end
 
     # Public: Given args from #exec, start this listener.
@@ -59,6 +61,7 @@ module Resqued
       trap(:CHLD) { awake }
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
       @socket.close_on_exec = true
+      write_procline('starting')
 
       config = Resqued::Config.new(@config_paths)
       config.before_fork
