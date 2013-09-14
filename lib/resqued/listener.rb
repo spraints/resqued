@@ -59,6 +59,7 @@ module Resqued
       trap(:CHLD) { awake }
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
       @socket.close_on_exec = true
+      write_procline('starting')
 
       config = Resqued::Config.new(@config_paths)
       config.before_fork
