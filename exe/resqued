@@ -1,10 +1,5 @@
 #!/usr/bin/env ruby
 
-if ARGV == ['listener']
-  require 'resqued/listener'
-  Resqued::Listener.exec!
-end
-
 require 'optparse'
 
 options = {}
@@ -59,8 +54,7 @@ if test
     puts "#{index + 1}: #{worker.queues.join(',')}"
   end
 else
-  require 'resqued'
-  Resqued::START_CTX['$0'] = $0.dup
+  require 'resqued/master'
   resqued = Resqued::Master.new(options)
   if daemonize
     require 'resqued/daemon'

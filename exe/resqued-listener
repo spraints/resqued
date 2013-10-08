@@ -1,6 +1,4 @@
 #!/usr/bin/env ruby
 
-puts "resqued-listener is deprecated and will be removed."
-puts "Stop and start the master process to remove your dependence on resqued-listener."
 require 'resqued/listener'
 Resqued::Listener.exec!
