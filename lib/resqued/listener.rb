@@ -30,8 +30,7 @@ module Resqued
       ENV['RESQUED_CONFIG_PATH'] = @config_paths.join(':')
       ENV['RESQUED_STATE']       = (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
       ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
-      listener = ENV['RESQUED_LISTENER_PATH'] || 'resqued-listener'
-      Kernel.exec(listener, socket_fd => socket_fd) # The hash at the end only works in new-ish (1.9+ or so) rubies. It's required for ruby 2.0.
+      Kernel.exec(Resqued::START_CTX['$0'], 'listener', socket_fd => socket_fd) # The hash at the end only works in new-ish (1.9+ or so) rubies. It's required for ruby 2.0.
     end
 
     # Public: Given args from #exec, start this listener.
