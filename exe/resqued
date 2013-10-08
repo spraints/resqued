@@ -3,6 +3,7 @@
 if ARGV == ['listener']
   require 'resqued/listener'
   Resqued::Listener.exec!
+  exit 0
 end
 
 require 'optparse'
