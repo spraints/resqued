@@ -52,7 +52,7 @@ module Resqued
       new(options).run
     end
 
-    SIGNALS = [ :QUIT, :INT, :TERM ]
+    SIGNALS = [ :CONT, :QUIT, :INT, :TERM ]
 
     SIGNAL_QUEUE = []
 
@@ -83,6 +83,8 @@ module Resqued
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn
+        when :CONT
+          kill_all(signal)
         when :QUIT, :INT, :TERM
           return signal
         end
