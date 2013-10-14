@@ -58,7 +58,7 @@ module Resqued
         when :CONT
           log "Resume job processing"
           @paused = false
-          kill_listener(:CONT)
+          kill_all_listeners(:CONT)
         when :INT, :TERM, :QUIT
           log "Shutting down..."
           kill_all_listeners(signal)
