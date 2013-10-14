@@ -11,6 +11,8 @@ restart            HUP   -> QUIT     -> QUIT
 exit now           INT   ->  INT     ->  INT
 exit now          TERM   -> TERM     -> TERM
 exit when ready   QUIT   -> QUIT     -> QUIT
+pause             USR2   -> QUIT     -> QUIT
+unpause           CONT   -> (start)
 ```
 
 Read on for more information about what the signals mean.
@@ -20,6 +22,8 @@ Read on for more information about what the signals mean.
 The Master process handles several signals.
 
 * `HUP`: Kill the listener with `SIGQUIT` and start a new listener.
+* `USR2`: Pause processing. Kills the current listener, and does not start a replacement.
+* `CONT`: Resume processing. If there is no listener, start one.
 * `QUIT`, `INT`, or `TERM`: Kill the listener with the same signal and wait for it to exit.
 * `CHLD`: Clean up any listeners that have exited. If the current listener exited
 

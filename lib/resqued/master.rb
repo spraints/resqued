@@ -41,7 +41,7 @@ module Resqued
       loop do
         read_listeners
         reap_all_listeners(Process::WNOHANG)
-        start_listener
+        start_listener unless @paused
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn(@listener_backoff.how_long? || 30.0)
@@ -51,6 +51,13 @@ module Resqued
           reopen_logs
           log "Restarting listener with new configuration and application."
           kill_listener(:QUIT)
+        when :USR2
+          log "Pause job processing"
+          @paused = true
+          kill_listener(:QUIT)
+        when :CONT
+          log "Resume job processing"
+          @paused = false
         when :INT, :TERM, :QUIT
           log "Shutting down..."
           kill_all_listeners(signal)
@@ -158,7 +165,7 @@ module Resqued
       end while true
     end
 
-    SIGNALS = [ :HUP, :INT, :TERM, :QUIT ]
+    SIGNALS = [ :HUP, :INT, :USR2, :CONT, :TERM, :QUIT ]
     OPTIONAL_SIGNALS = [ :INFO ]
     OTHER_SIGNALS = [:CHLD, 'EXIT']
     TRAPS = SIGNALS + OPTIONAL_SIGNALS + OTHER_SIGNALS
