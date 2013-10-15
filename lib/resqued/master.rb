@@ -199,7 +199,15 @@ module Resqued
     end
 
     def write_procline
-      $0 = "resqued master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
+      $0 = "resqued-#{version} master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
+    end
+
+    def version
+      # If we've built a custom version, this should show the custom version.
+      Gem.loaded_specs['resqued'].version.to_s
+    rescue Object
+      # If this isn't a gem, fall back to the version in resqued/version.rb.
+      Resqued::VERSION
     end
   end
 end
