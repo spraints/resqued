@@ -2,6 +2,7 @@ require 'resqued/backoff'
 require 'resqued/listener_proxy'
 require 'resqued/logging'
 require 'resqued/pidfile'
+require 'resqued/procline_version'
 require 'resqued/sleepy'
 
 module Resqued
@@ -12,6 +13,7 @@ module Resqued
   class Master
     include Resqued::Logging
     include Resqued::Pidfile
+    include Resqued::ProclineVersion
     include Resqued::Sleepy
 
     def initialize(options)
@@ -199,15 +201,7 @@ module Resqued
     end
 
     def write_procline
-      $0 = "resqued-#{version} master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
-    end
-
-    def version
-      # If we've built a custom version, this should show the custom version.
-      Gem.loaded_specs['resqued'].version.to_s
-    rescue Object
-      # If this isn't a gem, fall back to the version in resqued/version.rb.
-      Resqued::VERSION
+      $0 = "#{procline_version} master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
     end
   end
 end
