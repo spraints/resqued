@@ -2,6 +2,7 @@ require 'socket'
 
 require 'resqued/config'
 require 'resqued/logging'
+require 'resqued/procline_version'
 require 'resqued/sleepy'
 require 'resqued/worker'
 
@@ -9,6 +10,7 @@ module Resqued
   # A listener process. Watches resque queues and forks workers.
   class Listener
     include Resqued::Logging
+    include Resqued::ProclineVersion
     include Resqued::Sleepy
 
     # Configure a new listener object.
@@ -203,7 +205,7 @@ module Resqued
 
     # Private.
     def write_procline(status)
-      procline = "resqued listener"
+      procline = "#{procline_version} listener"
       procline << " #{@listener_id}" if @listener_id
       procline << " [#{status}]"
       procline << " #{@config_paths.join(' ')}"

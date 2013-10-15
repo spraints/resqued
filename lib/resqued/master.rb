@@ -2,6 +2,7 @@ require 'resqued/backoff'
 require 'resqued/listener_proxy'
 require 'resqued/logging'
 require 'resqued/pidfile'
+require 'resqued/procline_version'
 require 'resqued/sleepy'
 
 module Resqued
@@ -12,6 +13,7 @@ module Resqued
   class Master
     include Resqued::Logging
     include Resqued::Pidfile
+    include Resqued::ProclineVersion
     include Resqued::Sleepy
 
     def initialize(options)
@@ -199,7 +201,7 @@ module Resqued
     end
 
     def write_procline
-      $0 = "resqued master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
+      $0 = "#{procline_version} master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
     end
   end
 end
