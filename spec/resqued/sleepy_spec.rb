@@ -5,9 +5,6 @@ require 'thread'
 describe Resqued::Sleepy do
   include Resqued::Sleepy
 
-  it 'does not sleep if duration is 0'
-  it 'does not sleep if duration is negative'
-
   it 'sleeps' do
     expect { yawn(0.2) }.to run_for(0.2)
   end
@@ -21,5 +18,13 @@ describe Resqued::Sleepy do
     rd, wr = IO.pipe
     Thread.new { sleep 0.1 ; wr.write('.') }
     expect { yawn(2.0, rd) }.to run_for(0.1)
+  end
+
+  it 'does not sleep if duration is 0' do
+    expect { yawn(-0.000001) }.to run_for(0.0)
+  end
+
+  it 'does not sleep if duration is negative' do
+    expect { yawn(0) }.to run_for(0.0)
   end
 end
