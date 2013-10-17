@@ -5,9 +5,11 @@ module Resqued
   module Sleepy
     # Public: Like sleep, but the sleep is interrupted if input is detected on one of the provided IO objects, or if `awake` is called (e.g. from a signal handler).
     def yawn(duration, *inputs)
-      inputs = [self_pipe[0]] + [inputs].flatten.compact
-      IO.select(inputs, nil, nil, duration) or return
-      self_pipe[0].kgio_tryread(11)
+      if duration > 0
+        inputs = [self_pipe[0]] + [inputs].flatten.compact
+        IO.select(inputs, nil, nil, duration) or return
+        self_pipe[0].kgio_tryread(11)
+      end
     end
 
     # Public: Break out of `yawn`.
