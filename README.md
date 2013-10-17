@@ -37,8 +37,8 @@ To run the same fleet of workers with resqued, create a config file
 Another syntax for workers:
 
     worker_pool 5
-    queue 'low', '20%'
-    queue 'normal', '60%'
+    queue 'low', :percent => 20
+    queue 'normal', :percent => 60
     queue '*'
 
 This time, you'd end up with something similar to this:
@@ -96,8 +96,9 @@ You can configure the Resque worker in the `after_fork` block
     worker 'low', :interval => 30
 
     worker_pool 5, :interval => 1
-    queue 'low', '20%'
-    queue 'normal', 4
+    queue 'high', 'almosthigh'
+    queue 'low', :percent => 20
+    queue 'normal', :count => 4
     queue '*'
 
     before_fork do
