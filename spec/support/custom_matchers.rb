@@ -8,7 +8,7 @@ module CustomMatchers
   class RunFor
     def initialize(expected_duration)
       @expected_duration = expected_duration
-      @epsilon  = 0
+      @epsilon  = 0.01
     end
 
     def within(epsilon)
