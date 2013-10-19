@@ -128,10 +128,6 @@ If your app has several work machines, each with the same application code but d
     $ resqued config/shared.rb config/pool-a.rb
     $ resqued config/shared.rb config/pool-b.rb
 
-## Compatibility
-
-Version 0.6.x versions of resqued have compatible master, listener, and configuration.
-
 ## See also
 
 For information about how resqued works, see the [documentation](docs/).
