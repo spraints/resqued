@@ -122,14 +122,24 @@ module Resqued
 
     def read_listeners
       all_listeners.each do |l|
-        l.read_worker_status(:on_finished => self)
+        l.read_worker_status(:on_activity => self)
       end
     end
 
+    # Listener message: A worker just stopped working.
+    #
+    # Forwards the message to the other listeners.
     def worker_finished(pid)
       all_listeners.each do |other|
         other.worker_finished(pid)
       end
+    end
+
+    # Listener message: A listener finished booting, and is ready to start workers.
+    #
+    # Promotes a booting listener to be the current listener.
+    def listener_running(listener)
+      # todo
     end
 
     def kill_listener(signal)

@@ -67,16 +67,18 @@ module Resqued
 
     # Public: Check for updates on running worker information.
     def read_worker_status(options)
-      on_finished = options[:on_finished]
+      on_activity = options[:on_activity]
       until @master_socket.nil?
         IO.select([@master_socket], nil, nil, 0) or return
-        line = @master_socket.readline
-        if line =~ /^\+(\d+),(.*)$/
+        case line = @master_socket.readline
+        when /^\+(\d+),(.*)$/
           worker_pids[$1] = $2
-        elsif line =~ /^-(\d+)$/
+        when /^-(\d+)$/
           worker_pids.delete($1)
-          on_finished.worker_finished($1) if on_finished
-        elsif line == ''
+          on_activity.worker_finished($1) if on_activity
+        when /^RUNNING/
+          on_activity.listener_running(self) if on_activity
+        when ''
           break
         else
           log "Malformed data from listener: #{line.inspect}"

@@ -69,6 +69,7 @@ module Resqued
 
       config = Resqued::Config.new(@config_paths)
       config.before_fork
+      report_to_master("RUNNING")
 
       write_procline('running')
       init_workers(config)
