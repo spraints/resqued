@@ -44,7 +44,7 @@ module Resqued
       #     queue 'five', :count => 5
       def queue(*queues)
         options = queues.last.is_a?(Hash) ? queues.pop : {}
-        @pool_queues[queues] =
+        concurrency =
           case options
           when Hash
             if percent = options[:percent]
@@ -57,6 +57,7 @@ module Resqued
           else
             1.0
           end
+        queues.each { |queue| @pool_queues[queue] = concurrency }
       end
 
       private

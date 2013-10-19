@@ -66,8 +66,8 @@ describe Resqued::Config::Worker do
     it { expect(result.size).to eq(20) }
     it { expect(result[0]).to eq(:queues => ['a', 'b1', 'b2', 'c'], :interval => 1) }
     it { expect(result[3]).to eq(:queues => ['a', 'b1', 'b2', 'c'], :interval => 1) }
-    it { expect(result[4]).to eq(:queues => ['b', 'c'], :interval => 1) }
-    it { expect(result[9]).to eq(:queues => ['b', 'c'], :interval => 1) }
+    it { expect(result[4]).to eq(:queues => ['b1', 'b2', 'c'], :interval => 1) }
+    it { expect(result[9]).to eq(:queues => ['b1', 'b2', 'c'], :interval => 1) }
     it { expect(result[10]).to eq(:queues => ['c'], :interval => 1) }
     it { expect(result[19]).to eq(:queues => ['c'], :interval => 1) }
   end
@@ -89,7 +89,7 @@ describe Resqued::Config::Worker do
       before_fork { }
       after_fork { }
       worker_pool 20
-      queue 'a', 10
+      queue 'a', :count => 10
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
@@ -104,7 +104,7 @@ describe Resqued::Config::Worker do
       before_fork { }
       after_fork { }
       worker_pool 20
-      queue 'a', 30
+      queue 'a', :count => 30
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
@@ -113,8 +113,8 @@ describe Resqued::Config::Worker do
   context 'pool, with shuffled queues' do
     let(:config) { <<-END_CONFIG }
       worker_pool 20, :shuffle_queues => true
-      queue 'a', 10
-      queue 'b', 15
+      queue 'a', :count => 10
+      queue 'b', :count => 15
     END_CONFIG
     it { expect(result.size).to eq(20) }
     it { (0..9).each { |i| expect(result[i][:queues].sort).to eq(['a', 'b']) } }
