@@ -52,11 +52,12 @@ module Resqued
         when :HUP
           reopen_logs
           log "Restarting listener with new configuration and application."
-          kill_listener(:QUIT)
+          prepare_new_listener
         when :USR2
           log "Pause job processing"
           @paused = true
-          kill_listener(:QUIT)
+          kill_listener(:QUIT, @current_listener)
+          @current_listener = nil
         when :CONT
           log "Resume job processing"
           @paused = false
@@ -139,14 +140,28 @@ module Resqued
     #
     # Promotes a booting listener to be the current listener.
     def listener_running(listener)
-      # todo
+      if listener == @current_listener
+        kill_listener(:QUIT, @last_good_listener)
+        @last_good_listener = nil
+      end
     end
 
-    def kill_listener(signal)
-      if @current_listener
-        @current_listener.kill(signal)
-        @current_listener = nil
+    # Private: Spin up a new listener.
+    #
+    # The old one will be killed when the new one is ready for workers.
+    def prepare_new_listener
+      if @last_good_listener
+        # If the last good listener is still running, don't kill it. Just skip the listener that's starting up.
+        kill_listener(:QUIT, @current_listener)
+      else
+        @last_good_listener = @current_listener
       end
+      # The current listener is no longer the current one. MAKE WAY FOR A NEW LISTENER.
+      @current_listener = nil
+    end
+
+    def kill_listener(signal, listener)
+      listener.kill(signal) if listener
     end
 
     def kill_all_listeners(signal)
