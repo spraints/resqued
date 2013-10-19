@@ -40,24 +40,22 @@ module Resqued
       #
       #     queue 'one'
       #     queue '*'
-      #     queue 'two', '10%'
-      #     queue 'three', 5
-      #     queue 'four', :percent => 10
+      #     queue 'four-a', 'four-b', :percent => 10
       #     queue 'five', :count => 5
-      def queue(queue_name, concurrency = nil)
-        @pool_queues[queue_name] =
-          case concurrency
+      def queue(*queues)
+        options = queues.last.is_a?(Hash) ? queues.pop : {}
+        @pool_queues[queues] =
+          case options
           when Hash
-            if percent = concurrency[:percent]
+            if percent = options[:percent]
               percent * 0.01
-            elsif count = concurrency[:count]
+            elsif count = options[:count]
               count
             else
               1.0
             end
-          when nil, '';    1.0
-          when /%$/;       concurrency.chomp('%').to_i * 0.01
-          else             concurrency.to_i
+          else
+            1.0
           end
       end
 

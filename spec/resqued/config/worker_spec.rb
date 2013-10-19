@@ -10,8 +10,7 @@ describe Resqued::Config::Worker do
   #    worker_pool 10
   #    queue 'four', :percent => 20
   #    queue 'five', :count => 5
-  #    queue 'six', '40%'
-  #    queue 'seven', 3
+  #    queue 'six', 'seven', :count => 1
   #    queue '*'
   #
   # ignore calls to any other top-level method.
@@ -60,32 +59,13 @@ describe Resqued::Config::Worker do
       after_fork { }
       worker_pool 20, :interval => 1
       queue 'a', :percent => 20
-      queue 'b', :count => 10
+      queue 'b1', 'b2', :count => 10
       queue 'c'
       after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
     END_CONFIG
     it { expect(result.size).to eq(20) }
-    it { expect(result[0]).to eq(:queues => ['a', 'b', 'c'], :interval => 1) }
-    it { expect(result[3]).to eq(:queues => ['a', 'b', 'c'], :interval => 1) }
-    it { expect(result[4]).to eq(:queues => ['b', 'c'], :interval => 1) }
-    it { expect(result[9]).to eq(:queues => ['b', 'c'], :interval => 1) }
-    it { expect(result[10]).to eq(:queues => ['c'], :interval => 1) }
-    it { expect(result[19]).to eq(:queues => ['c'], :interval => 1) }
-  end
-
-  context 'pool (value for concurrency)' do
-    let(:config) { <<-END_CONFIG }
-      before_fork { }
-      after_fork { }
-      worker_pool 20, :interval => 1
-      queue 'a', '20%'
-      queue 'b', 10
-      queue 'c'
-      after_fork { } # So that we don't rely on `worker_pool`'s result falling through.
-    END_CONFIG
-    it { expect(result.size).to eq(20) }
-    it { expect(result[0]).to eq(:queues => ['a', 'b', 'c'], :interval => 1) }
-    it { expect(result[3]).to eq(:queues => ['a', 'b', 'c'], :interval => 1) }
+    it { expect(result[0]).to eq(:queues => ['a', 'b1', 'b2', 'c'], :interval => 1) }
+    it { expect(result[3]).to eq(:queues => ['a', 'b1', 'b2', 'c'], :interval => 1) }
     it { expect(result[4]).to eq(:queues => ['b', 'c'], :interval => 1) }
     it { expect(result[9]).to eq(:queues => ['b', 'c'], :interval => 1) }
     it { expect(result[10]).to eq(:queues => ['c'], :interval => 1) }
