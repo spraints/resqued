@@ -21,7 +21,7 @@ module Resqued
       end
 
       # Public: Define the queues worked by members of the worker pool.
-      def queue(queue_name, concurrency = nil)
+      def queue(*queues)
       end
     end
   end
