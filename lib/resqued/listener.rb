@@ -4,6 +4,7 @@ require 'resqued/config'
 require 'resqued/logging'
 require 'resqued/procline_version'
 require 'resqued/sleepy'
+require 'resqued/version'
 require 'resqued/worker'
 
 module Resqued
@@ -32,6 +33,7 @@ module Resqued
       ENV['RESQUED_CONFIG_PATH'] = @config_paths.join(':')
       ENV['RESQUED_STATE']       = (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
       ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
+      ENV['RESQUED_MASTER_VERSION'] = Resqued::VERSION
       log "exec: #{Resqued::START_CTX['$0']} listener"
       Kernel.exec(Resqued::START_CTX['$0'], 'listener', socket_fd => socket_fd) # The hash at the end only works in new-ish (1.9+ or so) rubies. It's required for ruby 2.0.
     end
@@ -67,6 +69,7 @@ module Resqued
 
       config = Resqued::Config.new(@config_paths)
       config.before_fork
+      report_to_master("RUNNING")
 
       write_procline('running')
       init_workers(config)

@@ -52,11 +52,12 @@ module Resqued
         when :HUP
           reopen_logs
           log "Restarting listener with new configuration and application."
-          kill_listener(:QUIT)
+          prepare_new_listener
         when :USR2
           log "Pause job processing"
           @paused = true
-          kill_listener(:QUIT)
+          kill_listener(:QUIT, @current_listener)
+          @current_listener = nil
         when :CONT
           log "Resume job processing"
           @paused = false
@@ -122,21 +123,51 @@ module Resqued
 
     def read_listeners
       all_listeners.each do |l|
-        l.read_worker_status(:on_finished => self)
+        l.read_worker_status(:on_activity => self)
       end
     end
 
+    # Listener message: A worker just stopped working.
+    #
+    # Forwards the message to the other listeners.
     def worker_finished(pid)
       all_listeners.each do |other|
         other.worker_finished(pid)
       end
     end
 
-    def kill_listener(signal)
-      if @current_listener
-        @current_listener.kill(signal)
-        @current_listener = nil
+    # Listener message: A listener finished booting, and is ready to start workers.
+    #
+    # Promotes a booting listener to be the current listener.
+    def listener_running(listener)
+      if listener == @current_listener
+        kill_listener(:QUIT, @last_good_listener)
+        @last_good_listener = nil
+      else
+        # This listener didn't receive the last SIGQUIT we sent.
+        # (It was probably sent before the listener had set up its traps.)
+        # So kill it again. We have moved on.
+        kill_listener(:QUIT, listener)
       end
+    end
+
+    # Private: Spin up a new listener.
+    #
+    # The old one will be killed when the new one is ready for workers.
+    def prepare_new_listener
+      if @last_good_listener
+        # The last_good_listener is still running because we got another HUP before the new listener finished booting.
+        # Keep the last_good_listener (where all the workers are) and kill the booting current_listener. We'll start a new one.
+        kill_listener(:QUIT, @current_listener)
+      else
+        @last_good_listener = @current_listener
+      end
+      # Indicate to `start_listener` that it should start a new listener.
+      @current_listener = nil
+    end
+
+    def kill_listener(signal, listener)
+      listener.kill(signal) if listener
     end
 
     def kill_all_listeners(signal)
