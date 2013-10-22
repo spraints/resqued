@@ -144,9 +144,9 @@ module Resqued
         kill_listener(:QUIT, @last_good_listener)
         @last_good_listener = nil
       else
-        # This listener didn't receive the last SIGQUIT we sent
-        # because it was too early in the startup sequence.
-        # So kill it again.
+        # This listener didn't receive the last SIGQUIT we sent.
+        # (It was probably sent before the listener had set up its traps.)
+        # So kill it again. We have moved on.
         kill_listener(:QUIT, listener)
       end
     end
