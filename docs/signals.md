@@ -22,7 +22,7 @@ Read on for more information about what the signals mean.
 
 The Master process handles several signals.
 
-* `HUP`: Kill the listener with `SIGQUIT` and start a new listener.
+* `HUP`: Start a new listener. After it boots, kill the previous listener with `SIGQUIT`.
 * `USR2`: Pause processing. Kills the current listener, and does not start a replacement.
 * `CONT`: Resume processing. If there is no listener, start one. If there is a listener, send it SIGCONT.
 * `QUIT`, `INT`, or `TERM`: Kill the listener with the same signal and wait for it to exit.
