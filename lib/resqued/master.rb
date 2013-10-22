@@ -156,12 +156,13 @@ module Resqued
     # The old one will be killed when the new one is ready for workers.
     def prepare_new_listener
       if @last_good_listener
-        # If the last good listener is still running, don't kill it. Just skip the listener that's starting up.
+        # The last_good_listener is still running because we got another HUP before the new listener finished booting.
+        # Keep the last_good_listener (where all the workers are) and kill the booting current_listener. We'll start a new one.
         kill_listener(:QUIT, @current_listener)
       else
         @last_good_listener = @current_listener
       end
-      # The current listener is no longer the current one. MAKE WAY FOR A NEW LISTENER.
+      # Indicate to `start_listener` that it should start a new listener.
       @current_listener = nil
     end
 
