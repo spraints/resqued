@@ -115,11 +115,11 @@ You can configure the Resque worker in the `after_fork` block
 In this example, a Rails application is being set up with 7 workers:
 * high
 * low (interval = 30)
-* low, normal, * (interval = 1)
-* normal, * (interval = 1)
-* normal, * (interval = 1)
-* normal, * (interval = 1)
-* * (interval = 1)
+* high, almosthigh, low, normal, * (interval = 1)
+* high, almosthigh, normal, * (interval = 1)
+* high, almosthigh, normal, * (interval = 1)
+* high, almosthigh, normal, * (interval = 1)
+* high, almosthigh, * (interval = 1)
 
 ## Multiple configurations
 
