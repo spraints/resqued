@@ -9,7 +9,6 @@ module Resqued
       # Public: Fork a process that spins up a Resqued::Master process directly.
       def assert_resqued(*configs)
         status = IO.pipe
-        done   = IO.pipe
         if pid = fork
           message = read_status_from_resqued(status[0], pid)
           if message !~ /^listener,\d+,start$/
@@ -21,26 +20,22 @@ module Resqued
           end
         else
           $0 = "resqued master for #{$0}"
-          Thread.new do
-            begin
-              # This should match how `exe/resqued` starts the master process.
-              require 'resqued'
-              Resqued::Logging.log_file = '/dev/null'
-              Resqued::START_CTX['$0'] = Gem.loaded_specs['resqued'].bin_file('resqued')
-              Resqued::Master.new(:config_paths => configs, :status_pipe => status[1]).run
-            rescue Object => e
-              p e
-              exit!
-            end
+          begin
+            # This should match how `exe/resqued` starts the master process.
+            require 'resqued'
+            Resqued::Logging.log_file = '/dev/null'
+            Resqued::START_CTX['$0'] = Gem.loaded_specs['resqued'].bin_file('resqued')
+            Resqued::Master.new(:config_paths => configs, :status_pipe => status[1]).run
+          rescue Object => e
+            # oops
           end
-          done[0].readline
           exit!
         end
       ensure
-        done[1].puts 'done'
         begin
+          Process.kill :QUIT, pid
           Process.waitpid2(pid) if pid
-        rescue Errno::ECHILD
+        rescue Errno::ESRCH, Errno::ECHILD
           # already dead.
         end
       end

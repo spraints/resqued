@@ -9,12 +9,17 @@ describe Resqued::TestCase do
 
   context 'ForkToStart' do
     let(:the_module) { described_class::ForkToStart }
-    it { test_case.assert_resqued 'spec/fixtures/test_case.rb' }
+    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_clean.rb'              }.not_to raise_error }
+    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_before_fork_raises.rb' }.to     raise_error }
+    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_after_fork_raises.rb'  }.not_to raise_error }
+    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_no_workers.rb'         }.not_to raise_error }
+    #it { expect { test_case.assert_resqued 'spec/fixtures/test_case_after_fork_raises.rb', :expect_workers => true }.not_to raise_error }
+    #it { expect { test_case.assert_resqued 'spec/fixtures/test_case_no_workers.rb', :expect_workers => true }.to raise_error }
   end
 
   context 'CleanStartup' do
     let(:the_module) { described_class::CleanStartup }
-    it { test_case.assert_resqued 'spec/fixtures/test_case.rb' }
+    pending { test_case.assert_resqued 'spec/fixtures/test_case.rb' }
   end
 end
 
