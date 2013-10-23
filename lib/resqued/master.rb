@@ -129,10 +129,16 @@ module Resqued
       end
     end
 
+    # Listener message: A worker just started working.
+    def worker_started(pid)
+      worker_status(pid, 'start')
+    end
+
     # Listener message: A worker just stopped working.
     #
     # Forwards the message to the other listeners.
     def worker_finished(pid)
+      worker_status(pid, 'stop')
       all_listeners.each do |other|
         other.worker_finished(pid)
       end
@@ -241,8 +247,18 @@ module Resqued
     end
 
     def listener_status(listener, status)
+      if listener && listener.pid
+        status_message('listener', listener.pid, status)
+      end
+    end
+
+    def worker_status(pid, status)
+      status_message('worker', pid, status)
+    end
+
+    def status_message(type, pid, status)
       if @status_pipe
-        @status_pipe.write("listener,#{listener.pid},#{status}\n")
+        @status_pipe.write("#{type},#{pid},#{status}\n")
       end
     end
   end

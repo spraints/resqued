@@ -1,2 +1,3 @@
 after_fork { raise 'boom' }
-worker "test"
+worker_pool 100
+queue 'test'

@@ -73,6 +73,7 @@ module Resqued
         case line = @master_socket.readline
         when /^\+(\d+),(.*)$/
           worker_pids[$1] = $2
+          on_activity.worker_started($1) if on_activity
         when /^-(\d+)$/
           worker_pids.delete($1)
           on_activity.worker_finished($1) if on_activity
