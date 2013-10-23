@@ -142,6 +142,7 @@ module Resqued
     #
     # Promotes a booting listener to be the current listener.
     def listener_running(listener)
+      listener_status(listener, 'ready')
       if listener == @current_listener
         kill_listener(:QUIT, @last_good_listener)
         @last_good_listener = nil
