@@ -7,6 +7,9 @@ module Resqued
       # Public: Fork a process that spins up a Resqued::Master process directly.
       def assert_resqued(*configs)
         options = configs.last.is_a?(Hash) ? configs.pop : {}
+        check_workers  = options.fetch(:expect_workers, false)
+        worker_timeout = options.fetch(:worker_timeout, 5)
+        resqued_bin    = options.fetch(:resqued_bin) { `which resqued || bundle exec which resqued`.chomp }
         status = IO.pipe
         if pid = fork
           message = read_status_from_resqued(:pipe => status[0], :pid => pid)
@@ -17,8 +20,7 @@ module Resqued
           if message !~ /^listener,\d+,ready$/
             fail "Expected listener to be ready, but received #{message.inspect}"
           end
-          if options[:expect_workers]
-            worker_timeout = options.fetch(:worker_timeout, 5)
+          if check_workers
             start = Time.now
             workers_started = 0
             loop do
@@ -39,13 +41,15 @@ module Resqued
           end
         else
           $0 = "resqued master for #{$0}"
-          devnull = File.open('/dev/null', 'w')
-          $stdout.reopen(devnull)
-          $stderr.reopen(devnull)
+          unless ENV['NOISY_RESQUED_TESTS']
+            devnull = File.open('/dev/null', 'w')
+            $stdout.reopen(devnull)
+            $stderr.reopen(devnull)
+          end
           begin
             # This should match how `exe/resqued` starts the master process.
             require 'resqued'
-            Resqued::START_CTX['$0'] = `which resqued`.chomp
+            Resqued::START_CTX['$0'] = resqued_bin
             Resqued::Master.new(:config_paths => configs, :status_pipe => status[1]).run
           rescue Object => e
             # oops
