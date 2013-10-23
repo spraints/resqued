@@ -50,7 +50,7 @@ module Resqued
           rescue Object => e
             # oops
           end
-          exit!
+          exit! # Do not make this look like a failing test.
         end
       ensure
         begin
