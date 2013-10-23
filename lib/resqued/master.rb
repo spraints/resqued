@@ -19,6 +19,7 @@ module Resqued
     def initialize(options)
       @config_paths = options.fetch(:config_paths)
       @pidfile      = options.fetch(:master_pidfile) { nil }
+      @status_pipe  = options.fetch(:status_pipe) { nil }
       @listener_backoff = Backoff.new
       @listeners_created = 0
     end
@@ -112,6 +113,7 @@ module Resqued
       return if @current_listener || @listener_backoff.wait?
       @current_listener = ListenerProxy.new(:config_paths => @config_paths, :running_workers => all_listeners.map { |l| l.running_workers }.flatten, :listener_id => next_listener_id)
       @current_listener.run
+      listener_status @current_listener, 'start'
       @listener_backoff.started
       listener_pids[@current_listener.pid] = @current_listener
       write_procline
@@ -127,10 +129,16 @@ module Resqued
       end
     end
 
+    # Listener message: A worker just started working.
+    def worker_started(pid)
+      worker_status(pid, 'start')
+    end
+
     # Listener message: A worker just stopped working.
     #
     # Forwards the message to the other listeners.
     def worker_finished(pid)
+      worker_status(pid, 'stop')
       all_listeners.each do |other|
         other.worker_finished(pid)
       end
@@ -140,6 +148,7 @@ module Resqued
     #
     # Promotes a booting listener to be the current listener.
     def listener_running(listener)
+      listener_status(listener, 'ready')
       if listener == @current_listener
         kill_listener(:QUIT, @last_good_listener)
         @last_good_listener = nil
@@ -189,7 +198,9 @@ module Resqued
             @listener_backoff.died
             @current_listener = nil
           end
-          listener_pids.delete(lpid).dispose # This may leak workers.
+          dead_listener = listener_pids.delete(lpid)
+          listener_status dead_listener, 'stop'
+          dead_listener.dispose
           write_procline
         else
           return
@@ -233,6 +244,22 @@ module Resqued
 
     def write_procline
       $0 = "#{procline_version} master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
+    end
+
+    def listener_status(listener, status)
+      if listener && listener.pid
+        status_message('listener', listener.pid, status)
+      end
+    end
+
+    def worker_status(pid, status)
+      status_message('worker', pid, status)
+    end
+
+    def status_message(type, pid, status)
+      if @status_pipe
+        @status_pipe.write("#{type},#{pid},#{status}\n")
+      end
     end
   end
 end
