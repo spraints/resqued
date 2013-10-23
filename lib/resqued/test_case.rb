@@ -45,7 +45,7 @@ module Resqued
           begin
             # This should match how `exe/resqued` starts the master process.
             require 'resqued'
-            Resqued::START_CTX['$0'] = Gem.loaded_specs['resqued'].bin_file('resqued')
+            Resqued::START_CTX['$0'] = `which resqued`.chomp
             Resqued::Master.new(:config_paths => configs, :status_pipe => status[1]).run
           rescue Object => e
             # oops
