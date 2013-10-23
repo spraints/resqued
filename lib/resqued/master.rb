@@ -19,6 +19,7 @@ module Resqued
     def initialize(options)
       @config_paths = options.fetch(:config_paths)
       @pidfile      = options.fetch(:master_pidfile) { nil }
+      @status_pipe  = options.fetch(:status_pipe) { nil }
       @listener_backoff = Backoff.new
       @listeners_created = 0
     end
@@ -112,6 +113,7 @@ module Resqued
       return if @current_listener || @listener_backoff.wait?
       @current_listener = ListenerProxy.new(:config_paths => @config_paths, :running_workers => all_listeners.map { |l| l.running_workers }.flatten, :listener_id => next_listener_id)
       @current_listener.run
+      listener_status @current_listener, 'start'
       @listener_backoff.started
       listener_pids[@current_listener.pid] = @current_listener
       write_procline
@@ -189,7 +191,9 @@ module Resqued
             @listener_backoff.died
             @current_listener = nil
           end
-          listener_pids.delete(lpid).dispose # This may leak workers.
+          dead_listener = listener_pids.delete(lpid)
+          listener_status dead_listener, 'stop'
+          dead_listener.dispose
           write_procline
         else
           return
@@ -233,6 +237,12 @@ module Resqued
 
     def write_procline
       $0 = "#{procline_version} master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
+    end
+
+    def listener_status(listener, status)
+      if @status_pipe
+        @status_pipe.write("listener,#{listener.pid},#{status}\n")
+      end
     end
   end
 end
