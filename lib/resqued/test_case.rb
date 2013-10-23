@@ -80,12 +80,5 @@ module Resqued
         end
       end
     end
-
-    module CleanStartup
-      # Public: Start a new process for resqued, wait for a worker to start.
-      def assert_resqued(*configs)
-        fail 'todo'
-      end
-    end
   end
 end
