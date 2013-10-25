@@ -6,9 +6,10 @@ guard 'bundler', :cli => '--local' do
 end
 
 rspec_options = {
-  after_all_pass: true,
-  all_on_start:   true,
-  keep_failed:    true,
+  after_all_pass: false,
+  all_on_start:   false,
+  keep_failed:    false,
+  cli:            '-f h -o rspec.html -f p',
 }
 
 guard 'rspec', rspec_options do
