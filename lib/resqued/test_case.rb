@@ -80,5 +80,71 @@ module Resqued
         end
       end
     end
+
+    module ForkListener
+      # Public: Fork a process and run the resqued listener.
+      def assert_resqued(*configs)
+        options = configs.last.is_a?(Hash) ? configs.pop : {}
+        check_workers  = options.fetch(:expect_workers, false)
+        worker_timeout = options.fetch(:worker_timeout, 5)
+        status = IO.pipe
+        if pid = fork
+          message = read_status_from_resqued(:pipe => status[0], :pid => pid)
+          if message != 'RUNNING'
+            fail "Expected listener to say \"RUNNING\", but it said #{message.inspect}"
+          end
+          if check_workers
+            start = Time.now
+            message = read_status_from_resqued(:pipe => status[0], :pid => pid, :timeout => worker_timeout)
+            if message !~ /^+,\d+,/
+              fail "Expected to see workers starting, instead saw #{message.inspect}"
+            end
+            message = read_status_from_resqued(:pipd => status[0], :pid => pid, :timeout => 1)
+            if message && message =~ /^-/
+              fail "Expected no workers to exit, but saw #{message.inspect}"
+            end
+          end
+        else
+          $0 = "resqued listener for #{$0}"
+          unless ENV['NOISY_RESQUED_TESTS']
+            devnull = File.open('/dev/null', 'w')
+            $stdout.reopen(devnull)
+            $stderr.reopen(devnull)
+          end
+          begin
+            # This should match how 'resqued listener' starts the listener process.
+            require 'resqued/listener'
+            Resqued::Listener.new(:config_paths => configs, :socket => status[1], :listener_id => 'test').run
+          rescue Object => e
+            # oops
+          ensure
+            status[1].close
+          end
+          exit! # Do not let this look like a failing test.
+        end
+      ensure
+        begin
+          Process.kill :QUIT, pid
+          Process.waitpid2(pid) if pid
+        rescue Errno::ESRCH, Errno::ECHILD
+          # already dead.
+        end
+      end
+
+      def read_status_from_resqued(options)
+        status  = options.fetch(:pipe)
+        pid     = options.fetch(:pid)
+        timeout = options[:timeout]
+        loop do
+          if IO.select([status], nil, nil, timeout || 2)
+            return status.readline.chomp
+          elsif dead = Process.waitpid2(pid, Process::WNOHANG)
+            fail "Resqued stopped too soon."
+          elsif timeout
+            return nil
+          end
+        end
+      end
+    end
   end
 end

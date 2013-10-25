@@ -7,15 +7,24 @@ describe Resqued::TestCase do
   after  { mock_redis.stop  }
   let(:mock_redis) { MockRedisServer.new }
 
+  shared_examples_for 'assert_resqued' do
+    it('starts resqued')             { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_clean.rb'              }.not_to raise_error }
+    it('detects before_fork errors') { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_before_fork_raises.rb' }.to     raise_error }
+    it('ignores after_fork errors')  { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_after_fork_raises.rb'  }.not_to raise_error }
+    it('ignores worker absence')     { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_no_workers.rb'         }.not_to raise_error }
+    it('checks for workers')         { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_clean.rb',             :expect_workers => true }.not_to raise_error }
+    it('detects after_fork errors')  { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_after_fork_raises.rb', :expect_workers => true }.to raise_error }
+    it('detects worker absence')     { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_no_workers.rb',        :expect_workers => true }.to raise_error }
+  end
+
   context 'ForkToStart' do
     let(:the_module) { described_class::ForkToStart }
-    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_clean.rb'              }.not_to raise_error }
-    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_before_fork_raises.rb' }.to     raise_error }
-    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_after_fork_raises.rb'  }.not_to raise_error }
-    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_no_workers.rb'         }.not_to raise_error }
-    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_clean.rb',             :expect_workers => true }.not_to raise_error }
-    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_after_fork_raises.rb', :expect_workers => true }.to raise_error }
-    it { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_no_workers.rb',        :expect_workers => true }.to raise_error }
+    it_behaves_like 'assert_resqued'
+  end
+
+  context 'ForkListener' do
+    let(:the_module) { described_class::ForkListener }
+    it_behaves_like 'assert_resqued'
   end
 end
 
