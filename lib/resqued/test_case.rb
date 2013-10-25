@@ -96,7 +96,7 @@ module Resqued
           if check_workers
             start = Time.now
             message = read_status_from_resqued(:pipe => status[0], :pid => pid, :timeout => worker_timeout)
-            if message !~ /^+,\d+,/
+            if message !~ /^+\d+,/
               fail "Expected to see workers starting, instead saw #{message.inspect}"
             end
             message = read_status_from_resqued(:pipd => status[0], :pid => pid, :timeout => 1)
