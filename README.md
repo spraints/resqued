@@ -55,7 +55,7 @@ This time, you'd end up with something similar to this:
 
 ## Compatibility with Resque
 
-Resqued does not automatically split comma-seperated lists of queues in
+Resqued does not automatically split comma-separated lists of queues in
 environment variables like Resque does. To continue using comma-separated
 lists, split them in your resqued config file:
 
