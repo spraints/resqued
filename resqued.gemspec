@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.homepage = 'https://github.com'
   s.authors = ["Matt Burke"]
   s.email   = 'spraints@gmail.com'
-  s.files   = Dir['lib/**/*', 'README.md']
+  s.files   = Dir['lib/**/*', 'README.md', 'docs/**/*']
   s.test_files = Dir['spec/**/*']
   s.bindir  = 'exe'
   s.executables = %w(
