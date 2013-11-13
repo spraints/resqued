@@ -11,6 +11,9 @@ module Resqued
             File.open(path, 'a').tap do |f|
               f.sync = true
               f.close_on_exec = true
+              # Make sure we're not holding onto a stale filehandle.
+              $stdout.reopen(f)
+              $stderr.reopen(f)
             end
           else
             $stdout
