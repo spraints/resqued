@@ -7,6 +7,7 @@ Gem::Specification.new do |s|
   s.authors = ["Matt Burke"]
   s.email   = 'spraints@gmail.com'
   s.files   = Dir['lib/**/*', 'README.md']
+  s.test_files = Dir['spec/**/*']
   s.bindir  = 'exe'
   s.executables = %w(
     resqued
