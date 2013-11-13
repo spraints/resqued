@@ -142,9 +142,15 @@ module Resqued
     def reap_workers(waitpidflags = 0)
       loop do
         worker_pid, status = Process.waitpid2(-1, waitpidflags)
-        return :none_ready if worker_pid.nil?
-        finish_worker(worker_pid, status)
-        report_to_master("-#{worker_pid}")
+        if worker_pid.nil?
+          return :none_ready
+        elsif status.exited?
+          log "Worker exited #{status}"
+          finish_worker(worker_pid, status)
+          report_to_master("-#{worker_pid}")
+        else
+          log "Worker reported #{status}"
+        end
       end
     rescue Errno::ECHILD
       # All done

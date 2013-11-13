@@ -88,6 +88,8 @@ module Resqued
     def kill(signal)
       Process.kill(signal.to_s, pid) if pid && @self_started
       @killed = true
+    rescue Errno::ESRCH => e
+      log "Can't kill #{pid}: #{e}"
     end
   end
 end
