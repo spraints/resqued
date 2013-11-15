@@ -57,25 +57,13 @@ module Resqued
       @killed = false
       if @pid = fork
         # still in the listener
+        log "Forked worker #{@pid}"
       else
         # In case we get a signal before resque is ready for it.
-        [:QUIT, :TERM, :INT].each { |signal| trap(signal) { exit 1 } }
+        Resqued::Listener::SIGNALS.each { |signal| trap(signal) { exit 1 } }
+        trap(:CHLD, nil)
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
-        if Resque.respond_to?("logger")
-          Resque.logger.level = Logger::INFO
-          Resque.logger.formatter = Resque::VerboseFormatter.new
-        end
-        if ! log_to_stdout?
-          lf = Resqued::Logging.logging_io
-          if Resque.respond_to?("logger=")
-            Resque.logger = Resque.logger.class.new(lf)
-          else
-            $stdout.reopen(lf)
-            lf.close
-          end
-        end
         resque_worker = Resque::Worker.new(*queues)
-        resque_worker.log "Starting worker #{resque_worker}"
         resque_worker.term_child = true if resque_worker.respond_to?('term_child=')
         Resque.redis.client.reconnect
         @config.after_fork(resque_worker)

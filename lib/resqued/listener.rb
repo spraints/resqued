@@ -68,6 +68,7 @@ module Resqued
       write_procline('starting')
 
       config = Resqued::Config.new(@config_paths)
+      set_default_resque_logger
       config.before_fork
       report_to_master("RUNNING")
 
@@ -77,6 +78,14 @@ module Resqued
 
       write_procline('shutdown')
       burn_down_workers(exit_signal || :QUIT)
+    end
+
+    # Private.
+    def set_default_resque_logger
+      require 'resque'
+      if Resque.respond_to?('logger=')
+        Resque.logger = Resqued::Logging.logger
+      end
     end
 
     # Private.
