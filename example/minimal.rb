@@ -8,4 +8,5 @@ before_fork do
   Resque.redis = Redis.new(:host => host, :port => port)
 end
 
-worker 'resqued-example-queue'
+worker_pool 1
+queue 'resqued-example-queue'
