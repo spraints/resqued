@@ -57,7 +57,6 @@ module Resqued
     end
 
     SIGNALS = [ :CONT, :QUIT, :INT, :TERM ]
-    TRAPS = SIGNALS + [:CHLD]
 
     SIGNAL_QUEUE = []
 
