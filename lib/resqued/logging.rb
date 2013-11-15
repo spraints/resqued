@@ -1,9 +1,27 @@
+require 'mono_logger'
+
 module Resqued
   # Mixin for any class that wants to write messages to the log file.
   module Logging
     # Global logging state.
     class << self
-      # Public: Get an IO to write log messages to.
+      # Public: Get a `Logger`.
+      def logger
+        @logger ||= MonoLogger.new(ResquedLoggingIOWrapper.new)
+      end
+
+      # Private: Lets our logger reopen its logfile without monologger EVEN KNOWING.
+      class ResquedLoggingIOWrapper
+        def method_missing(*args)
+          ::Resqued::Logging.logging_io.send(*args)
+        end
+
+        def respond_to?(*args)
+          ::Resqued::Logging.logging_io.respond_to?(*args)
+        end
+      end
+
+      # Private: Get an IO to write log messages to.
       def logging_io
         @logging_io = nil if @logging_io && @logging_io.closed?
         @logging_io ||=
@@ -52,7 +70,7 @@ module Resqued
 
     # Private (in classes that include this module)
     def log(message)
-      Resqued::Logging.logging_io.puts "[#{$$} #{Time.now.strftime('%H:%M:%S')}] #{message}"
+      Resqued::Logging.logger.info(message)
     end
   end
 end
