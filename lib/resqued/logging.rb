@@ -71,7 +71,7 @@ module Resqued
     # Private (in classes that include this module)
     def log(level, message = nil)
       level, message = :info, level if message.nil?
-      Resqued::Logging.logger.send(level, message)
+      Resqued::Logging.logger.send(level, self.class.name) { message }
     end
   end
 end
