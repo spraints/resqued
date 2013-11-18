@@ -11,7 +11,15 @@ module Resqued
       end
 
       def build_logger
-        MonoLogger.new(ResquedLoggingIOWrapper.new)
+        MonoLogger.new(ResquedLoggingIOWrapper.new).tap do |logger|
+          logger.formatter = ResquedLogFormatter.new
+        end
+      end
+
+      class ResquedLogFormatter < ::Logger::Formatter
+        def call(severity, time, progname, msg)
+          "[%s#%d] %5s %s -- %s\n" % [format_datetime(time), $$, severity, progname, msg2str(msg)]
+        end
       end
 
       # Private: Lets our logger reopen its logfile without monologger EVEN KNOWING.
