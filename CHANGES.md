@@ -1,9 +1,16 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
-0.7.3
+0.7.4
 -----
 
 * Better logging with (Mono)Logger!
+* Unregister resqued's signal handlers before running a resque worker.
+* Report the number of workers spinning down.
+
+0.7.3
+-----
+
+broken
 
 0.7.2
 -----
