@@ -57,6 +57,7 @@ module Resqued
     end
 
     SIGNALS = [ :CONT, :QUIT, :INT, :TERM ]
+    ALL_SIGNALS = SIGNALS + [ :CHLD ]
 
     SIGNAL_QUEUE = []
 
@@ -84,7 +85,7 @@ module Resqued
     def set_default_resque_logger
       require 'resque'
       if Resque.respond_to?('logger=')
-        Resque.logger = Resqued::Logging.logger
+        Resque.logger = Resqued::Logging.build_logger
       end
     end
 
@@ -111,6 +112,7 @@ module Resqued
     def burn_down_workers(signal)
       loop do
         check_for_expired_workers
+        write_procline('shutdown')
         SIGNAL_QUEUE.clear
 
         break if :no_child == reap_workers(Process::WNOHANG)
@@ -226,6 +228,7 @@ module Resqued
       procline = "#{procline_version} listener"
       procline << " #{@listener_id}" if @listener_id
       procline << " [#{status}]"
+      procline << " [#{running_workers.size} workers]" if status == 'shutdown'
       procline << " #{@config_paths.join(' ')}"
       $0 = procline
     end
