@@ -112,6 +112,7 @@ module Resqued
     def burn_down_workers(signal)
       loop do
         check_for_expired_workers
+        write_procline('shutdown')
         SIGNAL_QUEUE.clear
 
         break if :no_child == reap_workers(Process::WNOHANG)
@@ -227,6 +228,7 @@ module Resqued
       procline = "#{procline_version} listener"
       procline << " #{@listener_id}" if @listener_id
       procline << " [#{status}]"
+      procline << " [#{running_workers.size} workers]" if status == 'shutdown'
       procline << " #{@config_paths.join(' ')}"
       $0 = procline
     end
