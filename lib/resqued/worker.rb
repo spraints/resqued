@@ -60,8 +60,8 @@ module Resqued
         log "Forked worker #{@pid}"
       else
         # In case we get a signal before resque is ready for it.
-        Resqued::Listener::SIGNALS.each { |signal| trap(signal, 'DEFAULT') }
-        trap(:CHLD, 'DEFAULT')
+        Resqued::Listener::ALL_SIGNALS.each { |signal| trap(signal, 'DEFAULT') }
+        trap(:QUIT) { exit! 0 } # If we get a QUIT during boot, just spin back down.
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
         resque_worker = Resque::Worker.new(*queues)
         resque_worker.term_child = true if resque_worker.respond_to?('term_child=')
