@@ -84,7 +84,7 @@ module Resqued
     def set_default_resque_logger
       require 'resque'
       if Resque.respond_to?('logger=')
-        Resque.logger = Resqued::Logging.logger
+        Resque.logger = Resqued::Logging.build_logger
       end
     end
 

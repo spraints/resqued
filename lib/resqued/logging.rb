@@ -7,7 +7,11 @@ module Resqued
     class << self
       # Public: Get a `Logger`.
       def logger
-        @logger ||= MonoLogger.new(ResquedLoggingIOWrapper.new)
+        @logger ||= build_logger
+      end
+
+      def build_logger
+        MonoLogger.new(ResquedLoggingIOWrapper.new)
       end
 
       # Private: Lets our logger reopen its logfile without monologger EVEN KNOWING.
