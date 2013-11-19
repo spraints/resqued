@@ -19,7 +19,7 @@ module Resqued
     # Runs in the master process.
     def initialize(options)
       @config_paths    = options.fetch(:config_paths)
-      @running_workers = options.fetch(:running_workers) { [] }
+      @old_workers     = options.fetch(:old_workers) { [] }.freeze
       @socket          = options.fetch(:socket)
       @listener_id     = options.fetch(:listener_id) { nil }
     end
@@ -31,7 +31,7 @@ module Resqued
       socket_fd = @socket.to_i
       ENV['RESQUED_SOCKET']      = socket_fd.to_s
       ENV['RESQUED_CONFIG_PATH'] = @config_paths.join(':')
-      ENV['RESQUED_STATE']       = (@running_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
+      ENV['RESQUED_STATE']       = (@old_workers.map { |r| "#{r[:pid]}|#{r[:queue]}" }.join('||'))
       ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
       ENV['RESQUED_MASTER_VERSION'] = Resqued::VERSION
       log "exec: #{Resqued::START_CTX['$0']} listener"
@@ -48,7 +48,7 @@ module Resqued
         options[:config_paths] = path.split(':')
       end
       if state = ENV['RESQUED_STATE']
-        options[:running_workers] = state.split('||').map { |s| Hash[[:pid,:queue].zip(s.split('|'))] }
+        options[:old_workers] = state.split('||').map { |s| Hash[[:pid,:queue].zip(s.split('|'))] }
       end
       if listener_id = ENV['RESQUED_LISTENER_ID']
         options[:listener_id] = listener_id
@@ -204,7 +204,7 @@ module Resqued
     # Private.
     def init_workers(config)
       @workers = config.build_workers
-      @running_workers.each do |running_worker|
+      @old_workers.each do |running_worker|
         if blocked_worker = @workers.detect { |worker| worker.idle? && worker.queue_key == running_worker[:queue] }
           blocked_worker.wait_for(running_worker[:pid].to_i)
         end
