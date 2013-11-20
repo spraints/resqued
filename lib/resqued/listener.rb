@@ -127,8 +127,9 @@ module Resqued
 
     # Private: send a signal to all the workers.
     def kill_all(signal)
-      log "kill -#{signal} #{running_workers.map { |r| r.pid }.inspect}"
-      running_workers.each { |worker| worker.kill(signal) }
+      idle, running = partition_workers
+      log "kill -#{signal} #{running.map { |r| r.pid }.inspect}"
+      running.each { |worker| worker.kill(signal) }
     end
 
     # Private: all available workers
@@ -136,7 +137,12 @@ module Resqued
 
     # Private: just the running workers.
     def running_workers
-      workers.select { |worker| ! worker.idle? }
+      partition_workers.last
+    end
+
+    # Private: Split the workers into [not-running, running]
+    def partition_workers
+      workers.partition { |worker| worker.idle? }
     end
 
     # Private.
