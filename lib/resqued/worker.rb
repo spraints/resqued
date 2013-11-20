@@ -13,6 +13,7 @@ module Resqued
       @config = options.fetch(:config)
       @interval = options[:interval]
       @backoff = Backoff.new
+      @pids = []
     end
 
     # Public: The pid of the worker process.
@@ -35,11 +36,13 @@ module Resqued
     def wait_for(pid)
       raise "Already running #{@pid} (can't wait for #{pid})" if @pid
       @self_started = false
+      @pids << pid
       @pid = pid
     end
 
     # Public: The old worker process finished!
     def finished!(process_status)
+      log :debug, "I (#{@pid}/#{@pids.inspect}/self_started=#{@self_started}/killed=#{@killed}) died like this: #{process_status}"
       @pid = nil
       @backoff.died unless @killed
     end
@@ -56,6 +59,7 @@ module Resqued
       @self_started = true
       @killed = false
       if @pid = fork
+        @pids << @pid
         # still in the listener
         log "Forked worker #{@pid}"
       else

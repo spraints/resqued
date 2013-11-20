@@ -111,7 +111,7 @@ module Resqued
 
     def start_listener
       return if @current_listener || @listener_backoff.wait?
-      @current_listener = ListenerProxy.new(:config_paths => @config_paths, :running_workers => all_listeners.map { |l| l.running_workers }.flatten, :listener_id => next_listener_id)
+      @current_listener = ListenerProxy.new(:config_paths => @config_paths, :old_workers => all_listeners.map { |l| l.running_workers }.flatten, :listener_id => next_listener_id)
       @current_listener.run
       listener_status @current_listener, 'start'
       @listener_backoff.started
