@@ -3,7 +3,7 @@ Gem::Specification.new do |s|
   s.name    = 'resqued'
   s.version = Resqued::VERSION
   s.summary = s.description = 'Daemon of resque workers'
-  s.homepage = 'https://github.com'
+  s.homepage = 'https://github.com/spraints/resqued'
   s.authors = ["Matt Burke"]
   s.email   = 'spraints@gmail.com'
   s.files   = Dir['lib/**/*', 'README.md', 'docs/**/*']
