@@ -1,5 +1,7 @@
 source 'https://rubygems.org/'
 gemspec
+
+# These gems are nice to have in dev, but should not be installed during CI.
 group :development do
   gem 'debugger'
   gem 'guard-rspec',   '~> 2.4.1'
