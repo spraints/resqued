@@ -2,6 +2,8 @@
 
 Resqued is a multi-process daemon that controls and monitors a pool of resque workers. It works well with slow jobs and continuous delivery.
 
+[![travis status](https://travis-ci.org/spraints/resqued.png)](https://travis-ci.org/spraints/resqued)
+
 ## Installation
 
 Install by adding resqued to your Gemfile

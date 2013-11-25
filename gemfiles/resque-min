@@ -1,0 +1,3 @@
+source 'https://rubygems.org/'
+gemspec :path => '..', :development_group => :ci
+gem 'resque', '1.9.1'

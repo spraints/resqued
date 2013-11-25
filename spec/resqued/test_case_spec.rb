@@ -17,7 +17,7 @@ describe Resqued::TestCase do
     it { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_after_fork_raises.rb', :expect_workers => true }.to raise_error }
     it { expect { test_case.assert_resqued 'spec/fixtures/test_case_environment.rb', 'spec/fixtures/test_case_no_workers.rb',        :expect_workers => true }.to raise_error }
   end
-end
+end if false
 
 class MockRedisServer
   def start
