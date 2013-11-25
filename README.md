@@ -1,6 +1,8 @@
-# resqued - a long-running daemon for resque workers. [![travis status](https://travis-ci.org/spraints/resqued.png)](https://travis-ci.org/spraints/resqued)
+# resqued - a long-running daemon for resque workers.
 
 Resqued is a multi-process daemon that controls and monitors a pool of resque workers. It works well with slow jobs and continuous delivery.
+
+[![travis status](https://travis-ci.org/spraints/resqued.png)](https://travis-ci.org/spraints/resqued)
 
 ## Installation
 
