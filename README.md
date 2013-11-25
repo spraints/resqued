@@ -128,6 +128,19 @@ If your app has several work machines, each with the same application code but d
     $ resqued config/shared.rb config/pool-a.rb
     $ resqued config/shared.rb config/pool-b.rb
 
+## Testing
+
+To test your resqued configuration, add a test case like this:
+
+```
+class MyResquedTest < Test::Unit::TestCase
+  include Resqued::TestCase
+  def test_resqued_config
+    assert_resqued 'config/resqued.rb'
+  end
+end
+```
+
 ## See also
 
 For information about how resqued works, see the [documentation](docs/).
