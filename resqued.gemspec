@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.licenses = ['MIT']
   s.authors = ["Matt Burke"]
   s.email   = 'spraints@gmail.com'
-  s.files   = Dir['lib/**/*', 'README.md', 'docs/**/*']
+  s.files   = Dir['lib/**/*', 'README.md', 'CHANGES.md', 'docs/**/*']
   s.test_files = Dir['spec/**/*']
   s.bindir  = 'exe'
   s.executables = %w(
