@@ -1,5 +1,10 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+0.7.8
+-----
+
+* Avoid losing track of workers (#21, #29)
+
 0.7.7
 -----
 
