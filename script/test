@@ -1,3 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
-./bin/rspec --format documentation --backtrace
+./script/bootstrap --local --quiet
+exec ./bin/rspec --format documentation --backtrace
