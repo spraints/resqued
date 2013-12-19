@@ -9,6 +9,7 @@ rspec_options = {
   after_all_pass: true,
   all_on_start:   true,
   keep_failed:    true,
+  cli:            '--fail-fast',
 }
 
 guard 'rspec', rspec_options do
