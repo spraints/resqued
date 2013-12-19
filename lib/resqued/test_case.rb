@@ -1,4 +1,5 @@
 require 'resqued/config'
+require 'resqued/runtime_info'
 
 module Resqued
   module TestCase
@@ -14,7 +15,7 @@ module Resqued
       #     assert_resqued 'config/resqued-environment.rb', 'config/resqued-workers.rb'
       def assert_resqued(*paths)
         config = Resqued::Config.new(paths)
-        config.before_fork
+        config.before_fork(RuntimeInfo.new)
         config.build_workers
         config.after_fork(Resque::Worker.new('*'))
       end
