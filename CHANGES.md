@@ -1,9 +1,9 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
-next
-----
+0.7.9
+-----
 
-* Add the app's current version to the procline.
+* Add the app's current version to the procline. (#30)
 
 0.7.8
 -----
