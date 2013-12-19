@@ -3,6 +3,7 @@ require 'socket'
 require 'resqued/config'
 require 'resqued/logging'
 require 'resqued/procline_version'
+require 'resqued/runtime_info'
 require 'resqued/sleepy'
 require 'resqued/version'
 require 'resqued/worker'
@@ -70,7 +71,7 @@ module Resqued
 
       config = Resqued::Config.new(@config_paths)
       set_default_resque_logger
-      config.before_fork
+      config.before_fork(info)
       report_to_master("RUNNING")
 
       write_procline('running')
@@ -233,10 +234,16 @@ module Resqued
     def write_procline(status)
       procline = "#{procline_version} listener"
       procline << " #{@listener_id}" if @listener_id
+      procline << " [#{info.app_version}]" if info.app_version
       procline << " [#{status}]"
       procline << " [#{running_workers.size} workers]" if status == 'shutdown'
       procline << " #{@config_paths.join(' ')}"
       $0 = procline
+    end
+
+    # Private.
+    def info
+      @info ||= RuntimeInfo.new
     end
   end
 end

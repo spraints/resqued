@@ -18,8 +18,8 @@ module Resqued
       end
 
       # Public: Performs the `before_fork` action from the config.
-      def before_fork
-        Resqued::Config::BeforeFork.new.apply_all(@config_data)
+      def before_fork(resqued)
+        Resqued::Config::BeforeFork.new(:resqued => resqued).apply_all(@config_data)
       end
 
       # Public: Performs the `after_fork` action from the config.

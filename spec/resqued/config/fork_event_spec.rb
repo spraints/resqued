@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'resqued/config/after_fork'
 require 'resqued/config/before_fork'
+require 'resqued/runtime_info'
 
 describe do
   before { evaluator.apply(config) }
@@ -50,11 +51,16 @@ describe do
       before_fork do
         $before_fork_called = true
       end
+      before_fork do |resqued|
+        resqued.app_version = "example"
+      end
     END_CONFIG
 
-    let(:evaluator) { $before_fork_called = false ; Resqued::Config::BeforeFork.new }
+    let(:evaluator) { $before_fork_called = false ; Resqued::Config::BeforeFork.new(:resqued => resqued) }
+    let(:resqued) { Resqued::RuntimeInfo.new }
 
     it { expect($before_fork_called).to eq(true) }
+    it { expect(resqued.app_version).to eq("example") }
   end
 end
 

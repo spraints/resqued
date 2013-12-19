@@ -8,9 +8,13 @@ module Resqued
     #       # Runs once, before forking all the workers.
     #     end
     class BeforeFork < Base
+      def initialize(options = {})
+        @resqued = options.fetch(:resqued)
+      end
+
       # DSL: Execute the `before_fork` block.
       def before_fork
-        yield
+        yield @resqued
       end
     end
   end
