@@ -1,5 +1,8 @@
 require 'spec_helper'
+
 require 'fileutils'
+require 'tmpdir'
+
 require 'resqued/config'
 
 describe Resqued::Config do
