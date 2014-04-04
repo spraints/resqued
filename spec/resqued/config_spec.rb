@@ -7,7 +7,7 @@ describe Resqued::Config do
     around do |example|
       $test_val = :not_set
       Dir.mktmpdir do |dir|
-        @config_file = make_file(dir, "config/resqued.rb", "p __FILE__\nrequire_relative '../lib/file.rb'\nworker 'example'\n")
+        @config_file = make_file(dir, "config/resqued.rb", "require_relative '../lib/file.rb'\nworker 'example'\n")
         make_file(dir, "lib/file.rb", "$test_val = :ok\n")
         example.call
       end
