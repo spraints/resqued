@@ -239,10 +239,10 @@ module Resqued
     # Private.
     def write_procline(status)
       procline = "#{procline_version} listener"
-      procline << " #{@listener_id}" if @listener_id
+      procline << " \##{@listener_id}" if @listener_id
+      procline << " #{my_workers.size}/#{running_workers.size}/#{workers.size}" if workers
       procline << " [#{info.app_version}]" if info.app_version
       procline << " [#{status}]"
-      procline << " [#{my_workers.size}/#{running_workers.size}/#{workers.size} workers]" if workers
       procline << " #{@config_paths.join(' ')}"
       $0 = procline
     end
