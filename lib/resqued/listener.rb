@@ -242,7 +242,7 @@ module Resqued
       procline << " #{@listener_id}" if @listener_id
       procline << " [#{info.app_version}]" if info.app_version
       procline << " [#{status}]"
-      procline << " [#{my_workers.size}/#{workers.size} workers]" if workers
+      procline << " [#{my_workers.size}/#{running_workers.size}/#{workers.size} workers]" if workers
       procline << " #{@config_paths.join(' ')}"
       $0 = procline
     end
