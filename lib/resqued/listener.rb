@@ -142,6 +142,11 @@ module Resqued
       partition_workers.last
     end
 
+    # Private: just the workers running as children of this listener.
+    def my_workers
+      workers.select { |worker| worker.running_here? }
+    end
+
     # Private: Split the workers into [not-running, running]
     def partition_workers
       workers.partition { |worker| worker.idle? }
@@ -237,7 +242,7 @@ module Resqued
       procline << " #{@listener_id}" if @listener_id
       procline << " [#{info.app_version}]" if info.app_version
       procline << " [#{status}]"
-      procline << " [#{running_workers.size}/#{workers.size} workers]" if workers
+      procline << " [#{my_workers.size}/#{workers.size} workers]" if workers
       procline << " #{@config_paths.join(' ')}"
       $0 = procline
     end
