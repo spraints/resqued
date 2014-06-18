@@ -96,6 +96,7 @@ module Resqued
         reap_workers(Process::WNOHANG)
         check_for_expired_workers
         start_idle_workers
+        write_procline('running')
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn
@@ -236,7 +237,7 @@ module Resqued
       procline << " #{@listener_id}" if @listener_id
       procline << " [#{info.app_version}]" if info.app_version
       procline << " [#{status}]"
-      procline << " [#{running_workers.size} workers]" if status == 'shutdown'
+      procline << " [#{running_workers.size}/#{workers.size} workers]" if workers
       procline << " #{@config_paths.join(' ')}"
       $0 = procline
     end
