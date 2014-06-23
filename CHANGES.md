@@ -1,7 +1,7 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
-next
-----
+v0.7.11
+-------
 
 * Show worker count in more proclines. (#32)
 
