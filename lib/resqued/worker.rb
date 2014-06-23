@@ -27,6 +27,11 @@ module Resqued
       pid.nil?
     end
 
+    # Public: True if this worker is running in this process.
+    def running_here?
+      !idle? && @self_started
+    end
+
     # Public: A string that compares if this worker is equivalent to a worker in another Resqued::Listener.
     def queue_key
       queues.sort.join(';')
