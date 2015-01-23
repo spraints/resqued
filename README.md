@@ -55,6 +55,14 @@ This time, you'd end up with something similar to this:
 
 * `:interval` - The interval to pass to `Resque::Worker#run`.
 
+## Compatibility with Resque
+
+Resqued does not automatically split comma-separated lists of queues in
+environment variables like Resque does. To continue using comma-separated
+lists, split them in your resqued config file:
+
+    queue (ENV["QUEUE"] || "*").split(',')
+
 ## Loading your application
 
 An advantage of using resqued (over `rake resque:work`) is that you can load your application just once, before forking all the workers.
