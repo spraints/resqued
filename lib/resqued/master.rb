@@ -235,7 +235,7 @@ module Resqued
     end
 
     def no_more_unexpected_exits
-      trap('EXIT', nil)
+      trap('EXIT', 'DEFAULT')
     end
 
     def yawn(duration)
