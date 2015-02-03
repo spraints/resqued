@@ -1,5 +1,11 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.7.12
+-------
+
+* Fix EXIT trap. (#34)
+* Document resque compatibility. (#20)
+
 v0.7.11
 -------
 
