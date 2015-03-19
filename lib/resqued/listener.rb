@@ -36,7 +36,11 @@ module Resqued
       ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
       ENV['RESQUED_MASTER_VERSION'] = Resqued::VERSION
       log "exec: #{Resqued::START_CTX['$0']} listener"
-      Kernel.exec(Resqued::START_CTX['$0'], 'listener', socket_fd => socket_fd) # The hash at the end only works in new-ish (1.9+ or so) rubies. It's required for ruby 2.0.
+      exec_opts = {socket_fd => socket_fd} # Ruby 2.0 needs to be told to keep the file descriptor open during exec.
+      if start_pwd = Resqued::START_CTX['pwd']
+        exec_opts[:chdir] = start_pwd
+      end
+      Kernel.exec(Resqued::START_CTX['$0'], 'listener', exec_opts)
     end
 
     # Public: Given args from #exec, start this listener.
