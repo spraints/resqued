@@ -55,6 +55,33 @@ This time, you'd end up with something similar to this:
 
 * `:interval` - The interval to pass to `Resque::Worker#run`.
 
+## Launching in production.
+
+Resqued restarts when its master process receives `SIGHUP`. It restarts by re-execing the command that you initially ran. There are two main recommendations for running in production.
+
+* If you use bundler to install resqued, tell it to generate a binstub for resqued. Invoke this binstub (e.g. `bin/resqued`) when you start resqued.
+
+* Specify a pid file using the `-p` option. This pidfile will have the PID of the master process. See [docs/signals.md](docs/signals.md) for more information about which signals are supported.
+
+If your application is running from a symlinked dir (for example, [capistrano's "current" symlink](http://capistranorb.com/documentation/getting-started/structure/)), you'll need to do two more things:
+
+* Ensure that your resqued master process is at least 0.7.13 (`ps o args= $RESQUED_MASTER_PID` should start with "resqued-0.7.13" or higher).
+
+* Explicitly set the `BUNDLE_GEMFILE` environment variable to the symlink dir of your app.
+
+Rolling all of the above advice together, here's a sample that you could use in an upstart script for resqued:
+
+```
+# fragment of /etc/init/resqued.conf
+
+kill signal QUIT
+
+env BUNDLE_GEMFILE=/opt/app/current/Gemfile
+chdir /opt/app/current
+
+exec bin/resqued -c config/resqued.rb -p /opt/app/shared/tmp/pids/resqued.pid
+```
+
 ## Compatibility with Resque
 
 Resqued does not automatically split comma-separated lists of queues in
