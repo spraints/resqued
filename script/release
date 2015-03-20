@@ -102,4 +102,4 @@ run git push origin HEAD:master refs/tags/${tagname}
 
 step Building ${tagname}
 run gem build resqued.gemspec
-#run gem push "resqued-${version}.gem"
+run gem push "resqued-${version}.gem"
