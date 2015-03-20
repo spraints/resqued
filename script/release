@@ -39,16 +39,40 @@ if [ -z "${version}" ]; then
 fi
 
 if ! echo "${version}" | grep -E '^v[0-9]+(\.[0-9]+)+' >/dev/null 2>/dev/null; then
-  echo Error: "'${version}'" is not a valid version number.
+  echo error: "'${version}'" is not a valid version number.
   exit 2
 fi
 
 if git rev-parse --verify --quiet "refs/tags/${version}" >/dev/null; then
-  echo Error: "'${version}'" already 'exists!'
+  echo error: "'${version}'" already 'exists!'
   exit 3
 fi
 
+## Make sure the changelog is updated.
+
+if ! grep "${version}" CHANGES.md >/dev/null; then
+  echo error: CHANGES.md does not have an entry for "${version}"'!'
+  echo 'Please edit CHANGES.md and `git add` or `git commit` it.'
+  exit 4
+fi
+
+## Make sure the index is clean.
+
+status="`git status --porcelain`"
+
+if [ "${status}" != "" -a "${status}" != "M  CHANGES.md" ]; then
+  echo error: Your working directory is not clean'!'
+  echo "       Only CHANGES.md is allowed to be changed, and it must be staged."
+  echo ""
+  git status
+  exit 5
+fi
+
 ## Build the release
+
+step() {
+  echo "===> $*"
+}
 
 run() {
   echo "$@"
@@ -57,4 +81,5 @@ run() {
   fi
 }
 
-run echo Releasing ${version}
+step Releasing ${version}
+run 
