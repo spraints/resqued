@@ -77,6 +77,7 @@ Rolling all of the above advice together, here's a sample that you could use in 
 kill signal QUIT
 
 env BUNDLE_GEMFILE=/opt/app/current/Gemfile
+env PWD=/opt/app/current
 chdir /opt/app/current
 
 exec bin/resqued -c config/resqued.rb -p /opt/app/shared/tmp/pids/resqued.pid
