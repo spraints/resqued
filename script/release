@@ -21,7 +21,7 @@ while [ "$#" -gt 0 ]; do
       exit 1
       ;;
     *)
-      if [ "$#" -eq 1 ]; then
+      if [ -z "${version}" ]; then
         version="$1"
       else
         usage 
