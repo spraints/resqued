@@ -1,0 +1,105 @@
+#!/bin/sh
+#/ Usage: script/release [--force] VERSION
+#/ where VERSION looks like 0.7.13
+#/ without --force, the release is previewed, but not applied.
+
+set -e
+
+usage() {
+  cat "$0" | grep '^#/' | cut -c4-
+}
+
+dry_run=yes
+version=
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --force)
+      dry_run=no
+      ;;
+    --*)
+      usage
+      exit 1
+      ;;
+    *)
+      if [ -z "${version}" ]; then
+        version="$1"
+      else
+        usage 
+        exit 1
+      fi
+  esac
+  shift
+done
+
+## Validate the version number.
+
+if [ -z "${version}" ]; then
+  usage
+  exit 1
+fi
+
+if ! echo "${version}" | grep -E '^[0-9]+(\.[0-9]+)+' >/dev/null 2>/dev/null; then
+  echo error: "'${version}'" is not a valid version number.
+  exit 2
+fi
+
+tagname="v${version}"
+
+if git rev-parse --verify --quiet "refs/tags/${tagname}" >/dev/null; then
+  echo error: Version "${version}" already 'exists!'
+  exit 3
+fi
+
+## Make sure the changelog is updated.
+
+if ! grep "${version}" CHANGES.md >/dev/null; then
+  echo error: CHANGES.md does not have an entry for "${version}"'!'
+  echo 'Please edit CHANGES.md and `git add` or `git commit` it.'
+  exit 4
+fi
+
+## Make sure the index is clean.
+
+status="`git status --porcelain`"
+
+if [ "${status}" != "" -a "${status}" != "M  CHANGES.md" ]; then
+  echo error: Your working directory is not clean'!'
+  echo "       Only CHANGES.md is allowed to be changed, and it must be staged."
+  echo ""
+  git status
+  exit 5
+fi
+
+## Build the release
+
+step() {
+  echo "===> $*"
+}
+
+run() {
+  echo + "$@"
+  if [ "${dry_run}" = "no" ]; then
+    "$@"
+  fi
+}
+
+set_gem_version() {
+  cat >lib/resqued/version.rb <<V
+module Resqued
+  VERSION = '${version}'
+end
+V
+}
+
+step Committing ${tagname}
+run set_gem_version
+run git add lib/resqued/version.rb
+run git commit -m "${tagname}"
+
+step Pushing ${tagname}
+run git tag "${tagname}"
+run git push origin HEAD:master refs/tags/${tagname}
+
+step Building ${tagname}
+run gem build resqued.gemspec
+run gem push "resqued-${version}.gem"
