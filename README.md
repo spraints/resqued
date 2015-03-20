@@ -69,6 +69,8 @@ If your application is running from a symlinked dir (for example, [capistrano's 
 
 * Explicitly set the `BUNDLE_GEMFILE` environment variable to the symlink dir of your app.
 
+* If you're invoking resqued from something that resolves symlinks in `pwd`, you'll also want to explicitly set the `PWD` environment variable.
+
 Rolling all of the above advice together, here's a sample that you could use in an upstart script for resqued:
 
 ```
