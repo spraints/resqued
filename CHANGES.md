@@ -1,5 +1,10 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.7.13
+-------
+
+* Support for symlinks in production environments. (#36)
+
 v0.7.12
 -------
 
