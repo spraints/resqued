@@ -81,5 +81,23 @@ run() {
   fi
 }
 
-step Releasing ${version}
-run 
+set_gem_version() {
+  cat >lib/resqued/version.rb <<V
+module Resqued
+  VERSION = '${version}'
+end
+V
+}
+
+step Committing ${version}
+run set_gem_version
+run git add lib/resqued/version.rb
+run git commit -m "${version}"
+
+step Pushing ${version}
+run git tag "${version}"
+run git push origin HEAD:master refs/tags/${version}
+
+step Building ${version}
+run gem build resqued.gemspec
+run gem push "resqued-${version}.gem"
