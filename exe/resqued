@@ -61,7 +61,7 @@ if test
   end
 else
   require 'resqued'
-  Resqued::START_CTX['$0'] = $0.dup
+  Resqued.capture_start_ctx!
   resqued = Resqued::Master.new(options)
   if daemonize
     require 'resqued/daemon'
