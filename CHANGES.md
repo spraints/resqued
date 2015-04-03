@@ -1,5 +1,10 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.8.0
+------
+
+* Make proclines work again. (#40) (This introduces a new argument to the re-exec of resqued. Old masters (0.7.x) will be able to start new listeners (0.8.x), but new masters (0.8.x) will not be able to start <0.8 listeners.)
+
 v0.7.14
 -------
 
