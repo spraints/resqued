@@ -40,7 +40,8 @@ module Resqued
       if start_pwd = Resqued::START_CTX['pwd']
         exec_opts[:chdir] = start_pwd
       end
-      Kernel.exec(Resqued::START_CTX['$0'], 'listener', exec_opts)
+      procline_buf = ' ' * 256 # make room for setproctitle
+      Kernel.exec(Resqued::START_CTX['$0'], 'listener', procline_buf, exec_opts)
     end
 
     # Public: Given args from #exec, start this listener.
