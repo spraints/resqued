@@ -198,6 +198,10 @@ module Resqued
             @listener_backoff.died
             @current_listener = nil
           end
+
+          if @last_good_listener && @last_good_listener.pid == lpid
+            @last_good_listener = nil
+          end
           dead_listener = listener_pids.delete(lpid)
           listener_status dead_listener, 'stop'
           dead_listener.dispose
