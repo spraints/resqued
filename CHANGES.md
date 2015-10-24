@@ -1,5 +1,9 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.8.1
+------
+* Fix an error on fast SIGHUP (#42, @asceth)
+
 v0.8.0
 ------
 
