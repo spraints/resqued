@@ -23,6 +23,9 @@ module Resqued
         exit
       else
         # master
+        STDIN.reopen "/dev/null"
+        STDOUT.reopen "/dev/null", "a"
+        STDERR.reopen "/dev/null", "a"
         rd.close
         @master.run(wr)
       end
