@@ -54,6 +54,8 @@ module Resqued
           reopen_logs
           log "Restarting listener with new configuration and application."
           prepare_new_listener
+        when :USR1
+          @econnreset = !@econnreset
         when :USR2
           log "Pause job processing"
           @paused = true
@@ -125,7 +127,7 @@ module Resqued
 
     def read_listeners
       all_listeners.each do |l|
-        l.read_worker_status(:on_activity => self)
+        l.read_worker_status(:on_activity => self, :reset => !!@econnreset)
       end
     end
 
@@ -214,7 +216,7 @@ module Resqued
       end while true
     end
 
-    SIGNALS = [ :HUP, :INT, :USR2, :CONT, :TERM, :QUIT ]
+    SIGNALS = [ :HUP, :INT, :USR1, :USR2, :CONT, :TERM, :QUIT ]
     OPTIONAL_SIGNALS = [ :INFO ]
     OTHER_SIGNALS = [:CHLD, 'EXIT']
     TRAPS = SIGNALS + OPTIONAL_SIGNALS + OTHER_SIGNALS
