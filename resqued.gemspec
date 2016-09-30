@@ -17,6 +17,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'kgio', '~> 2.6'
   s.add_dependency 'resque', '>= 1.9.1'
   s.add_dependency 'mono_logger', '~> 1.0'
-  s.add_development_dependency 'rspec', '~> 2.0'
+  s.add_development_dependency 'rspec', '~> 2.0', '< 2.99'
   s.add_development_dependency 'rake', '~> 0.9.0'
 end
