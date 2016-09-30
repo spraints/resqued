@@ -62,7 +62,7 @@ module Resqued
       new(options).run
     end
 
-    SIGNALS = [ :CONT, :QUIT, :INT, :TERM, :USR1 ]
+    SIGNALS = [ :CONT, :QUIT, :INT, :TERM ]
     ALL_SIGNALS = SIGNALS + [ :CHLD ]
 
     SIGNAL_QUEUE = []
@@ -109,8 +109,6 @@ module Resqued
           kill_all(signal)
         when :QUIT, :INT, :TERM
           return signal
-        when :USR1
-          report_to_master("THIS IS BOGUS")
         end
       end
     end

@@ -70,7 +70,6 @@ module Resqued
       on_activity = options[:on_activity]
       until @master_socket.nil?
         IO.select([@master_socket], nil, nil, 0) or return
-        return dispose if options[:reset]
         case line = @master_socket.readline
         when /^\+(\d+),(.*)$/
           worker_pids[$1] = $2
