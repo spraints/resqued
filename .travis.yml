@@ -2,8 +2,10 @@ language: ruby
 bundler_args: --without development
 cache: bundler
 rvm:
-  - "1.9.3"
-  - "2.0.0"
+  - "2.0"
+  # - "2.1" # uses a bundler that has this bug: https://github.com/bundler/bundler/issues/3558
+  - "2.2"
+  - "2.3"
 gemfile:
   - gemfiles/resque-min
   - gemfiles/resque-latest

@@ -191,7 +191,7 @@ module Resqued
         line = @socket.readline
         finish_worker(line.to_i, nil)
       end
-    rescue EOFError
+    rescue EOFError, Errno::ECONNRESET
       log "eof from master"
       Process.kill(:QUIT, $$)
     end
