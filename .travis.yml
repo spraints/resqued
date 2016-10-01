@@ -3,7 +3,7 @@ bundler_args: --without development
 cache: bundler
 rvm:
   - "2.0"
-  - "2.1"
+  # - "2.1" # uses a bundler that has this bug: https://github.com/bundler/bundler/issues/3558
   - "2.2"
   - "2.3"
 gemfile:
