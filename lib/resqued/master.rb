@@ -20,6 +20,7 @@ module Resqued
       @config_paths = options.fetch(:config_paths)
       @pidfile      = options.fetch(:master_pidfile) { nil }
       @status_pipe  = options.fetch(:status_pipe) { nil }
+      @fast_exit    = options.fetch(:fast_exit) { false }
       @listener_backoff = Backoff.new
       @listeners_created = 0
     end
@@ -66,7 +67,7 @@ module Resqued
         when :INT, :TERM, :QUIT
           log "Shutting down..."
           kill_all_listeners(signal)
-          wait_for_workers unless signal == :QUIT
+          wait_for_workers unless @fast_exit
           break
         end
       end
