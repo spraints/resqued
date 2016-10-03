@@ -66,7 +66,7 @@ module Resqued
         when :INT, :TERM, :QUIT
           log "Shutting down..."
           kill_all_listeners(signal)
-          wait_for_workers
+          wait_for_workers unless signal == :QUIT
           break
         end
       end
