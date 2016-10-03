@@ -24,8 +24,8 @@ The Master process handles several signals.
 
 * `HUP`: Start a new listener. After it boots, kill the previous listener with `SIGQUIT`.
 * `USR2`: Pause processing. Kills the current listener, and does not start a replacement.
-* `CONT`: Resume processing. If there is no listener, start one. If there is a listener, send it SIGCONT.
-* `QUIT`, `INT`, or `TERM`: Kill the listener with the same signal and wait for it to exit.
+* `CONT`: Resume processing. If there is no listener, start one. If there is a listener, send it `SIGCONT`.
+* `QUIT`, `INT`, or `TERM`: Kill the listener with the same signal and wait for it to exit. If `--fast-exit` was specified, the master exits immediately without waiting for the listener to exit.
 * `CHLD`: Clean up any listeners that have exited. If the current listener exited
 
 ## Listener

@@ -30,6 +30,10 @@ opts = OptionParser.new do |opts|
     test = true
   end
 
+  opts.on '--fast-exit', 'Exit quickly on SIGQUIT, SIGTERM' do
+    options[:fast_exit] = true
+  end
+
   opts.on '-p', '--pidfile PIDFILE', 'Store the pid of the master process in PIDFILE' do |v|
     options[:master_pidfile] = v
   end
