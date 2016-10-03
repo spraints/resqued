@@ -186,12 +186,14 @@ module Resqued
 
     # Private: Check if master reports any dead workers.
     def check_for_expired_workers
+      return unless @socket
       loop do
         IO.select([@socket], nil, nil, 0) or return
         line = @socket.readline
         finish_worker(line.to_i, nil)
       end
     rescue EOFError, Errno::ECONNRESET
+      @socket = nil
       log "eof from master"
       Process.kill(:QUIT, $$)
     end
@@ -234,8 +236,9 @@ module Resqued
     #     report_to_master("+12345,queue")  # Worker process PID:12345 started, working on a job from "queue".
     #     report_to_master("-12345")        # Worker process PID:12345 exited.
     def report_to_master(status)
-      @socket.puts(status)
+      @socket.puts(status) if @socket
     rescue Errno::EPIPE
+      @socket = nil
       Process.kill(:QUIT, $$) # If the master is gone, LIFE IS NOW MEANINGLESS.
     end
 

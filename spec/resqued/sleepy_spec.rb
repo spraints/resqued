@@ -27,4 +27,8 @@ describe Resqued::Sleepy do
   it 'does not sleep if duration is negative' do
     expect { yawn(0) }.to run_for(0.0)
   end
+
+  it 'sleeps if io is nil' do
+    expect { yawn(0.5, nil) }.to run_for(0.5)
+  end
 end
