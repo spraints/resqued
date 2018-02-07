@@ -101,7 +101,7 @@ module Resqued
         case
         when value.nil?
           @pool_size
-        when value.is_a?(Fixnum)
+        when value.is_a?(1.class)
           value < @pool_size ? value : @pool_size
         when value.is_a?(Float) && value >= 0.0 && value <= 1.0
           (@pool_size * value).to_i
