@@ -1,5 +1,9 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.8.4
+------
+* Use `Integer` in place of `Fixnum`, when it's available.
+
 v0.8.3
 ------
 * Add a "fast-exit" mode (#44)

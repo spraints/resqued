@@ -91,10 +91,17 @@ end
 V
 }
 
+commit_if_dirty() {
+  echo + "git commit" "$@"
+  if [ "${dry_run}" = "no" ] && [ -n "$(git status --porcelain)" ]; then
+    git commit "$@"
+  fi
+}
+
 step Committing ${tagname}
 run set_gem_version
 run git add lib/resqued/version.rb
-run git commit -m "${tagname}"
+run commit_if_dirty -m "${tagname}"
 
 step Pushing ${tagname}
 run git tag "${tagname}"
