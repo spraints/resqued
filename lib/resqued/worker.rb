@@ -11,6 +11,7 @@ module Resqued
     def initialize(options)
       @queues = options.fetch(:queues)
       @config = options.fetch(:config)
+      @worker_class = options.fetch(:worker_class, Resque::Worker)
       @interval = options[:interval]
       @backoff = Backoff.new
       @pids = []
@@ -21,6 +22,8 @@ module Resqued
 
     # Private.
     attr_reader :queues
+
+    attr_reader :worker_class
 
     # Public: True if there is no worker process mapped to this object.
     def idle?
@@ -80,7 +83,7 @@ module Resqued
         Resqued::Listener::ALL_SIGNALS.each { |signal| trap(signal, 'DEFAULT') }
         trap(:QUIT) { exit! 0 } # If we get a QUIT during boot, just spin back down.
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
-        resque_worker = Resque::Worker.new(*queues)
+        resque_worker = worker_class.new(*queues)
         resque_worker.term_child = true if resque_worker.respond_to?('term_child=')
         Resque.redis.client.reconnect
         @config.after_fork(resque_worker)

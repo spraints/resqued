@@ -10,7 +10,7 @@ module Resqued
       # Public.
       def initialize(options = {})
         options = options.dup
-        @worker_class = options.delete(:worker_class) || Resqued::Worker
+        @resqued_worker_class = options.delete(:resqued_worker_class) || Resqued::Worker
         @worker_options = options
         @workers = []
       end
@@ -23,7 +23,7 @@ module Resqued
         queues = queues.flatten
         queues = ['*'] if queues.empty?
         queues = queues.shuffle if options.delete(:shuffle_queues)
-        @workers << @worker_class.new(options.merge(@worker_options).merge(:queues => queues))
+        @workers << @resqued_worker_class.new(options.merge(@worker_options).merge(:queues => queues))
       end
 
       # DSL: Set up a pool of workers. Define queues for the members of the pool with `queue`.

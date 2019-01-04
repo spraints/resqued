@@ -15,13 +15,16 @@ describe Resqued::Config::Worker do
   #
   # ignore calls to any other top-level method.
 
-  let(:evaluator) { described_class.new(:worker_class => FakeWorker) }
+  let(:evaluator) { described_class.new(:resqued_worker_class => FakeWorker) }
   let(:result) { evaluator.apply(config) }
   module FakeWorker
     def self.new(options)
       options
     end
+
   end
+
+  module FakeResqueWoker; end
 
   context 'individual' do
     let(:config) { <<-END_CONFIG }
@@ -32,15 +35,17 @@ describe Resqued::Config::Worker do
       worker 'c', 'd'
       worker 'd', 'c', :interval => 3
       worker
+      worker 'b', :worker_class => FakeResqueWoker
       after_fork { } # So that we don't rely on `workers`'s result falling through.
     END_CONFIG
-    it { expect(result.size).to eq(6) }
+    it { expect(result.size).to eq(7) }
     it { expect(result[0]).to eq(:queues => ['a']) }
     it { expect(result[1]).to eq(:queues => ['a']) }
     it { expect(result[2]).to eq(:queues => ['b']) }
     it { expect(result[3]).to eq(:queues => ['c', 'd']) }
     it { expect(result[4]).to eq(:queues => ['d', 'c'], :interval => 3) }
     it { expect(result[5]).to eq(:queues => ['*']) }
+    it { expect(result[6]).to eq(:queues => ['b'], worker_class: FakeResqueWoker) }
   end
 
   context 'concise pool' do
@@ -141,7 +146,7 @@ describe Resqued::Config::Worker do
   end
 
   context 'with default options' do
-    let(:evaluator) { described_class.new(:worker_class => FakeWorker, :config => 'something') }
+    let(:evaluator) { described_class.new(:resqued_worker_class => FakeWorker, :config => 'something') }
     let(:config) { <<-END_CONFIG }
       worker 'a', :interval => 1
     END_CONFIG
