@@ -13,6 +13,7 @@ module Resqued
         @resqued_worker_class = options.delete(:resqued_worker_class) || Resqued::Worker
         @worker_options = options
         @workers = []
+        @pools = []
       end
 
       # DSL: Create a worker for the exact queues listed.
@@ -30,9 +31,10 @@ module Resqued
       #
       #     worker_pool 20, :interval => 1
       def worker_pool(count, *queues)
-        @pool_size = count
-        @pool_options = queues.last.is_a?(Hash) ? queues.pop : {}
-        @pool_queues = {}
+        @pools.push(Pool.new({
+          size: count,
+          options: (queues.last.is_a?(Hash) ? queues.pop : {}),
+        }))
         queues.each { |q| queue q }
       end
 
@@ -57,7 +59,14 @@ module Resqued
           else
             1.0
           end
-        queues.each { |queue| @pool_queues[queue] = concurrency }
+
+        if @pools.none?
+          raise ArgumentError, "Must create a worker pool before configuring queues"
+        end
+
+        @pools.each do |pool|
+          queues.each { |queue| pool.add_queue(queue, concurrency) }
+        end
       end
 
       private
@@ -72,41 +81,56 @@ module Resqued
       # Build an array of Worker objects with queue lists configured based
       # on the concurrency values established and the total number of workers.
       def build_pool_workers!
-        return unless @pool_size
-        queues = _fixed_concurrency_queues
-        1.upto(@pool_size) do |worker_num|
-          queue_names = queues.
-            select { |name, concurrency| concurrency >= worker_num }.
-            map { |name, _| name }
-          if queue_names.any?
-            worker(queue_names, @pool_options)
-          else
-            worker('*', @pool_options)
+        @pools.each do |pool|
+          queues = pool._fixed_concurrency_queues
+          1.upto(pool.size) do |worker_num|
+            queue_names = queues.
+              select { |name, concurrency| concurrency >= worker_num }.
+              map { |name, _| name }
+            if queue_names.any?
+              worker(queue_names, pool.options)
+            else
+              worker('*', pool.options)
+            end
           end
         end
       end
 
-      # Internal: Like @queues but with concrete fixed concurrency values. All
-      # percentage based concurrency values are converted to fixnum total number
-      # of workers that queue should run on.
-      def _fixed_concurrency_queues
-        @pool_queues.map { |name, concurrency| [name, _translate_concurrency_value(concurrency)] }
-      end
+      class Pool
+        attr_reader :size, :options
 
-      # Internal: Convert a queue worker concurrency value to a fixed number of
-      # workers. This supports values that are fixed numbers as well as percentage
-      # values (between 0.0 and 1.0). The value may also be nil, in which case the
-      # maximum worker_processes value is returned.
-      def _translate_concurrency_value(value)
-        case
-        when value.nil?
-          @pool_size
-        when value.is_a?(1.class)
-          value < @pool_size ? value : @pool_size
-        when value.is_a?(Float) && value >= 0.0 && value <= 1.0
-          (@pool_size * value).to_i
-        else
-          raise TypeError, "Unknown concurrency value: #{value.inspect}"
+        def initialize(size:, options:)
+          @size = size
+          @options = options
+          @queues = {}
+        end
+
+        def add_queue(queue, concurrency)
+          @queues[queue] = concurrency
+        end
+
+        # Internal: Like @queues but with concrete fixed concurrency values. All
+        # percentage based concurrency values are converted to fixnum total number
+        # of workers that queue should run on.
+        def _fixed_concurrency_queues
+          @queues.map { |name, concurrency| [name, translate_concurrency_value(concurrency)] }
+        end
+
+        # Internal: Convert a queue worker concurrency value to a fixed number of
+        # workers. This supports values that are fixed numbers as well as percentage
+        # values (between 0.0 and 1.0). The value may also be nil, in which case the
+        # maximum worker_processes value is returned.
+        def translate_concurrency_value(value)
+          case
+          when value.nil?
+            @size
+          when value.is_a?(1.class)
+            value < @size ? value : @size
+          when value.is_a?(Float) && value >= 0.0 && value <= 1.0
+            (@size * value).to_i
+          else
+            raise TypeError, "Unknown concurrency value: #{value.inspect}"
+          end
         end
       end
     end

@@ -132,6 +132,20 @@ describe Resqued::Config::Worker do
     end
   end
 
+  context 'multiple worker pools' do
+    let(:config) { <<-END_CONFIG }
+      worker_pool 2, 'a', 'b', 'c', :interval => 1
+      worker_pool 2, 'a', 'b', 'c', :interval => 1, :worker_class => FakeResqueWoker
+    END_CONFIG
+    it { expect(result.size).to eq(4) }
+    it { expect(result).to eq([
+      { :queues => ['a', 'b', 'c'], :interval => 1 },
+      { :queues => ['a', 'b', 'c'], :interval => 1 },
+      { :queues => ['a', 'b', 'c'], :interval => 1, :worker_class => FakeResqueWoker },
+      { :queues => ['a', 'b', 'c'], :interval => 1, :worker_class => FakeResqueWoker },
+    ]) }
+  end
+
   context 'multiple worker configs' do
     let(:config) { <<-END_CONFIG }
       worker 'one'
