@@ -20,6 +20,10 @@ module Resqued
       def worker_pool(count, *queues_and_options)
       end
 
+      # Public: Define a factory Proc that creates Resque::Workers
+      def worker_factory(&block)
+      end
+
       # Public: Define the queues worked by members of the worker pool.
       def queue(*queues)
       end

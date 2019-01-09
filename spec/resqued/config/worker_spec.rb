@@ -140,6 +140,29 @@ describe Resqued::Config::Worker do
     it { expect(result[3]).to eq(:queues => ['*']) }
   end
 
+  context 'worker factory' do
+    let(:config) { <<-END_CONFIG }
+      worker_factory { |queues| queues }
+      worker 'a'
+    END_CONFIG
+
+    it { expect(result.size).to eq(1) }
+    it { expect(result[0].reject { |k, _| k == :worker_factory}).to eq(:queues => ['a']) }
+    it { expect(result[0][:worker_factory].call(result[0][:queues])).to eq(['a']) }
+  end
+
+  context 'worker factory with pool' do
+    let(:config) { <<-END_CONFIG }
+      worker_factory { |queues| queues }
+      worker_pool 1
+      queue 'a'
+    END_CONFIG
+
+    it { expect(result.size).to eq(1) }
+    it { expect(result[0].reject { |k, _| k == :worker_factory}).to eq(:queues => ['a']) }
+    it { expect(result[0][:worker_factory].call(result[0][:queues])).to eq(['a']) }
+  end
+
   context 'with default options' do
     let(:evaluator) { described_class.new(:worker_class => FakeWorker, :config => 'something') }
     let(:config) { <<-END_CONFIG }

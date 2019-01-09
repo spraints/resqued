@@ -8,11 +8,14 @@ module Resqued
   class Worker
     include Resqued::Logging
 
+    DEFAULT_WORKER_FACTORY = ->(queues) { Resque::Worker.new(*queues) }
+
     def initialize(options)
       @queues = options.fetch(:queues)
       @config = options.fetch(:config)
       @interval = options[:interval]
       @backoff = Backoff.new
+      @worker_factory = options.fetch(:worker_factory, DEFAULT_WORKER_FACTORY)
       @pids = []
     end
 
@@ -80,7 +83,7 @@ module Resqued
         Resqued::Listener::ALL_SIGNALS.each { |signal| trap(signal, 'DEFAULT') }
         trap(:QUIT) { exit! 0 } # If we get a QUIT during boot, just spin back down.
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
-        resque_worker = Resque::Worker.new(*queues)
+        resque_worker = @worker_factory.call(queues)
         resque_worker.term_child = true if resque_worker.respond_to?('term_child=')
         Resque.redis.client.reconnect
         @config.after_fork(resque_worker)

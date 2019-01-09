@@ -36,6 +36,14 @@ module Resqued
         queues.each { |q| queue q }
       end
 
+      # DSL: Define a factory Proc used to create Resque::Workers. The factory
+      # Proc receives a list of queues as an argument.
+      #
+      #    worker_factory { |queues| Resque::Worker.new(*queues) }
+      def worker_factory(&block)
+        @worker_options.merge!(worker_factory: block)
+      end
+
       # DSL: Define a queue for the worker_pool to work from.
       #
       #     queue 'one'
