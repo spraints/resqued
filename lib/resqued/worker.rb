@@ -11,7 +11,8 @@ module Resqued
     DEFAULT_WORKER_FACTORY = ->(queues) {
       resque_worker = Resque::Worker.new(*queues)
       resque_worker.term_child = true if resque_worker.respond_to?('term_child=')
-      Resque.redis.client.reconnect
+      redis_client = Resque.redis.respond_to?(:_client) ? Resque.redis._client : Resque.redis.client
+      redis_client.reconnect
       resque_worker
     }
 
