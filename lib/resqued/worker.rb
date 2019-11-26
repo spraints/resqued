@@ -1,4 +1,5 @@
 require 'resque'
+require 'digest'
 
 require 'resqued/backoff'
 require 'resqued/logging'
@@ -43,7 +44,7 @@ module Resqued
 
     # Public: A string that compares if this worker is equivalent to a worker in another Resqued::Listener.
     def queue_key
-      queues.sort.join(';')
+      Digest::SHA256.hexdigest(queues.sort.join(';'))
     end
 
     # Public: Claim this worker for another listener's worker.
