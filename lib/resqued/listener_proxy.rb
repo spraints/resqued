@@ -57,7 +57,7 @@ module Resqued
 
     # Public: Get the list of workers running from this listener.
     def running_workers
-      worker_pids.map { |pid, queue| { :pid => pid, :queue => queue } }
+      worker_pids.map { |pid, queue_key| { :pid => pid, :queue_key => queue_key } }
     end
 
     # Private: Map worker pids to queue names
