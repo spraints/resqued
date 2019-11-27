@@ -1,5 +1,9 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.9.0
+------
+* Avoid Errno::E2BIG on SIGHUP when there are lots of workers and lots of queues per worker. (#50) This changes the format of an env var that master passes to listener. Old and new versions won't crash, but they won't be able to communicate about currenly running workers.
+
 v0.8.6
 ------
 * Add compatibility for redis 4.0.
