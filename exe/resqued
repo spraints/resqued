@@ -51,12 +51,15 @@ end
 opts.parse!
 options[:config_paths] = ARGV
 
-if options[:config_paths].size == 0
-  puts opts
-  exit 1
+def require_config_paths!(options)
+  if options[:config_paths].size == 0
+    puts opts
+    exit 1
+  end
 end
 
 if test
+  require_config_paths! options
   require 'resqued/config'
   workers = Resqued::Config.new(options[:config_paths]).build_workers
   puts "Workers defined in #{options[:config_paths].join(' ')}"
@@ -64,6 +67,7 @@ if test
     puts "#{index + 1}: #{worker.queues.join(',')}"
   end
 else
+  require_config_paths! options
   require 'resqued'
   Resqued.capture_start_ctx!
   state = Resqued::MasterState.new(options)
