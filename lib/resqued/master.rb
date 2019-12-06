@@ -1,6 +1,7 @@
 require 'resqued/backoff'
 require 'resqued/listener_proxy'
 require 'resqued/logging'
+require 'resqued/master_state'
 require 'resqued/pidfile'
 require 'resqued/procline_version'
 require 'resqued/sleepy'
@@ -16,19 +17,16 @@ module Resqued
     include Resqued::ProclineVersion
     include Resqued::Sleepy
 
-    def initialize(options)
-      @config_paths = options.fetch(:config_paths)
-      @pidfile      = options.fetch(:master_pidfile) { nil }
-      @status_pipe  = options.fetch(:status_pipe) { nil }
-      @fast_exit    = options.fetch(:fast_exit) { false }
+    def initialize(state, options = {})
+      @state = state
+      @status_pipe = options.fetch(:status_pipe) { nil }
       @listener_backoff = Backoff.new
-      @listeners_created = 0
     end
 
     # Public: Starts the master process.
     def run(ready_pipe = nil)
       report_unexpected_exits
-      with_pidfile(@pidfile) do
+      with_pidfile(@state.pidfile) do
         write_procline
         install_signal_handlers
         if ready_pipe
@@ -45,7 +43,7 @@ module Resqued
       loop do
         read_listeners
         reap_all_listeners(Process::WNOHANG)
-        start_listener unless @paused
+        start_listener unless @state.paused
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn(@listener_backoff.how_long? || 30.0)
@@ -57,17 +55,17 @@ module Resqued
           prepare_new_listener
         when :USR2
           log "Pause job processing"
-          @paused = true
-          kill_listener(:QUIT, @current_listener)
-          @current_listener = nil
+          @state.paused = true
+          kill_listener(:QUIT, @state.current_listener)
+          @state.current_listener = nil
         when :CONT
           log "Resume job processing"
-          @paused = false
+          @state.paused = false
           kill_all_listeners(:CONT)
         when :INT, :TERM, :QUIT
           log "Shutting down..."
           kill_all_listeners(signal)
-          wait_for_workers unless @fast_exit
+          wait_for_workers unless @state.fast_exit
           break
         end
       end
@@ -102,7 +100,7 @@ module Resqued
 
     # Private: Map listener pids to ListenerProxy objects.
     def listener_pids
-      @listener_pids ||= {}
+      @state.listener_pids ||= {}
     end
 
     # Private: All the ListenerProxy objects.
@@ -111,17 +109,17 @@ module Resqued
     end
 
     def start_listener
-      return if @current_listener || @listener_backoff.wait?
-      @current_listener = ListenerProxy.new(:config_paths => @config_paths, :old_workers => all_listeners.map { |l| l.running_workers }.flatten, :listener_id => next_listener_id)
-      @current_listener.run
-      listener_status @current_listener, 'start'
+      return if @state.current_listener || @listener_backoff.wait?
+      @state.current_listener = ListenerProxy.new(:config_paths => @state.config_paths, :old_workers => all_listeners.map { |l| l.running_workers }.flatten, :listener_id => next_listener_id)
+      @state.current_listener.run
+      listener_status @state.current_listener, 'start'
       @listener_backoff.started
-      listener_pids[@current_listener.pid] = @current_listener
+      listener_pids[@state.current_listener.pid] = @state.current_listener
       write_procline
     end
 
     def next_listener_id
-      @listeners_created += 1
+      @state.listeners_created += 1
     end
 
     def read_listeners
@@ -150,9 +148,9 @@ module Resqued
     # Promotes a booting listener to be the current listener.
     def listener_running(listener)
       listener_status(listener, 'ready')
-      if listener == @current_listener
-        kill_listener(:QUIT, @last_good_listener)
-        @last_good_listener = nil
+      if listener == @state.current_listener
+        kill_listener(:QUIT, @state.last_good_listener)
+        @state.last_good_listener = nil
       else
         # This listener didn't receive the last SIGQUIT we sent.
         # (It was probably sent before the listener had set up its traps.)
@@ -165,15 +163,15 @@ module Resqued
     #
     # The old one will be killed when the new one is ready for workers.
     def prepare_new_listener
-      if @last_good_listener
+      if @state.last_good_listener
         # The last_good_listener is still running because we got another HUP before the new listener finished booting.
         # Keep the last_good_listener (where all the workers are) and kill the booting current_listener. We'll start a new one.
-        kill_listener(:QUIT, @current_listener)
+        kill_listener(:QUIT, @state.current_listener)
       else
-        @last_good_listener = @current_listener
+        @state.last_good_listener = @state.current_listener
       end
       # Indicate to `start_listener` that it should start a new listener.
-      @current_listener = nil
+      @state.current_listener = nil
     end
 
     def kill_listener(signal, listener)
@@ -195,13 +193,13 @@ module Resqued
         lpid, status = Process.waitpid2(-1, waitpid_flags)
         if lpid
           log "Listener exited #{status}"
-          if @current_listener && @current_listener.pid == lpid
+          if @state.current_listener && @state.current_listener.pid == lpid
             @listener_backoff.died
-            @current_listener = nil
+            @state.current_listener = nil
           end
 
-          if @last_good_listener && @last_good_listener.pid == lpid
-            @last_good_listener = nil
+          if @state.last_good_listener && @state.last_good_listener.pid == lpid
+            @state.last_good_listener = nil
           end
           dead_listener = listener_pids.delete(lpid)
           listener_status dead_listener, 'stop'
@@ -248,7 +246,7 @@ module Resqued
     end
 
     def write_procline
-      $0 = "#{procline_version} master [gen #{@listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
+      $0 = "#{procline_version} master [gen #{@state.listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
     end
 
     def listener_status(listener, status)
