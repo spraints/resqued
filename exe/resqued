@@ -46,6 +46,10 @@ opts = OptionParser.new do |opts|
   opts.on '-D', '--daemonize', 'Run daemonized in the background' do
     daemonize = true
   end
+
+  opts.on '--exec-on-hup', 'Re-exec the master process on SIGHUP' do
+    options[:exec_on_hup] = true
+  end
 end
 
 opts.parse!

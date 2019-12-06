@@ -50,9 +50,13 @@ module Resqued
         when :INFO
           dump_object_counts
         when :HUP
-          reopen_logs
-          log "Restarting listener with new configuration and application."
-          prepare_new_listener
+          if @state.exec_on_hup
+            log "TODO - re-exec the master"
+          else
+            reopen_logs
+            log "Restarting listener with new configuration and application."
+            prepare_new_listener
+          end
         when :USR2
           log "Pause job processing"
           @state.paused = true
