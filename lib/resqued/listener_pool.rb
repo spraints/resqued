@@ -8,16 +8,17 @@ module Resqued
     # Public: Initialize a new pool, and store state in the given master's state.
     def initialize(master_state)
       @master_state = master_state
+      @listener_proxies = {}
     end
 
     # Public: Iterate through all active ListenerProxy instances.
     def each(&block)
-      @master_state.listener_pids.values.each(&block)
+      @listener_proxies.values.each(&block)
     end
 
     # Public: Number of active listeners.
     def size
-      @master_state.listener_pids.values.size
+      @listener_proxies.size
     end
 
     # Public: Initialize a new listener, run it, and record it as the current listener. Returns its ListenerProxy.
@@ -30,19 +31,21 @@ module Resqued
       }
       listener = ListenerProxy.new(listener_state)
       listener.run
-      @master_state.listener_pids[listener.pid] = listener
+      @master_state.listener_states[listener.pid] = listener_state
+      @listener_proxies[listener.pid] = listener
       @master_state.current_listener_pid = listener.pid
       return listener
     end
 
     # Public: Remove the given pid from the set of known listeners, and return its ListenerProxy.
     def delete(pid)
-      @master_state.listener_pids.delete(pid)
+      @master_state.listener_states.delete(pid)
+      return @listener_proxies.delete(pid)
     end
 
     # Public: The current ListenerProxy, if available.
     def current
-      @master_state.listener_pids[current_pid]
+      @listener_proxies[current_pid]
     end
 
     # Public: The pid of the current listener, if available.
@@ -62,7 +65,7 @@ module Resqued
 
     # Public: The last good (previous current) ListenerProxy, if available.
     def last_good
-      @master_state.listener_pids[last_good_pid]
+      @listener_proxies[last_good_pid]
     end
 
     # Public: The pid of the last good listener, if available.

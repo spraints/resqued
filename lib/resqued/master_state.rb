@@ -6,7 +6,7 @@ module Resqued
       @fast_exit    = options.fetch(:fast_exit) { false }
       @pidfile      = options.fetch(:master_pidfile) { nil }
       @listeners_created = 0
-      @listener_pids = {}
+      @listener_states = {}
     end
 
     attr_reader :config_paths
@@ -15,7 +15,7 @@ module Resqued
     attr_reader :fast_exit
     attr_accessor :last_good_listener_pid
     attr_accessor :listeners_created
-    attr_accessor :listener_pids
+    attr_reader :listener_states
     attr_accessor :paused
     attr_reader :pidfile
   end
