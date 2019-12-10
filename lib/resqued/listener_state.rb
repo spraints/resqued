@@ -1,5 +1,5 @@
 module Resqued
-  class ListenerProxyState
+  class ListenerState
     attr_accessor :master_socket
     attr_accessor :options
     attr_accessor :pid

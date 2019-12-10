@@ -1,6 +1,6 @@
 require 'resqued/backoff'
 require 'resqued/listener_proxy'
-require 'resqued/listener_proxy_state'
+require 'resqued/listener_state'
 require 'resqued/logging'
 require 'resqued/master_state'
 require 'resqued/pidfile'
@@ -110,7 +110,7 @@ module Resqued
 
     def start_listener
       return if @state.current_listener || @listener_backoff.wait?
-      listener_state = ListenerProxyState.new
+      listener_state = ListenerState.new
       listener_state.options = {
         :config_paths => @state.config_paths,
         :old_workers => all_listeners.map { |l| l.running_workers }.flatten,
