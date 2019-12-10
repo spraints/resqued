@@ -65,6 +65,7 @@ module Resqued
     # Public: Change the current listener into the last good listener.
     def cycle_current
       @master_state.last_good_listener_pid = @master_state.current_listener_pid
+      @master_state.current_listener_pid = nil
     end
 
     # Public: The last good (previous current) ListenerProxy, if available.

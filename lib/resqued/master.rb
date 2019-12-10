@@ -160,11 +160,11 @@ module Resqued
         # The last good listener is still running because we got another HUP before the new listener finished booting.
         # Keep the last_good_listener (where all the workers are) and kill the booting current_listener. We'll start a new one.
         kill_listener(:QUIT, @listeners.current)
+        # Indicate to `start_listener` that it should start a new listener.
+        @listeners.clear_current!
       else
         @listeners.cycle_current
       end
-      # Indicate to `start_listener` that it should start a new listener.
-      @listeners.clear_current!
     end
 
     def kill_listener(signal, listener)
