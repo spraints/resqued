@@ -9,6 +9,10 @@ module Resqued
     def initialize(master_state)
       @master_state = master_state
       @listener_proxies = {}
+      # If this master is replacing an old one, there will be listeners in the state already.
+      @master_state.listener_states.each do |pid, ls|
+        @listener_proxies[pid] = ListenerProxy.new(ls)
+      end
     end
 
     # Public: Iterate through all active ListenerProxy instances.

@@ -50,6 +50,10 @@ opts = OptionParser.new do |opts|
   opts.on '--exec-on-hup', 'Re-exec the master process on SIGHUP' do
     options[:exec_on_hup] = true
   end
+
+  opts.on '--replace FILE', '(internal)' do |v|
+    options[:master_state] = v
+  end
 end
 
 opts.parse!
@@ -71,11 +75,16 @@ if test
     puts "#{index + 1}: #{worker.queues.join(',')}"
   end
 else
-  require_config_paths! options
   require 'resqued'
-  Resqued.capture_start_ctx!
   state = Resqued::MasterState.new
-  state.init(options)
+  if options[:master_state]
+    Resqued::Logging.logger.info "Resuming master from #{options[:master_state]}"
+    Resqued::ExecOnHUP.restore_state(state, options[:master_state])
+  else
+    require_config_paths! options
+    Resqued.capture_start_ctx!
+    state.init(options)
+  end
   resqued = Resqued::Master.new(state)
   if daemonize
     require 'resqued/daemon'

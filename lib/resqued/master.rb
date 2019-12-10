@@ -1,4 +1,5 @@
 require 'resqued/backoff'
+require 'resqued/exec_on_hup'
 require 'resqued/listener_pool'
 require 'resqued/logging'
 require 'resqued/master_state'
@@ -41,6 +42,9 @@ module Resqued
 
     # Private: dat main loop.
     def go_ham
+      # If we're resuming, we'll want to recycle the existing listener now.
+      prepare_new_listener
+
       loop do
         read_listeners
         reap_all_listeners(Process::WNOHANG)
@@ -52,12 +56,12 @@ module Resqued
           dump_object_counts
         when :HUP
           if @state.exec_on_hup
-            log "TODO - re-exec the master"
-          else
-            reopen_logs
-            log "Restarting listener with new configuration and application."
-            prepare_new_listener
+            log "Execing a new master"
+            ExecOnHUP.exec!(@state)
           end
+          reopen_logs
+          log "Restarting listener with new configuration and application."
+          prepare_new_listener
         when :USR2
           log "Pause job processing"
           @state.paused = true
