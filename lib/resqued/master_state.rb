@@ -1,12 +1,16 @@
 module Resqued
   class MasterState
-    def initialize(options)
+    def initialize
+      @listeners_created = 0
+      @listener_states = {}
+    end
+
+    # Public: When starting fresh, from command-line options, assign the initial values.
+    def init(options)
       @config_paths = options.fetch(:config_paths)
       @exec_on_hup  = options.fetch(:exec_on_hup) { false }
       @fast_exit    = options.fetch(:fast_exit) { false }
       @pidfile      = options.fetch(:master_pidfile) { nil }
-      @listeners_created = 0
-      @listener_states = {}
     end
 
     attr_reader :config_paths

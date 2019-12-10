@@ -74,7 +74,8 @@ else
   require_config_paths! options
   require 'resqued'
   Resqued.capture_start_ctx!
-  state = Resqued::MasterState.new(options)
+  state = Resqued::MasterState.new
+  state.init(options)
   resqued = Resqued::Master.new(state)
   if daemonize
     require 'resqued/daemon'
