@@ -10,10 +10,10 @@ module Resqued
     end
 
     attr_reader :config_paths
-    attr_accessor :current_listener
+    attr_accessor :current_listener_pid
     attr_reader :exec_on_hup
     attr_reader :fast_exit
-    attr_accessor :last_good_listener
+    attr_accessor :last_good_listener_pid
     attr_accessor :listeners_created
     attr_accessor :listener_pids
     attr_accessor :paused
