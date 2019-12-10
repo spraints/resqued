@@ -59,7 +59,7 @@ end
 opts.parse!
 options[:config_paths] = ARGV
 
-def require_config_paths!(options)
+def require_config_paths!(options, opts)
   if options[:config_paths].size == 0
     puts opts
     exit 1
@@ -67,7 +67,7 @@ def require_config_paths!(options)
 end
 
 if test
-  require_config_paths! options
+  require_config_paths! options, opts
   require 'resqued/config'
   workers = Resqued::Config.new(options[:config_paths]).build_workers
   puts "Workers defined in #{options[:config_paths].join(' ')}"
@@ -81,7 +81,7 @@ else
     Resqued::Logging.logger.info "Resuming master from #{options[:master_state]}"
     Resqued::ExecOnHUP.restore_state(state, options[:master_state])
   else
-    require_config_paths! options
+    require_config_paths! options, opts
     Resqued.capture_start_ctx!
     state.init(options)
   end
