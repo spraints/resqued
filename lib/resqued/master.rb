@@ -103,14 +103,9 @@ module Resqued
       log "Error while counting objects: #{e}"
     end
 
-    # Private: Map listener pids to ListenerProxy objects.
-    def listener_pids
-      @state.listener_pids ||= {}
-    end
-
     # Private: All the ListenerProxy objects.
     def all_listeners
-      listener_pids.values
+      @state.listener_pids.values
     end
 
     def start_listener
@@ -125,7 +120,7 @@ module Resqued
       @state.current_listener.run
       listener_status @state.current_listener, 'start'
       @listener_backoff.started
-      listener_pids[@state.current_listener.pid] = @state.current_listener
+      @state.listener_pids[@state.current_listener.pid] = @state.current_listener
       write_procline
     end
 
@@ -212,7 +207,7 @@ module Resqued
           if @state.last_good_listener && @state.last_good_listener.pid == lpid
             @state.last_good_listener = nil
           end
-          dead_listener = listener_pids.delete(lpid)
+          dead_listener = @state.listener_pids.delete(lpid)
           listener_status dead_listener, 'stop'
           dead_listener.dispose
           write_procline
@@ -257,7 +252,7 @@ module Resqued
     end
 
     def write_procline
-      $0 = "#{procline_version} master [gen #{@state.listeners_created}] [#{listener_pids.size} running] #{ARGV.join(' ')}"
+      $0 = "#{procline_version} master [gen #{@state.listeners_created}] [#{@state.listener_pids.size} running] #{ARGV.join(' ')}"
     end
 
     def listener_status(listener, status)
