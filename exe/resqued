@@ -8,7 +8,7 @@ end
 
 require 'optparse'
 
-options = {}
+options = {:exec_on_hup => true}
 daemonize = false
 test = false
 
@@ -47,8 +47,8 @@ opts = OptionParser.new do |opts|
     daemonize = true
   end
 
-  opts.on '--exec-on-hup', 'Re-exec the master process on SIGHUP' do
-    options[:exec_on_hup] = true
+  opts.on '--no-exec-on-hup', 'Do not re-exec the master process on SIGHUP' do
+    options[:exec_on_hup] = false
   end
 
   opts.on '--replace FILE', '(internal)' do |v|
