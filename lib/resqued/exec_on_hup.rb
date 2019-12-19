@@ -1,3 +1,4 @@
+require "tempfile"
 require "yaml"
 
 module Resqued
