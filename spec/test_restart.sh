@@ -29,6 +29,7 @@ configure_resqued() {
 }
 
 start_resqued() {
+  bundle binstub resqued
   bin/resqued --pidfile "${PIDFILE}" "${CONFIG}" &
   sleep 1
   running # set -e will make the test fail if it's not running
