@@ -29,6 +29,8 @@ configure_resqued() {
 }
 
 start_resqued() {
+  git clean -nxd
+  head bin/*
   bin/resqued --pidfile "${PIDFILE}" "${CONFIG}" &
   sleep 1
   running # set -e will make the test fail if it's not running
