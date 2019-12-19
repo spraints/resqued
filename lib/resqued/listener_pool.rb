@@ -29,9 +29,9 @@ module Resqued
     def start!
       listener_state = ListenerState.new
       listener_state.options = {
-        :config_paths => @master_state.config_paths,
-        :old_workers => map { |l| l.running_workers }.flatten,
-        :listener_id => next_listener_id,
+        config_paths: @master_state.config_paths,
+        old_workers: map { |l| l.running_workers }.flatten,
+        listener_id: next_listener_id,
       }
       listener = ListenerProxy.new(listener_state)
       listener.run

@@ -8,7 +8,7 @@ end
 
 require 'optparse'
 
-options = {:exec_on_hup => true}
+options = {exec_on_hup: true}
 daemonize = false
 test = false
 

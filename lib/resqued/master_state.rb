@@ -36,20 +36,20 @@ module Resqued
     # Public: Return this state so that it can be serialized.
     def to_h
       {
-        :config_paths => @config_paths,
-        :current_listener_pid => @current_listener_pid,
-        :exec_on_hup => @exec_on_hup,
-        :fast_exit => @fast_exit,
-        :last_good_listener_pid => @last_good_listener_pid,
-        :listeners_created => @listeners_created,
-        :listener_states => @listener_states.values.map { |ls| {
-          :master_socket => ls.master_socket && ls.master_socket.to_i,
-          :options => ls.options,
-          :pid => ls.pid,
-          :worker_pids => ls.worker_pids,
+        config_paths: @config_paths,
+        current_listener_pid: @current_listener_pid,
+        exec_on_hup: @exec_on_hup,
+        fast_exit: @fast_exit,
+        last_good_listener_pid: @last_good_listener_pid,
+        listeners_created: @listeners_created,
+        listener_states: @listener_states.values.map { |ls| {
+          master_socket: ls.master_socket && ls.master_socket.to_i,
+          options: ls.options,
+          pid: ls.pid,
+          worker_pids: ls.worker_pids,
         } },
-        :paused => @paused,
-        :pidfile => @pidfile,
+        paused: @paused,
+        pidfile: @pidfile,
       }
     end
 

@@ -48,7 +48,7 @@ module Resqued
         # listener
         master_socket.close
         Master::TRAPS.each { |signal| trap(signal, 'DEFAULT') rescue nil }
-        Listener.new(@state.options.merge(:socket => listener_socket)).exec
+        Listener.new(@state.options.merge(socket: listener_socket)).exec
         exit
       end
     end
