@@ -29,9 +29,15 @@ configure_resqued() {
 }
 
 start_resqued() {
+  bin_resqued=bin/resqued
+  binroot=bin
+  if [ -x gemfiles/bin/resqued ]; then
+    bin_resqued=gemfiles/bin/resqued
+    binroot=gemfiles/bin
+  fi
   git clean -nxd
-  head bin/*
-  bin/resqued --pidfile "${PIDFILE}" "${CONFIG}" &
+  head $binroot/*
+  $bin_resqued --pidfile "${PIDFILE}" "${CONFIG}" &
   sleep 1
   running # set -e will make the test fail if it's not running
   ps axo pid,args -H | grep [r]esqued-
