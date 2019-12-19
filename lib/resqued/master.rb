@@ -20,7 +20,7 @@ module Resqued
 
     def initialize(state, options = {})
       @state = state
-      @status_pipe = options.fetch(:status_pipe) { nil }
+      @status_pipe = options.fetch(:status_pipe, nil)
       @listeners = ListenerPool.new(state)
       @listener_backoff = Backoff.new
     end

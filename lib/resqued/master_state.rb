@@ -8,9 +8,9 @@ module Resqued
     # Public: When starting fresh, from command-line options, assign the initial values.
     def init(options)
       @config_paths = options.fetch(:config_paths)
-      @exec_on_hup  = options.fetch(:exec_on_hup) { false }
-      @fast_exit    = options.fetch(:fast_exit) { false }
-      @pidfile      = options.fetch(:master_pidfile) { nil }
+      @exec_on_hup  = options.fetch(:exec_on_hup, false)
+      @fast_exit    = options.fetch(:fast_exit, false)
+      @pidfile      = options.fetch(:master_pidfile, nil)
     end
 
     # Public: Restore state from a serialized form.
