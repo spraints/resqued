@@ -9,6 +9,7 @@ rvm:
   - "2.4"
   - "2.5"
   - "2.6"
+bundler_args: "--binstubs bin"
 gemfile:
   - gemfiles/resque-min
   - gemfiles/resque-latest
