@@ -49,9 +49,9 @@ describe Resqued::Config::Worker do
     END_CONFIG
     it do
       expect(result).to eq([
-        { :queues => ['a', 'b', 'c'], :interval => 1 },
-        { :queues => ['a', 'b', 'c'], :interval => 1 },
-      ])
+                             { :queues => ['a', 'b', 'c'], :interval => 1 },
+                             { :queues => ['a', 'b', 'c'], :interval => 1 },
+                           ])
     end
   end
 

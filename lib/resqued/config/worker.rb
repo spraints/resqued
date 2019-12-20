@@ -85,8 +85,8 @@ module Resqued
         queues = _fixed_concurrency_queues
         1.upto(@pool_size) do |worker_num|
           queue_names = queues
-            .select { |name, concurrency| concurrency >= worker_num }
-            .map { |name, _| name }
+                        .select { |name, concurrency| concurrency >= worker_num }
+                        .map { |name, _| name }
           if queue_names.any?
             worker(queue_names, @pool_options)
           else
