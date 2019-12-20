@@ -12,4 +12,16 @@ end
 desc "Run all tests"
 task :tests => [:spec, :test_restart]
 
-task :default => :tests
+desc "Check syntax"
+task :rubocop do
+  sh "rubocop"
+end
+
+namespace :rubocop do
+  desc "Reformat files to conform to rubocop rules"
+  task :fix do
+    sh "rubocop", "--auto-correct"
+  end
+end
+
+task :default => [:tests, :rubocop]
