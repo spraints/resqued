@@ -8,13 +8,6 @@
 
 # Offense count: 2
 # Cop supports --auto-correct.
-Layout/BlockEndNewline:
-  Exclude:
-    - 'lib/resqued/master_state.rb'
-    - 'spec/resqued/config/worker_spec.rb'
-
-# Offense count: 2
-# Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle.
 # SupportedStyles: leading, trailing
 Layout/DotPosition:
@@ -236,7 +229,7 @@ Metrics/AbcSize:
 # Configuration parameters: CountComments, ExcludedMethods.
 # ExcludedMethods: refine
 Metrics/BlockLength:
-  Max: 142
+  Max: 144
 
 # Offense count: 2
 # Configuration parameters: CountComments.
