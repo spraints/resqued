@@ -10,41 +10,45 @@ module Resqued
     include Resqued::Logging
 
     # Public.
-    def initialize(options)
-      @options = options
+    def initialize(state)
+      @state = state
     end
+
+    attr_reader :state
 
     # Public: wrap up all the things, this object is going home.
     def dispose
-      if @master_socket
-        @master_socket.close
-        @master_socket = nil
+      if @state.master_socket
+        @state.master_socket.close
+        @state.master_socket = nil
       end
     end
 
     # Public: An IO to select on to check if there is incoming data available.
     def read_pipe
-      @master_socket
+      @state.master_socket
     end
 
     # Public: The pid of the running listener process.
-    attr_reader :pid
+    def pid
+      @state.pid
+    end
 
     # Public: Start the listener process.
     def run
       return if pid
       listener_socket, master_socket = UNIXSocket.pair
-      if @pid = fork
+      if @state.pid = fork
         # master
         listener_socket.close
         master_socket.close_on_exec = true
-        log "Started listener #{@pid}"
-        @master_socket = master_socket
+        log "Started listener #{@state.pid}"
+        @state.master_socket = master_socket
       else
         # listener
         master_socket.close
         Master::TRAPS.each { |signal| trap(signal, 'DEFAULT') rescue nil }
-        Listener.new(@options.merge(:socket => listener_socket)).exec
+        Listener.new(@state.options.merge(socket: listener_socket)).exec
         exit
       end
     end
@@ -62,15 +66,15 @@ module Resqued
 
     # Private: Map worker pids to queue names
     def worker_pids
-      @worker_pids ||= {}
+      @state.worker_pids ||= {}
     end
 
     # Public: Check for updates on running worker information.
     def read_worker_status(options)
       on_activity = options[:on_activity]
-      until @master_socket.nil?
-        IO.select([@master_socket], nil, nil, 0) or return
-        case line = @master_socket.readline
+      until @state.master_socket.nil?
+        IO.select([@state.master_socket], nil, nil, 0) or return
+        case line = @state.master_socket.readline
         when /^\+(\d+),(.*)$/
           worker_pids[$1] = $2
           on_activity.worker_started($1) if on_activity
@@ -86,17 +90,17 @@ module Resqued
         end
       end
     rescue EOFError, Errno::ECONNRESET
-      @master_socket.close
-      @master_socket = nil
+      @state.master_socket.close
+      @state.master_socket = nil
     end
 
     # Public: Tell the listener process that a worker finished.
     def worker_finished(pid)
-      return if @master_socket.nil?
-      @master_socket.puts(pid)
+      return if @state.master_socket.nil?
+      @state.master_socket.puts(pid)
     rescue Errno::EPIPE
-      @master_socket.close
-      @master_socket = nil
+      @state.master_socket.close
+      @state.master_socket = nil
     end
   end
 end

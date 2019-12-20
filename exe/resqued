@@ -8,7 +8,7 @@ end
 
 require 'optparse'
 
-options = {}
+options = {exec_on_hup: true}
 daemonize = false
 test = false
 
@@ -46,17 +46,28 @@ opts = OptionParser.new do |opts|
   opts.on '-D', '--daemonize', 'Run daemonized in the background' do
     daemonize = true
   end
+
+  opts.on '--no-exec-on-hup', 'Do not re-exec the master process on SIGHUP' do
+    options[:exec_on_hup] = false
+  end
+
+  opts.on '--replace FILE', '(internal)' do |v|
+    options[:master_state] = v
+  end
 end
 
 opts.parse!
 options[:config_paths] = ARGV
 
-if options[:config_paths].size == 0
-  puts opts
-  exit 1
+def require_config_paths!(options, opts)
+  if options[:config_paths].size == 0
+    puts opts
+    exit 1
+  end
 end
 
 if test
+  require_config_paths! options, opts
   require 'resqued/config'
   workers = Resqued::Config.new(options[:config_paths]).build_workers
   puts "Workers defined in #{options[:config_paths].join(' ')}"
@@ -65,8 +76,16 @@ if test
   end
 else
   require 'resqued'
-  Resqued.capture_start_ctx!
-  resqued = Resqued::Master.new(options)
+  state = Resqued::MasterState.new
+  if options[:master_state]
+    Resqued::Logging.logger.info "Resuming master from #{options[:master_state]}"
+    Resqued::ExecOnHUP.restore_state(state, options[:master_state])
+  else
+    require_config_paths! options, opts
+    Resqued.capture_start_ctx!
+    state.init(options)
+  end
+  resqued = Resqued::Master.new(state)
   if daemonize
     require 'resqued/daemon'
     resqued = Resqued::Daemon.new(resqued)
