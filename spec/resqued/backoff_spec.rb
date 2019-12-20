@@ -55,7 +55,7 @@ describe Resqued::Backoff do
     end
   end
 
-  def be_close_to(x)
-    be_within(0.005).of(x)
+  def be_close_to(number)
+    be_within(0.005).of(number)
   end
 end

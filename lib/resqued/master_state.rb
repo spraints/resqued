@@ -14,14 +14,14 @@ module Resqued
     end
 
     # Public: Restore state from a serialized form.
-    def restore(h)
-      @config_paths = h[:config_paths]
-      @current_listener_pid = h[:current_listener_pid]
-      @exec_on_hup = h[:exec_on_hup]
-      @fast_exit = h[:fast_exit]
-      @last_good_listener_pid = h[:last_good_listener_pid]
-      @listeners_created = h[:listeners_created]
-      h[:listener_states].each do |lsh|
+    def restore(data)
+      @config_paths = data[:config_paths]
+      @current_listener_pid = data[:current_listener_pid]
+      @exec_on_hup = data[:exec_on_hup]
+      @fast_exit = data[:fast_exit]
+      @last_good_listener_pid = data[:last_good_listener_pid]
+      @listeners_created = data[:listeners_created]
+      data[:listener_states].each do |lsh|
         @listener_states[lsh[:pid]] = ListenerState.new.tap do |ls|
           ls.master_socket = lsh[:master_socket] && Socket.for_fd(lsh[:master_socket])
           ls.options = lsh[:options]
@@ -29,8 +29,8 @@ module Resqued
           ls.worker_pids = lsh[:worker_pids]
         end
       end
-      @paused = h[:paused]
-      @pidfile = h[:pidfile]
+      @paused = data[:paused]
+      @pidfile = data[:pidfile]
     end
 
     # Public: Return this state so that it can be serialized.
