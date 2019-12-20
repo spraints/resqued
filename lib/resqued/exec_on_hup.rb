@@ -22,7 +22,7 @@ module Resqued
 
     # Internal: Write out current state to a file, so that a new master can pick up from where we left off.
     def self.store_state(state)
-      data = {version: Resqued::VERSION}
+      data = { version: Resqued::VERSION }
       data[:start_ctx] = Resqued::START_CTX
       data[:state] = state.to_h
       

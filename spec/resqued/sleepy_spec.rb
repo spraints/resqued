@@ -10,13 +10,13 @@ describe Resqued::Sleepy do
   end
 
   it 'wakes on `awake`' do
-    Thread.new { sleep 0.1 ; awake }
+    Thread.new { sleep 0.1; awake }
     expect { yawn(2.0) }.to run_for(0.1)
   end
 
   it 'wakes on IO' do
     rd, wr = IO.pipe
-    Thread.new { sleep 0.1 ; wr.write('.') }
+    Thread.new { sleep 0.1; wr.write('.') }
     expect { yawn(2.0, rd) }.to run_for(0.1)
   end
 

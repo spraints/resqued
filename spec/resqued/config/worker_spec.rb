@@ -125,7 +125,7 @@ describe Resqued::Config::Worker do
     it { result.each { |x| expect(x).not_to have_key(:shuffle_queues) } }
     it do
       shuffled_queues = result.take(10).map { |x| x[:queues] }
-      expect(shuffled_queues.sort.uniq).to eq([ ['a','b'], ['b','a'] ]) # Some of the queues should be shuffled
+      expect(shuffled_queues.sort.uniq).to eq([['a', 'b'], ['b', 'a']]) # Some of the queues should be shuffled
     end
   end
 
@@ -149,7 +149,7 @@ describe Resqued::Config::Worker do
     END_CONFIG
 
     it { expect(result.size).to eq(1) }
-    it { expect(result[0].reject { |k, _| k == :worker_factory}).to eq(:queues => ['a']) }
+    it { expect(result[0].reject { |k, _| k == :worker_factory }).to eq(:queues => ['a']) }
     it { expect(result[0][:worker_factory].call(result[0][:queues])).to eq(['a']) }
   end
 
@@ -161,7 +161,7 @@ describe Resqued::Config::Worker do
     END_CONFIG
 
     it { expect(result.size).to eq(1) }
-    it { expect(result[0].reject { |k, _| k == :worker_factory}).to eq(:queues => ['a']) }
+    it { expect(result[0].reject { |k, _| k == :worker_factory }).to eq(:queues => ['a']) }
     it { expect(result[0][:worker_factory].call(result[0][:queues])).to eq(['a']) }
   end
 

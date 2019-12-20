@@ -209,8 +209,8 @@ module Resqued
       end while true
     end
 
-    SIGNALS = [ :HUP, :INT, :USR2, :CONT, :TERM, :QUIT ]
-    OPTIONAL_SIGNALS = [ :INFO ]
+    SIGNALS = [:HUP, :INT, :USR2, :CONT, :TERM, :QUIT]
+    OPTIONAL_SIGNALS = [:INFO]
     OTHER_SIGNALS = [:CHLD, 'EXIT']
     TRAPS = SIGNALS + OPTIONAL_SIGNALS + OTHER_SIGNALS
 
@@ -218,8 +218,8 @@ module Resqued
 
     def install_signal_handlers
       trap(:CHLD) { awake }
-      SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
-      OPTIONAL_SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } rescue nil }
+      SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal; awake } }
+      OPTIONAL_SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal; awake } rescue nil }
     end
 
     def report_unexpected_exits

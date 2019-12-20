@@ -58,11 +58,11 @@ module Resqued
 
     # Public: The old worker process finished!
     def finished!(process_status)
-      if process_status.nil? && ! @self_started
+      if process_status.nil? && !@self_started
         log :debug, "(#{@pid}/#{@pids.inspect}/self_started=#{@self_started}/killed=#{@killed}) I am no longer blocked."
         @pid = nil
         @backoff.died unless @killed
-      elsif ! process_status.nil? && @self_started
+      elsif !process_status.nil? && @self_started
         log :debug, "(#{@pid}/#{@pids.inspect}/self_started=#{@self_started}/killed=#{@killed}) I exited: #{process_status}"
         @pid = nil
         @backoff.died unless @killed

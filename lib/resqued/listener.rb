@@ -36,7 +36,7 @@ module Resqued
       ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
       ENV['RESQUED_MASTER_VERSION'] = Resqued::VERSION
       log "exec: #{Resqued::START_CTX['$0']} listener"
-      exec_opts = {socket_fd => socket_fd} # Ruby 2.0 needs to be told to keep the file descriptor open during exec.
+      exec_opts = { socket_fd => socket_fd } # Ruby 2.0 needs to be told to keep the file descriptor open during exec.
       if start_pwd = Resqued::START_CTX['pwd']
         exec_opts[:chdir] = start_pwd
       end
@@ -54,7 +54,7 @@ module Resqued
         options[:config_paths] = path.split(':')
       end
       if state = ENV['RESQUED_STATE']
-        options[:old_workers] = state.split('||').map { |s| Hash[[:pid,:queue_key].zip(s.split('|'))] }
+        options[:old_workers] = state.split('||').map { |s| Hash[[:pid, :queue_key].zip(s.split('|'))] }
       end
       if listener_id = ENV['RESQUED_LISTENER_ID']
         options[:listener_id] = listener_id
@@ -62,15 +62,15 @@ module Resqued
       new(options).run
     end
 
-    SIGNALS = [ :CONT, :QUIT, :INT, :TERM ]
-    ALL_SIGNALS = SIGNALS + [ :CHLD ]
+    SIGNALS = [:CONT, :QUIT, :INT, :TERM]
+    ALL_SIGNALS = SIGNALS + [:CHLD]
 
     SIGNAL_QUEUE = []
 
     # Public: Run the main loop.
     def run
       trap(:CHLD) { awake }
-      SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
+      SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal; awake } }
       @socket.close_on_exec = true
       write_procline('starting')
 

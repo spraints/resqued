@@ -19,8 +19,8 @@ describe Resqued::Config do
     end
     let(:config) { Resqued::Config.new([@config_file]) }
 
-    it("can require_relative") { config.build_workers ; expect($test_val).to eq(:ok) }
-    it("does not override require_relative in required files") { config.build_workers ; expect($other_test_val).to eq(:ok) }
+    it("can require_relative") { config.build_workers; expect($test_val).to eq(:ok) }
+    it("does not override require_relative in required files") { config.build_workers; expect($other_test_val).to eq(:ok) }
 
     def make_file(dir, relative_path, content)
       File.join(dir, relative_path).tap do |path|

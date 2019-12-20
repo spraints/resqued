@@ -20,31 +20,31 @@ describe Resqued::Backoff do
   end
 
   context 'after one quick exit' do
-    before { 1.times { backoff.started ; backoff.died } }
+    before { 1.times { backoff.started; backoff.died } }
     it { expect(backoff.wait?).to be_true }
     it { expect(backoff.how_long?).to be_close_to(1.0) }
   end
 
   context 'after two quick starts' do
-    before { 2.times { backoff.started ; backoff.died } }
+    before { 2.times { backoff.started; backoff.died } }
     it { expect(backoff.wait?).to be_true }
     it { expect(backoff.how_long?).to be_close_to(2.0) }
   end
 
   context 'after five quick starts' do
-    before { 6.times { backoff.started ; backoff.died } }
+    before { 6.times { backoff.started; backoff.died } }
     it { expect(backoff.wait?).to be_true }
     it { expect(backoff.how_long?).to be_close_to(32.0) }
   end
 
   context 'after six quick starts' do
-    before { 7.times { backoff.started ; backoff.died } }
+    before { 7.times { backoff.started; backoff.died } }
     it { expect(backoff.wait?).to be_true }
     it { expect(backoff.how_long?).to be_close_to(64.0) }
   end
 
   context 'does not wait longer than 64s' do
-    before { 8.times { backoff.started ; backoff.died } }
+    before { 8.times { backoff.started; backoff.died } }
     it { expect(backoff.wait?).to be_true }
     it { expect(backoff.how_long?).to be_close_to(64.0) }
     it 'and resets after an expected exit' do

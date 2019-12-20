@@ -14,7 +14,7 @@ module Resqued
     # Does the things that the config file says to do.
     class Configuration
       def initialize(config_paths)
-        @config_data = config_paths.map { |path| {:content => File.read(path), :path => path} }
+        @config_data = config_paths.map { |path| { :content => File.read(path), :path => path } }
       end
 
       # Public: Performs the `before_fork` action from the config.
