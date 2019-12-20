@@ -81,6 +81,7 @@ module Resqued
       # on the concurrency values established and the total number of workers.
       def build_pool_workers!
         return unless @pool_size
+
         queues = _fixed_concurrency_queues
         1.upto(@pool_size) do |worker_num|
           queue_names = queues

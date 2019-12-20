@@ -109,6 +109,7 @@ module Resqued
 
     def start_listener
       return if @listeners.current || @listener_backoff.wait?
+
       listener = @listeners.start!
       listener_status listener, 'start'
       @listener_backoff.started

@@ -6,29 +6,6 @@
 # Note that changes in the inspected code, or installation of new
 # versions of RuboCop, may require this file to be generated again.
 
-# Offense count: 8
-# Cop supports --auto-correct.
-Layout/EmptyLineAfterGuardClause:
-  Exclude:
-    - 'lib/resqued/config/worker.rb'
-    - 'lib/resqued/listener.rb'
-    - 'lib/resqued/listener_proxy.rb'
-    - 'lib/resqued/master.rb'
-    - 'lib/resqued/worker.rb'
-
-# Offense count: 19
-# Cop supports --auto-correct.
-Layout/EmptyLineAfterMagicComment:
-  Enabled: false
-
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: empty_lines, no_empty_lines
-Layout/EmptyLinesAroundBlockBody:
-  Exclude:
-    - 'Guardfile'
-
 # Offense count: 3
 # Cop supports --auto-correct.
 # Configuration parameters: AllowForAlignment, AllowBeforeTrailingComments, ForceEqualSignAlignment.

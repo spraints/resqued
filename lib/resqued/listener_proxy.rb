@@ -37,6 +37,7 @@ module Resqued
     # Public: Start the listener process.
     def run
       return if pid
+
       listener_socket, master_socket = UNIXSocket.pair
       if @state.pid = fork
         # master
@@ -97,6 +98,7 @@ module Resqued
     # Public: Tell the listener process that a worker finished.
     def worker_finished(pid)
       return if @state.master_socket.nil?
+
       @state.master_socket.puts(pid)
     rescue Errno::EPIPE
       @state.master_socket.close

@@ -23,5 +23,4 @@ guard 'rspec', rspec_options do
   watch(%r{^lib/(.*)\.rb$}) { |m| "spec/#{m[1]}_spec.rb" }
   watch(%r{^lib/resqued/config/(.*)_fork\.rb$}) { |m| "spec/resqued/config/fork_event_spec.rb" }
   watch(%r{^lib/resqued/config/dsl\.rb$}) { |m| "spec/resqued/config" }
-
 end

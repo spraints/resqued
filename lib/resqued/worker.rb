@@ -50,6 +50,7 @@ module Resqued
     # Public: Claim this worker for another listener's worker.
     def wait_for(pid)
       raise "Already running #{@pid} (can't wait for #{pid})" if @pid
+
       @self_started = false
       @pids << pid
       @pid = pid
@@ -78,6 +79,7 @@ module Resqued
     # Public: Start a job, if there's one waiting in one of my queues.
     def try_start
       return if @backoff.wait?
+
       @backoff.started
       @self_started = true
       @killed = false

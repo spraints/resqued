@@ -123,6 +123,7 @@ module Resqued
         SIGNAL_QUEUE.clear
 
         break if :no_child == reap_workers(Process::WNOHANG)
+
         kill_all(signal)
 
         sleep 1 # Don't kill any more often than every 1s.
@@ -187,6 +188,7 @@ module Resqued
     # Private: Check if master reports any dead workers.
     def check_for_expired_workers
       return unless @socket
+
       loop do
         IO.select([@socket], nil, nil, 0) or return
         line = @socket.readline
