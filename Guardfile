@@ -13,7 +13,7 @@ rspec_options = {
 }
 
 guard 'rspec', rspec_options do
-  watch('Gemfile.lock')                { 'spec' }
+  watch('Gemfile.lock') { 'spec' }
 
   watch(%r{^spec/.+_spec\.rb$})
 

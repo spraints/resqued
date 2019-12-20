@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.email   = 'spraints@gmail.com'
   s.files   = Dir['lib/**/*', 'README.md', 'CHANGES.md', 'MIT-LICENSE', 'docs/**/*']
   s.test_files = Dir['spec/**/*']
-  s.bindir  = 'exe'
+  s.bindir = 'exe'
   s.executables = %w(
     resqued
   )
