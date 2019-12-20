@@ -16,26 +16,12 @@ Layout/HashAlignment:
   Exclude:
     - 'Guardfile'
 
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: AllowDoxygenCommentStyle.
-Layout/LeadingCommentSpace:
-  Exclude:
-    - 'test2.rb'
-
 # Offense count: 2
 # Cop supports --auto-correct.
 Layout/MultilineBlockLayout:
   Exclude:
     - 'lib/resqued/master_state.rb'
     - 'spec/resqued/config/worker_spec.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: AllowInHeredoc.
-Layout/TrailingWhitespace:
-  Exclude:
-    - 'lib/resqued/exec_on_hup.rb'
 
 # Offense count: 14
 # Configuration parameters: AllowSafeAssignment.

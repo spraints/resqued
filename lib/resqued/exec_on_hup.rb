@@ -25,7 +25,7 @@ module Resqued
       data = { version: Resqued::VERSION }
       data[:start_ctx] = Resqued::START_CTX
       data[:state] = state.to_h
-      
+
       f = Tempfile.create "resqued-state"
       f.write(YAML.dump(data))
       f.close
