@@ -183,28 +183,30 @@ module Resqued
     end
 
     def reap_all_listeners(waitpid_flags = 0)
-      begin
-        lpid, status = Process.waitpid2(-1, waitpid_flags)
-        return unless lpid
+      loop do
+        begin
+          lpid, status = Process.waitpid2(-1, waitpid_flags)
+          return unless lpid
 
-        log "Listener exited #{status}"
+          log "Listener exited #{status}"
 
-        if @listeners.current_pid == lpid
-          @listener_backoff.died
-          @listeners.clear_current!
+          if @listeners.current_pid == lpid
+            @listener_backoff.died
+            @listeners.clear_current!
+          end
+
+          if @listeners.last_good_pid == lpid
+            @state.clear_last_good!
+          end
+
+          dead_listener = @listeners.delete(lpid)
+          listener_status dead_listener, 'stop'
+          dead_listener.dispose
+          write_procline
+        rescue Errno::ECHILD
+          return
         end
-
-        if @listeners.last_good_pid == lpid
-          @state.clear_last_good!
-        end
-
-        dead_listener = @listeners.delete(lpid)
-        listener_status dead_listener, 'stop'
-        dead_listener.dispose
-        write_procline
-      rescue Errno::ECHILD
-        return
-      end while true
+      end
     end
 
     SIGNALS = [:HUP, :INT, :USR2, :CONT, :TERM, :QUIT]
