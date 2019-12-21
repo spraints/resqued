@@ -1,9 +1,9 @@
-require 'spec_helper'
+require "spec_helper"
 
-require 'fileutils'
-require 'tmpdir'
+require "fileutils"
+require "tmpdir"
 
-require 'resqued/config'
+require "resqued/config"
 
 describe Resqued::Config do
   context do

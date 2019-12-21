@@ -1,11 +1,11 @@
-require 'resqued/backoff'
-require 'resqued/exec_on_hup'
-require 'resqued/listener_pool'
-require 'resqued/logging'
-require 'resqued/master_state'
-require 'resqued/pidfile'
-require 'resqued/procline_version'
-require 'resqued/sleepy'
+require "resqued/backoff"
+require "resqued/exec_on_hup"
+require "resqued/listener_pool"
+require "resqued/logging"
+require "resqued/master_state"
+require "resqued/pidfile"
+require "resqued/procline_version"
+require "resqued/sleepy"
 
 module Resqued
   # The master process.
@@ -97,7 +97,7 @@ module Resqued
 
         diff = ""
         if last = @last_counts && @last_counts[name]
-          diff = sprintf(' (%+d)', (count - last))
+          diff = sprintf(" (%+d)", (count - last))
         end
         log "   #{count} #{name}#{diff}"
       end
@@ -111,7 +111,7 @@ module Resqued
       return if @listeners.current || @listener_backoff.wait?
 
       listener = @listeners.start!
-      listener_status listener, 'start'
+      listener_status listener, "start"
       @listener_backoff.started
       write_procline
     end
@@ -124,14 +124,14 @@ module Resqued
 
     # Listener message: A worker just started working.
     def worker_started(pid)
-      worker_status(pid, 'start')
+      worker_status(pid, "start")
     end
 
     # Listener message: A worker just stopped working.
     #
     # Forwards the message to the other listeners.
     def worker_finished(pid)
-      worker_status(pid, 'stop')
+      worker_status(pid, "stop")
       @listeners.each do |other|
         other.worker_finished(pid)
       end
@@ -141,7 +141,7 @@ module Resqued
     #
     # Promotes a booting listener to be the current listener.
     def listener_running(listener)
-      listener_status(listener, 'ready')
+      listener_status(listener, "ready")
       if listener == @listeners.current
         kill_listener(:QUIT, @listeners.last_good)
         @listeners.clear_last_good!
@@ -200,7 +200,7 @@ module Resqued
           end
 
           dead_listener = @listeners.delete(lpid)
-          listener_status dead_listener, 'stop'
+          listener_status dead_listener, "stop"
           dead_listener.dispose
           write_procline
         rescue Errno::ECHILD
@@ -211,7 +211,7 @@ module Resqued
 
     SIGNALS = [:HUP, :INT, :USR2, :CONT, :TERM, :QUIT].freeze
     OPTIONAL_SIGNALS = [:INFO].freeze
-    OTHER_SIGNALS = [:CHLD, 'EXIT'].freeze
+    OTHER_SIGNALS = [:CHLD, "EXIT"].freeze
     TRAPS = SIGNALS + OPTIONAL_SIGNALS + OTHER_SIGNALS
 
     SIGNAL_QUEUE = [] # rubocop: disable Style/MutableConstant
@@ -223,7 +223,7 @@ module Resqued
     end
 
     def report_unexpected_exits
-      trap('EXIT') do
+      trap("EXIT") do
         log("EXIT #{$!.inspect}")
         $!&.backtrace&.each do |line|
           log(line)
@@ -232,7 +232,7 @@ module Resqued
     end
 
     def no_more_unexpected_exits
-      trap('EXIT', 'DEFAULT')
+      trap("EXIT", "DEFAULT")
     end
 
     def yawn(duration)
@@ -245,12 +245,12 @@ module Resqued
 
     def listener_status(listener, status)
       if listener&.pid
-        status_message('listener', listener.pid, status)
+        status_message("listener", listener.pid, status)
       end
     end
 
     def worker_status(pid, status)
-      status_message('worker', pid, status)
+      status_message("worker", pid, status)
     end
 
     def status_message(type, pid, status)

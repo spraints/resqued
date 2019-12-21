@@ -1,5 +1,5 @@
-require 'fcntl'
-require 'kgio'
+require "fcntl"
+require "kgio"
 
 module Resqued
   module Sleepy
@@ -14,7 +14,7 @@ module Resqued
 
     # Public: Break out of `yawn`.
     def awake
-      self_pipe[1].kgio_trywrite('.')
+      self_pipe[1].kgio_trywrite(".")
     end
 
     # Private.

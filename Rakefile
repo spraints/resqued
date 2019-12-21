@@ -1,7 +1,7 @@
-require 'rspec/core/rake_task'
+require "rspec/core/rake_task"
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
-  spec.rspec_opts = '-f doc'
+  spec.rspec_opts = "-f doc"
 end
 
 desc "Test daemon start/restart/stop"

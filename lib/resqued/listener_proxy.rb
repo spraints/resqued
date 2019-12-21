@@ -1,8 +1,8 @@
-require 'fcntl'
-require 'socket'
+require "fcntl"
+require "socket"
 
-require 'resqued/listener'
-require 'resqued/logging'
+require "resqued/listener"
+require "resqued/logging"
 
 module Resqued
   # Controls a listener process from the master process.
@@ -48,7 +48,7 @@ module Resqued
       else
         # listener
         master_socket.close
-        Master::TRAPS.each { |signal| trap(signal, 'DEFAULT') rescue nil }
+        Master::TRAPS.each { |signal| trap(signal, "DEFAULT") rescue nil }
         Listener.new(@state.options.merge(socket: listener_socket)).exec
         exit
       end
@@ -84,7 +84,7 @@ module Resqued
           on_activity&.worker_finished($1)
         when /^RUNNING/
           on_activity&.listener_running(self)
-        when ''
+        when ""
           break
         else
           log "Malformed data from listener: #{line.inspect}"

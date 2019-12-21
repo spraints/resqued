@@ -1,6 +1,6 @@
-require 'resqued/config/after_fork'
-require 'resqued/config/before_fork'
-require 'resqued/config/worker'
+require "resqued/config/after_fork"
+require "resqued/config/before_fork"
+require "resqued/config/worker"
 
 module Resqued
   module Config

@@ -1,4 +1,4 @@
-require 'mono_logger'
+require "mono_logger"
 
 module Resqued
   # Mixin for any class that wants to write messages to the log file.
@@ -40,7 +40,7 @@ module Resqued
         @logging_io = nil if @logging_io&.closed?
         @logging_io ||=
           if path = Resqued::Logging.log_file
-            File.open(path, 'a').tap do |f|
+            File.open(path, "a").tap do |f|
               f.sync = true
               f.close_on_exec = true
               # Make sure we're not holding onto a stale filehandle.
@@ -62,13 +62,13 @@ module Resqued
 
       # Public.
       def log_file=(path)
-        ENV['RESQUED_LOGFILE'] = File.expand_path(path)
+        ENV["RESQUED_LOGFILE"] = File.expand_path(path)
         close_log
       end
 
       # Public.
       def log_file
-        ENV['RESQUED_LOGFILE']
+        ENV["RESQUED_LOGFILE"]
       end
     end
 

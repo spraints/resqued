@@ -1,12 +1,12 @@
-require 'spec_helper'
-require 'resqued/config/after_fork'
-require 'resqued/config/before_fork'
-require 'resqued/runtime_info'
+require "spec_helper"
+require "resqued/config/after_fork"
+require "resqued/config/before_fork"
+require "resqued/runtime_info"
 
 describe do
   before { evaluator.apply(config) }
 
-  context 'after_fork' do
+  context "after_fork" do
     # Run the after_fork block.
     #
     #    after_fork do |resque_worker|
@@ -32,7 +32,7 @@ describe do
     it { expect(worker.token).to eq(:called) }
   end
 
-  context 'before_fork' do
+  context "before_fork" do
     # Run the before_fork block.
     #
     #    before_fork do

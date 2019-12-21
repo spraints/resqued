@@ -1,4 +1,4 @@
-require 'resqued/config/dsl'
+require "resqued/config/dsl"
 
 module Resqued
   module Config

@@ -86,3 +86,6 @@ Style/Semicolon:
 
 Style/SpecialGlobalVars:
   EnforcedStyle: use_perl_names
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes

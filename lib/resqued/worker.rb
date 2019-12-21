@@ -1,8 +1,8 @@
-require 'resque'
-require 'digest'
+require "resque"
+require "digest"
 
-require 'resqued/backoff'
-require 'resqued/logging'
+require "resqued/backoff"
+require "resqued/logging"
 
 module Resqued
   # Models a worker process.
@@ -11,7 +11,7 @@ module Resqued
 
     DEFAULT_WORKER_FACTORY = lambda { |queues|
       resque_worker = Resque::Worker.new(*queues)
-      resque_worker.term_child = true if resque_worker.respond_to?('term_child=')
+      resque_worker.term_child = true if resque_worker.respond_to?("term_child=")
       redis_client = Resque.redis.respond_to?(:_client) ? Resque.redis._client : Resque.redis.client
       redis_client.reconnect
       resque_worker
@@ -44,7 +44,7 @@ module Resqued
 
     # Public: A string that compares if this worker is equivalent to a worker in another Resqued::Listener.
     def queue_key
-      Digest::SHA256.hexdigest(queues.sort.join(';'))
+      Digest::SHA256.hexdigest(queues.sort.join(";"))
     end
 
     # Public: Claim this worker for another listener's worker.
@@ -89,7 +89,7 @@ module Resqued
         log "Forked worker #{@pid}"
       else
         # In case we get a signal before resque is ready for it.
-        Resqued::Listener::ALL_SIGNALS.each { |signal| trap(signal, 'DEFAULT') }
+        Resqued::Listener::ALL_SIGNALS.each { |signal| trap(signal, "DEFAULT") }
         trap(:QUIT) { exit! 0 } # If we get a QUIT during boot, just spin back down.
         $0 = "STARTING RESQUE FOR #{queues.join(',')}"
         resque_worker = @worker_factory.call(queues)

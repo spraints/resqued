@@ -1,5 +1,5 @@
-require 'resqued/config/base'
-require 'resqued/worker'
+require "resqued/config/base"
+require "resqued/worker"
 
 module Resqued
   module Config
@@ -21,7 +21,7 @@ module Resqued
       def worker(*queues)
         options = queues.last.is_a?(Hash) ? queues.pop.dup : {}
         queues = queues.flatten
-        queues = ['*'] if queues.empty?
+        queues = ["*"] if queues.empty?
         queues = queues.shuffle if options.delete(:shuffle_queues)
         @workers << @worker_class.new(options.merge(@worker_options).merge(queues: queues))
       end
@@ -90,7 +90,7 @@ module Resqued
           if queue_names.any?
             worker(queue_names, @pool_options)
           else
-            worker('*', @pool_options)
+            worker("*", @pool_options)
           end
         end
       end

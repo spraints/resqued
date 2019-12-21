@@ -1,5 +1,5 @@
 before_fork do
-  raise 'boom'
+  raise "boom"
 end
 
 worker "test"

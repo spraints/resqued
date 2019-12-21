@@ -5,7 +5,7 @@ module Resqued
   class ExecOnHUP
     # Public: Replace the current master process with a new one, while preserving state.
     def self.exec!(state)
-      exec Resqued::START_CTX['$0'], "--replace", store_state(state), exec_opts(state)
+      exec Resqued::START_CTX["$0"], "--replace", store_state(state), exec_opts(state)
     end
 
     # Internal: Returns exec options for each open socket in 'state'.
@@ -14,7 +14,7 @@ module Resqued
       state.sockets.each do |sock|
         exec_opts[sock.to_i] = sock
       end
-      if pwd = Resqued::START_CTX['pwd']
+      if pwd = Resqued::START_CTX["pwd"]
         exec_opts[:chdir] = pwd
       end
       return exec_opts

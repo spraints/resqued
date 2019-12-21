@@ -1,12 +1,12 @@
-require 'socket'
+require "socket"
 
-require 'resqued/config'
-require 'resqued/logging'
-require 'resqued/procline_version'
-require 'resqued/runtime_info'
-require 'resqued/sleepy'
-require 'resqued/version'
-require 'resqued/worker'
+require "resqued/config"
+require "resqued/logging"
+require "resqued/procline_version"
+require "resqued/runtime_info"
+require "resqued/sleepy"
+require "resqued/version"
+require "resqued/worker"
 
 module Resqued
   # A listener process. Watches resque queues and forks workers.
@@ -30,33 +30,33 @@ module Resqued
     # Runs in the master process.
     def exec
       socket_fd = @socket.to_i
-      ENV['RESQUED_SOCKET']      = socket_fd.to_s
-      ENV['RESQUED_CONFIG_PATH'] = @config_paths.join(':')
-      ENV['RESQUED_STATE']       = @old_workers.map { |r| "#{r[:pid]}|#{r[:queue_key]}" }.join('||')
-      ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
-      ENV['RESQUED_MASTER_VERSION'] = Resqued::VERSION
+      ENV["RESQUED_SOCKET"]      = socket_fd.to_s
+      ENV["RESQUED_CONFIG_PATH"] = @config_paths.join(":")
+      ENV["RESQUED_STATE"]       = @old_workers.map { |r| "#{r[:pid]}|#{r[:queue_key]}" }.join("||")
+      ENV["RESQUED_LISTENER_ID"] = @listener_id.to_s
+      ENV["RESQUED_MASTER_VERSION"] = Resqued::VERSION
       log "exec: #{Resqued::START_CTX['$0']} listener"
       exec_opts = { socket_fd => socket_fd } # Ruby 2.0 needs to be told to keep the file descriptor open during exec.
-      if start_pwd = Resqued::START_CTX['pwd']
+      if start_pwd = Resqued::START_CTX["pwd"]
         exec_opts[:chdir] = start_pwd
       end
-      procline_buf = ' ' * 256 # make room for setproctitle
-      Kernel.exec(Resqued::START_CTX['$0'], 'listener', procline_buf, exec_opts)
+      procline_buf = " " * 256 # make room for setproctitle
+      Kernel.exec(Resqued::START_CTX["$0"], "listener", procline_buf, exec_opts)
     end
 
     # Public: Given args from #exec, start this listener.
     def self.exec!
       options = {}
-      if socket = ENV['RESQUED_SOCKET']
+      if socket = ENV["RESQUED_SOCKET"]
         options[:socket] = Socket.for_fd(socket.to_i)
       end
-      if path = ENV['RESQUED_CONFIG_PATH']
-        options[:config_paths] = path.split(':')
+      if path = ENV["RESQUED_CONFIG_PATH"]
+        options[:config_paths] = path.split(":")
       end
-      if state = ENV['RESQUED_STATE']
-        options[:old_workers] = state.split('||').map { |s| Hash[[:pid, :queue_key].zip(s.split('|'))] }
+      if state = ENV["RESQUED_STATE"]
+        options[:old_workers] = state.split("||").map { |s| Hash[[:pid, :queue_key].zip(s.split("|"))] }
       end
-      if listener_id = ENV['RESQUED_LISTENER_ID']
+      if listener_id = ENV["RESQUED_LISTENER_ID"]
         options[:listener_id] = listener_id
       end
       new(options).run
@@ -72,25 +72,25 @@ module Resqued
       trap(:CHLD) { awake }
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal; awake } }
       @socket.close_on_exec = true
-      write_procline('starting')
+      write_procline("starting")
 
       config = Resqued::Config.new(@config_paths)
       set_default_resque_logger
       config.before_fork(info)
       report_to_master("RUNNING")
 
-      write_procline('running')
+      write_procline("running")
       init_workers(config)
       exit_signal = run_workers_run
 
-      write_procline('shutdown')
+      write_procline("shutdown")
       burn_down_workers(exit_signal || :QUIT)
     end
 
     # Private.
     def set_default_resque_logger
-      require 'resque'
-      if Resque.respond_to?('logger=')
+      require "resque"
+      if Resque.respond_to?("logger=")
         Resque.logger = Resqued::Logging.build_logger
       end
     end
@@ -101,7 +101,7 @@ module Resqued
         reap_workers(Process::WNOHANG)
         check_for_expired_workers
         start_idle_workers
-        write_procline('running')
+        write_procline("running")
         case signal = SIGNAL_QUEUE.shift
         when nil
           yawn
@@ -119,7 +119,7 @@ module Resqued
     def burn_down_workers(signal)
       loop do
         check_for_expired_workers
-        write_procline('shutdown')
+        write_procline("shutdown")
         SIGNAL_QUEUE.clear
 
         break if :no_child == reap_workers(Process::WNOHANG)
