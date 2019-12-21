@@ -20,23 +20,23 @@ Style/BlockDelimiters:
   FunctionalMethods:
     - trap
 
-# Maybe eventually, just not for now.
-Style/Documentation:
-  Enabled: false
-  Exclude:
-    - 'spec/**/*'
-    - 'test/**/*'
-
 Style/EmptyMethod:
   EnforcedStyle: expanded
 
 Style/FormatString:
   EnforcedStyle: sprintf
 
-# maybe eventually.
-Style/FormatStringToken:
+# TODO - figure out if frozen string literals will be ok.
+Style/FrozenStringLiteralComment:
   Enabled: false
 
-# maybe eventually
-Style/FrozenStringLiteralComment:
+# TODO - add docs to code.
+Style/Documentation:
+  Enabled: false
+  Exclude:
+    - 'spec/**/*'
+    - 'test/**/*'
+
+# maybe eventually, if positional tokens become difficult to maintain.
+Style/FormatStringToken:
   Enabled: false
