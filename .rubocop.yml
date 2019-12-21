@@ -57,3 +57,6 @@ Style/HashSyntax:
 
 Style/IfUnlessModifier:
   Enabled: false
+
+Style/NumericLiteralPrefix:
+  EnforcedOctalStyle: zero_only
