@@ -32,3 +32,7 @@ Style/EmptyMethod:
 
 Style/FormatString:
   EnforcedStyle: sprintf
+
+# maybe eventually.
+Style/FormatStringToken:
+  Enabled: false
