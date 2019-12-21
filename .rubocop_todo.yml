@@ -88,16 +88,6 @@ Security/YAMLLoad:
   Exclude:
     - 'lib/resqued/exec_on_hup.rb'
 
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: AutoCorrect, EnforcedStyle, IgnoredMethods.
-# SupportedStyles: predicate, comparison
-Style/NumericPredicate:
-  Exclude:
-    - 'spec/**/*'
-    - 'exe/resqued'
-    - 'lib/resqued/sleepy.rb'
-
 # Offense count: 3
 # Cop supports --auto-correct.
 Style/ParallelAssignment:

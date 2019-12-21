@@ -60,3 +60,6 @@ Style/IfUnlessModifier:
 
 Style/NumericLiteralPrefix:
   EnforcedOctalStyle: zero_only
+
+Style/NumericPredicate:
+  EnforcedStyle: comparison
