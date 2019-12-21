@@ -18,7 +18,7 @@ module Resqued
 
       class ResquedLogFormatter < ::Logger::Formatter
         def call(severity, time, progname, msg)
-          "[%s#%6d] %5s %s -- %s\n" % [format_datetime(time), $$, severity, progname, msg2str(msg)]
+          sprintf("[%s#%6d] %5s %s -- %s\n", format_datetime(time), $$, severity, progname, msg2str(msg))
         end
       end
 

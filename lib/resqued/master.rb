@@ -96,7 +96,7 @@ module Resqued
         if i < top
           diff = ""
           if last = @last_counts && @last_counts[name]
-            diff = " (#{'%+d' % (count - last)})"
+            diff = sprintf(' (%+d)', (count - last))
           end
           log "   #{count} #{name}#{diff}"
         end

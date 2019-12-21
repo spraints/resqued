@@ -29,3 +29,6 @@ Style/Documentation:
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
+
+Style/FormatString:
+  EnforcedStyle: sprintf
