@@ -29,7 +29,7 @@ namespace :rubocop do
 end
 
 def rubocop(*args)
-  sh "rubocop", "-c", ".rubocop.yml", *args
+  sh "rubocop", "-c", ".rubocop.yml", "--parallel", *args
 end
 
 task :default => [:tests, :rubocop]
