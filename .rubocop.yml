@@ -26,3 +26,6 @@ Style/Documentation:
   Exclude:
     - 'spec/**/*'
     - 'test/**/*'
+
+Style/EmptyMethod:
+  EnforcedStyle: expanded
