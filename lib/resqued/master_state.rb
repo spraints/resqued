@@ -44,7 +44,7 @@ module Resqued
         listeners_created: @listeners_created,
         listener_states: @listener_states.values.map { |ls|
           {
-            master_socket: ls.master_socket && ls.master_socket.to_i,
+            master_socket: ls.master_socket&.to_i,
             options: ls.options,
             pid: ls.pid,
             worker_pids: ls.worker_pids,

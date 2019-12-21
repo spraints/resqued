@@ -37,7 +37,7 @@ module Resqued
 
       # Private: Get an IO to write log messages to.
       def logging_io
-        @logging_io = nil if @logging_io && @logging_io.closed?
+        @logging_io = nil if @logging_io&.closed?
         @logging_io ||=
           if path = Resqued::Logging.log_file
             File.open(path, 'a').tap do |f|

@@ -236,7 +236,7 @@ module Resqued
     #     report_to_master("+12345,queue")  # Worker process PID:12345 started, working on a job from "queue".
     #     report_to_master("-12345")        # Worker process PID:12345 exited.
     def report_to_master(status)
-      @socket.puts(status) if @socket
+      @socket&.puts(status)
     rescue Errno::EPIPE => e
       @socket = nil
       log "#{e.class.name} while writing to master"

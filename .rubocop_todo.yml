@@ -88,18 +88,6 @@ Security/YAMLLoad:
   Exclude:
     - 'lib/resqued/exec_on_hup.rb'
 
-# Offense count: 10
-# Cop supports --auto-correct.
-# Configuration parameters: ConvertCodeThatCanStartToReturnNil, AllowedMethods.
-# AllowedMethods: present?, blank?, presence, try, try!
-Style/SafeNavigation:
-  Exclude:
-    - 'lib/resqued/listener.rb'
-    - 'lib/resqued/listener_proxy.rb'
-    - 'lib/resqued/logging.rb'
-    - 'lib/resqued/master.rb'
-    - 'lib/resqued/master_state.rb'
-
 # Offense count: 16
 # Cop supports --auto-correct.
 # Configuration parameters: AllowAsExpressionSeparator.

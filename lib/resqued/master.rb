@@ -169,7 +169,7 @@ module Resqued
     end
 
     def kill_listener(signal, listener)
-      listener.kill(signal) if listener
+      listener&.kill(signal)
     end
 
     def kill_all_listeners(signal)
@@ -225,10 +225,8 @@ module Resqued
     def report_unexpected_exits
       trap('EXIT') do
         log("EXIT #{$!.inspect}")
-        if $!
-          $!.backtrace.each do |line|
-            log(line)
-          end
+        $!&.backtrace&.each do |line|
+          log(line)
         end
       end
     end
@@ -246,7 +244,7 @@ module Resqued
     end
 
     def listener_status(listener, status)
-      if listener && listener.pid
+      if listener&.pid
         status_message('listener', listener.pid, status)
       end
     end
@@ -256,9 +254,7 @@ module Resqued
     end
 
     def status_message(type, pid, status)
-      if @status_pipe
-        @status_pipe.write("#{type},#{pid},#{status}\n")
-      end
+      @status_pipe&.write("#{type},#{pid},#{status}\n")
     end
   end
 end
