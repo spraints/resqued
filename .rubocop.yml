@@ -66,3 +66,17 @@ Style/NumericPredicate:
 
 Style/ParallelAssignment:
   Enabled: false
+
+Style/PerlBackrefs:
+  Enabled: false
+
+Style/RedundantReturn:
+  Enabled: false
+
+Style/RescueModifier:
+  # TODO - enable this check and restructure the affected code.
+  Enabled: false
+
+Style/RescueStandardError:
+  # TODO - enable this check and rescue the right types of things.
+  Enabled: false

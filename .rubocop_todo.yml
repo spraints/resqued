@@ -88,38 +88,6 @@ Security/YAMLLoad:
   Exclude:
     - 'lib/resqued/exec_on_hup.rb'
 
-# Offense count: 5
-# Cop supports --auto-correct.
-Style/PerlBackrefs:
-  Exclude:
-    - 'lib/resqued/listener_proxy.rb'
-
-# Offense count: 4
-# Cop supports --auto-correct.
-# Configuration parameters: AllowMultipleReturnValues.
-Style/RedundantReturn:
-  Exclude:
-    - 'lib/resqued/exec_on_hup.rb'
-    - 'lib/resqued/listener_pool.rb'
-
-# Offense count: 5
-# Cop supports --auto-correct.
-Style/RescueModifier:
-  Exclude:
-    - 'lib/resqued/exec_on_hup.rb'
-    - 'lib/resqued/listener_proxy.rb'
-    - 'lib/resqued/master.rb'
-    - 'lib/resqued/pidfile.rb'
-
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: implicit, explicit
-Style/RescueStandardError:
-  Exclude:
-    - 'lib/resqued.rb'
-    - 'lib/resqued/master.rb'
-
 # Offense count: 10
 # Cop supports --auto-correct.
 # Configuration parameters: ConvertCodeThatCanStartToReturnNil, AllowedMethods.
