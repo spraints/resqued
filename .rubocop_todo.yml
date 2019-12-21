@@ -88,32 +88,11 @@ Security/YAMLLoad:
   Exclude:
     - 'lib/resqued/exec_on_hup.rb'
 
-# Offense count: 3
-# Cop supports --auto-correct.
-Style/ParallelAssignment:
-  Exclude:
-    - 'lib/resqued/config/base.rb'
-    - 'lib/resqued/logging.rb'
-    - 'spec/resqued/start_ctx_spec.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: PreferredDelimiters.
-Style/PercentLiteralDelimiters:
-  Exclude:
-    - 'resqued.gemspec'
-
 # Offense count: 5
 # Cop supports --auto-correct.
 Style/PerlBackrefs:
   Exclude:
     - 'lib/resqued/listener_proxy.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-Style/RedundantParentheses:
-  Exclude:
-    - 'lib/resqued/listener.rb'
 
 # Offense count: 4
 # Cop supports --auto-correct.

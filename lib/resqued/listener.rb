@@ -32,7 +32,7 @@ module Resqued
       socket_fd = @socket.to_i
       ENV['RESQUED_SOCKET']      = socket_fd.to_s
       ENV['RESQUED_CONFIG_PATH'] = @config_paths.join(':')
-      ENV['RESQUED_STATE']       = (@old_workers.map { |r| "#{r[:pid]}|#{r[:queue_key]}" }.join('||'))
+      ENV['RESQUED_STATE']       = @old_workers.map { |r| "#{r[:pid]}|#{r[:queue_key]}" }.join('||')
       ENV['RESQUED_LISTENER_ID'] = @listener_id.to_s
       ENV['RESQUED_MASTER_VERSION'] = Resqued::VERSION
       log "exec: #{Resqued::START_CTX['$0']} listener"

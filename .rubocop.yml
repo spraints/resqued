@@ -63,3 +63,6 @@ Style/NumericLiteralPrefix:
 
 Style/NumericPredicate:
   EnforcedStyle: comparison
+
+Style/ParallelAssignment:
+  Enabled: false

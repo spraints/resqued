@@ -10,9 +10,9 @@ Gem::Specification.new do |s|
   s.files   = Dir['lib/**/*', 'README.md', 'CHANGES.md', 'MIT-LICENSE', 'docs/**/*']
   s.test_files = Dir['spec/**/*']
   s.bindir = 'exe'
-  s.executables = %w(
+  s.executables = %w[
     resqued
-  )
+  ]
   s.add_dependency 'kgio', '~> 2.6'
   s.add_dependency 'mono_logger', '~> 1.0'
   s.add_dependency 'resque', '>= 1.9.1'

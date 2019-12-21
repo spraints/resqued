@@ -14,7 +14,7 @@ task :tests => [:spec, :test_restart]
 
 desc "Check syntax"
 task :rubocop do
-  rubocop
+  rubocop "--parallel"
 end
 
 namespace :rubocop do
@@ -29,7 +29,7 @@ namespace :rubocop do
 end
 
 def rubocop(*args)
-  sh "rubocop", "-c", ".rubocop.yml", "--parallel", *args
+  sh "rubocop", "-c", ".rubocop.yml", *args
 end
 
 task :default => [:tests, :rubocop]
