@@ -95,3 +95,9 @@ Style/SymbolArray:
 
 Style/SymbolProc:
   Enabled: false
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
