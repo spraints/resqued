@@ -2,8 +2,8 @@ inherit_from: .rubocop_todo.yml
 
 AllCops:
   Exclude:
-    - bin
-    - gemfiles
+    - 'bin/*'
+    - 'gemfiles/**/*'
 
 Style/AndOr:
   EnforcedStyle: conditionals

@@ -22,6 +22,10 @@ namespace :rubocop do
   task :fix do
     sh "rubocop", "--auto-correct", "-c", ".rubocop.yml"
   end
+
+  task :fast do
+    sh "rubocop", "--fail-fast", "-c", ".rubocop.yml"
+  end
 end
 
 task :default => [:tests, :rubocop]
