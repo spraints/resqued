@@ -210,11 +210,11 @@ module Resqued
     # Private.
     def start_idle_workers
       workers.each do |worker|
-        if worker.idle?
-          worker.try_start
-          if pid = worker.pid
-            report_to_master("+#{pid},#{worker.queue_key}")
-          end
+        next unless worker.idle?
+
+        worker.try_start
+        if pid = worker.pid
+          report_to_master("+#{pid},#{worker.queue_key}")
         end
       end
     end

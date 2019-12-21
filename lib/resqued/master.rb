@@ -93,13 +93,13 @@ module Resqued
       top = 10
       log "#{total} objects. top #{top}:"
       counts.sort_by { |name, count| count }.reverse.each_with_index do |(name, count), i|
-        if i < top
-          diff = ""
-          if last = @last_counts && @last_counts[name]
-            diff = sprintf(' (%+d)', (count - last))
-          end
-          log "   #{count} #{name}#{diff}"
+        next unless i < top
+
+        diff = ""
+        if last = @last_counts && @last_counts[name]
+          diff = sprintf(' (%+d)', (count - last))
         end
+        log "   #{count} #{name}#{diff}"
       end
       @last_counts = counts
       log GC.stat.inspect
