@@ -33,6 +33,9 @@ Style/GlobalVars:
     - 'spec/resqued/config_spec.rb'
     - 'spec/resqued/config/*'
 
+Style/GuardClause:
+  MinBodyLength: 4
+
 # TODO - figure out if frozen string literals will be ok.
 Style/FrozenStringLiteralComment:
   Enabled: false

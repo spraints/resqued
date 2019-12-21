@@ -88,17 +88,6 @@ Security/YAMLLoad:
   Exclude:
     - 'lib/resqued/exec_on_hup.rb'
 
-# Offense count: 9
-# Configuration parameters: MinBodyLength.
-Style/GuardClause:
-  Exclude:
-    - 'exe/resqued'
-    - 'lib/resqued/listener.rb'
-    - 'lib/resqued/listener_proxy.rb'
-    - 'lib/resqued/logging.rb'
-    - 'lib/resqued/master.rb'
-    - 'lib/resqued/sleepy.rb'
-
 # Offense count: 63
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, UseHashRocketsWithSymbolValues, PreferHashRocketsForNonAlnumEndingSymbols.
