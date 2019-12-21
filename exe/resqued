@@ -60,7 +60,7 @@ opts.parse!
 options[:config_paths] = ARGV
 
 def require_config_paths!(options, opts)
-  if options[:config_paths].size == 0
+  if options[:config_paths].empty?
     puts opts
     exit 1
   end
