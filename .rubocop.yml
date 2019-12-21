@@ -36,3 +36,7 @@ Style/FormatString:
 # maybe eventually.
 Style/FormatStringToken:
   Enabled: false
+
+# maybe eventually
+Style/FrozenStringLiteralComment:
+  Enabled: false
