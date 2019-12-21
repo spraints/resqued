@@ -24,12 +24,14 @@ module Resqued
 
       # Private: Lets our logger reopen its logfile without monologger EVEN KNOWING.
       class ResquedLoggingIOWrapper
+        # rubocop: disable Style/MethodMissingSuper
         def method_missing(*args)
           ::Resqued::Logging.logging_io.send(*args)
         end
+        # rubocop: enable Style/MethodMissingSuper
 
-        def respond_to?(*args)
-          ::Resqued::Logging.logging_io.respond_to?(*args)
+        def respond_to_missing?(method, *)
+          ::Resqued::Logging.logging_io.respond_to?(method)
         end
       end
 
