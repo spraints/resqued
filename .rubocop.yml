@@ -4,3 +4,6 @@ AllCops:
   Exclude:
     - bin
     - gemfiles
+
+Style/AndOr:
+  EnforcedStyle: conditionals
