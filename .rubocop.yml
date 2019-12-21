@@ -19,3 +19,10 @@ Style/BlockDelimiters:
     - watch
   FunctionalMethods:
     - trap
+
+# Maybe eventually, just not for now.
+Style/Documentation:
+  Enabled: false
+  Exclude:
+    - 'spec/**/*'
+    - 'test/**/*'
