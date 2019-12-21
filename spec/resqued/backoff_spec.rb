@@ -3,7 +3,7 @@ require 'spec_helper'
 require 'resqued/backoff'
 
 describe Resqued::Backoff do
-  let(:backoff) { described_class.new(:min => 0.5, :max => 64.0) }
+  let(:backoff) { described_class.new(min: 0.5, max: 64.0) }
 
   it 'can start on the first try' do
     expect(backoff.wait?).to be_false

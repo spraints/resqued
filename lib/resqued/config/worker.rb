@@ -23,7 +23,7 @@ module Resqued
         queues = queues.flatten
         queues = ['*'] if queues.empty?
         queues = queues.shuffle if options.delete(:shuffle_queues)
-        @workers << @worker_class.new(options.merge(@worker_options).merge(:queues => queues))
+        @workers << @worker_class.new(options.merge(@worker_options).merge(queues: queues))
       end
 
       # DSL: Set up a pool of workers. Define queues for the members of the pool with `queue`.

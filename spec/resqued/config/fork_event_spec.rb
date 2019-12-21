@@ -26,7 +26,7 @@ describe do
       end
     END_CONFIG
 
-    let(:evaluator) { Resqued::Config::AfterFork.new(:worker => worker) }
+    let(:evaluator) { Resqued::Config::AfterFork.new(worker: worker) }
     let(:worker) { FakeResqueWorker.new }
 
     it { expect(worker.token).to eq(:called) }
@@ -56,7 +56,7 @@ describe do
       end
     END_CONFIG
 
-    let(:evaluator) { $before_fork_called = false; Resqued::Config::BeforeFork.new(:resqued => resqued) }
+    let(:evaluator) { $before_fork_called = false; Resqued::Config::BeforeFork.new(resqued: resqued) }
     let(:resqued) { Resqued::RuntimeInfo.new }
 
     it { expect($before_fork_called).to eq(true) }

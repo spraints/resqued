@@ -118,7 +118,7 @@ module Resqued
 
     def read_listeners
       @listeners.each do |l|
-        l.read_worker_status(:on_activity => self)
+        l.read_worker_status(on_activity: self)
       end
     end
 

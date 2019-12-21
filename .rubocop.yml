@@ -50,3 +50,7 @@ Style/GlobalVars:
 
 Style/GuardClause:
   MinBodyLength: 4
+
+Style/HashSyntax:
+  Exclude:
+    - 'Rakefile'

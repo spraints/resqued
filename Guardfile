@@ -1,6 +1,6 @@
 notification :off
 
-guard 'bundler', :cli => '--local' do
+guard 'bundler', cli: '--local' do
   watch('Gemfile')
   watch('resqorn.gemspec')
 end
