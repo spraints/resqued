@@ -14,13 +14,13 @@ task :tests => [:spec, :test_restart]
 
 desc "Check syntax"
 task :rubocop do
-  sh "rubocop"
+  sh "rubocop", "-c", ".rubocop.yml"
 end
 
 namespace :rubocop do
   desc "Reformat files to conform to rubocop rules"
   task :fix do
-    sh "rubocop", "--auto-correct"
+    sh "rubocop", "--auto-correct", "-c", ".rubocop.yml"
   end
 end
 
