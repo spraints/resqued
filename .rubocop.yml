@@ -7,3 +7,15 @@ AllCops:
 
 Style/AndOr:
   EnforcedStyle: conditionals
+
+Style/BlockDelimiters:
+  EnforcedStyle: semantic
+  IgnoredMethods:
+    - before
+    - each
+    - it
+    - let
+    - new
+    - watch
+  FunctionalMethods:
+    - trap
