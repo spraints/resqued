@@ -107,12 +107,11 @@ module Resqued
       # values (between 0.0 and 1.0). The value may also be nil, in which case the
       # maximum worker_processes value is returned.
       def _translate_concurrency_value(value)
-        case
-        when value.nil?
+        if value.nil?
           @pool_size
-        when value.is_a?(1.class)
+        elsif value.is_a?(1.class)
           value < @pool_size ? value : @pool_size
-        when value.is_a?(Float) && value >= 0.0 && value <= 1.0
+        elsif value.is_a?(Float) && value >= 0.0 && value <= 1.0
           (@pool_size * value).to_i
         else
           raise TypeError, "Unknown concurrency value: #{value.inspect}"
