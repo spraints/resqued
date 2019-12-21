@@ -89,3 +89,9 @@ Style/SpecialGlobalVars:
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+Style/SymbolProc:
+  Enabled: false

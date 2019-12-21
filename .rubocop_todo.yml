@@ -88,24 +88,6 @@ Security/YAMLLoad:
   Exclude:
     - 'lib/resqued/exec_on_hup.rb'
 
-# Offense count: 5
-# Cop supports --auto-correct.
-# Configuration parameters: MinSize.
-# SupportedStyles: percent, brackets
-Style/SymbolArray:
-  EnforcedStyle: brackets
-
-# Offense count: 7
-# Cop supports --auto-correct.
-# Configuration parameters: IgnoredMethods.
-# IgnoredMethods: respond_to, define_method
-Style/SymbolProc:
-  Exclude:
-    - 'lib/resqued/listener.rb'
-    - 'lib/resqued/listener_pool.rb'
-    - 'lib/resqued/master.rb'
-    - 'lib/resqued/master_state.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyleForMultiline.
