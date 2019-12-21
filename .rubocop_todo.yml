@@ -88,13 +88,6 @@ Security/YAMLLoad:
   Exclude:
     - 'lib/resqued/exec_on_hup.rb'
 
-# Offense count: 10
-# Configuration parameters: AllowedVariables.
-Style/GlobalVars:
-  Exclude:
-    - 'spec/resqued/config/fork_event_spec.rb'
-    - 'spec/resqued/config_spec.rb'
-
 # Offense count: 9
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:

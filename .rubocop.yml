@@ -26,6 +26,13 @@ Style/EmptyMethod:
 Style/FormatString:
   EnforcedStyle: sprintf
 
+Style/GlobalVars:
+  Exclude:
+    # Config specs need to pass data back and forth, and globals are the way to do it.
+    # TODO - look into using a fixed name, to help avoid accidentally mistyping the var name.
+    - 'spec/resqued/config_spec.rb'
+    - 'spec/resqued/config/*'
+
 # TODO - figure out if frozen string literals will be ok.
 Style/FrozenStringLiteralComment:
   Enabled: false
