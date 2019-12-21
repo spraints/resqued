@@ -80,3 +80,6 @@ Style/RescueModifier:
 Style/RescueStandardError:
   # TODO - enable this check and rescue the right types of things.
   Enabled: false
+
+Style/Semicolon:
+  AllowAsExpressionSeparator: true
