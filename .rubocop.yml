@@ -20,11 +20,26 @@ Style/BlockDelimiters:
   FunctionalMethods:
     - trap
 
+# TODO - add docs to code.
+Style/Documentation:
+  Enabled: false
+  Exclude:
+    - 'spec/**/*'
+    - 'test/**/*'
+
 Style/EmptyMethod:
   EnforcedStyle: expanded
 
 Style/FormatString:
   EnforcedStyle: sprintf
+
+# maybe eventually, if positional tokens become difficult to maintain.
+Style/FormatStringToken:
+  Enabled: false
+
+# TODO - figure out if frozen string literals will be ok.
+Style/FrozenStringLiteralComment:
+  Enabled: false
 
 Style/GlobalVars:
   Exclude:
@@ -35,18 +50,3 @@ Style/GlobalVars:
 
 Style/GuardClause:
   MinBodyLength: 4
-
-# TODO - figure out if frozen string literals will be ok.
-Style/FrozenStringLiteralComment:
-  Enabled: false
-
-# TODO - add docs to code.
-Style/Documentation:
-  Enabled: false
-  Exclude:
-    - 'spec/**/*'
-    - 'test/**/*'
-
-# maybe eventually, if positional tokens become difficult to maintain.
-Style/FormatStringToken:
-  Enabled: false
