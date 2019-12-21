@@ -88,13 +88,6 @@ Security/YAMLLoad:
   Exclude:
     - 'lib/resqued/exec_on_hup.rb'
 
-# Offense count: 5
-# Cop supports --auto-correct.
-Style/IfUnlessModifier:
-  Exclude:
-    - 'lib/resqued/listener.rb'
-    - 'lib/resqued/master.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 Style/InfiniteLoop:

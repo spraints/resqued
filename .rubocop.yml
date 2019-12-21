@@ -54,3 +54,6 @@ Style/GuardClause:
 Style/HashSyntax:
   Exclude:
     - 'Rakefile'
+
+Style/IfUnlessModifier:
+  Enabled: false
