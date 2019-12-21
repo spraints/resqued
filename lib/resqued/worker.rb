@@ -9,7 +9,7 @@ module Resqued
   class Worker
     include Resqued::Logging
 
-    DEFAULT_WORKER_FACTORY = ->(queues) {
+    DEFAULT_WORKER_FACTORY = lambda { |queues|
       resque_worker = Resque::Worker.new(*queues)
       resque_worker.term_child = true if resque_worker.respond_to?('term_child=')
       redis_client = Resque.redis.respond_to?(:_client) ? Resque.redis._client : Resque.redis.client

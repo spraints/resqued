@@ -89,14 +89,6 @@ Security/YAMLLoad:
     - 'lib/resqued/exec_on_hup.rb'
 
 # Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: line_count_dependent, lambda, literal
-Style/Lambda:
-  Exclude:
-    - 'lib/resqued/worker.rb'
-
-# Offense count: 1
 Style/MethodMissingSuper:
   Exclude:
     - 'lib/resqued/logging.rb'
