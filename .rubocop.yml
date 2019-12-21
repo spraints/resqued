@@ -83,3 +83,6 @@ Style/RescueStandardError:
 
 Style/Semicolon:
   AllowAsExpressionSeparator: true
+
+Style/SpecialGlobalVars:
+  EnforcedStyle: use_perl_names
