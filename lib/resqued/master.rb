@@ -209,12 +209,12 @@ module Resqued
       end
     end
 
-    SIGNALS = [:HUP, :INT, :USR2, :CONT, :TERM, :QUIT]
-    OPTIONAL_SIGNALS = [:INFO]
-    OTHER_SIGNALS = [:CHLD, 'EXIT']
+    SIGNALS = [:HUP, :INT, :USR2, :CONT, :TERM, :QUIT].freeze
+    OPTIONAL_SIGNALS = [:INFO].freeze
+    OTHER_SIGNALS = [:CHLD, 'EXIT'].freeze
     TRAPS = SIGNALS + OPTIONAL_SIGNALS + OTHER_SIGNALS
 
-    SIGNAL_QUEUE = []
+    SIGNAL_QUEUE = [] # rubocop: disable Style/MutableConstant
 
     def install_signal_handlers
       trap(:CHLD) { awake }

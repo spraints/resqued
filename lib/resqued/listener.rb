@@ -62,10 +62,10 @@ module Resqued
       new(options).run
     end
 
-    SIGNALS = [:CONT, :QUIT, :INT, :TERM]
+    SIGNALS = [:CONT, :QUIT, :INT, :TERM].freeze
     ALL_SIGNALS = SIGNALS + [:CHLD]
 
-    SIGNAL_QUEUE = []
+    SIGNAL_QUEUE = [] # rubocop: disable Style/MutableConstant
 
     # Public: Run the main loop.
     def run

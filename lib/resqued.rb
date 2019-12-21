@@ -2,7 +2,7 @@ require 'resqued/master'
 require 'resqued/version'
 
 module Resqued
-  START_CTX = {}
+  START_CTX = {} # rubocop: disable Style/MutableConstant
 
   def self.capture_start_ctx!
     START_CTX['$0'] = $0.dup
