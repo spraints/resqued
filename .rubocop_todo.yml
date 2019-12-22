@@ -87,10 +87,3 @@ Metrics/PerceivedComplexity:
 Security/YAMLLoad:
   Exclude:
     - 'lib/resqued/exec_on_hup.rb'
-
-# Offense count: 76
-# Cop supports --auto-correct.
-# Configuration parameters: AutoCorrect, AllowHeredoc, AllowURI, URISchemes, IgnoreCopDirectives, IgnoredPatterns.
-# URISchemes: http, https
-Layout/LineLength:
-  Max: 167

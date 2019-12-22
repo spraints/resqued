@@ -92,7 +92,7 @@ module Resqued
       end
       top = 10
       log "#{total} objects. top #{top}:"
-      counts.sort_by { |name, count| count }.reverse.each_with_index do |(name, count), i|
+      counts.sort_by { |_, count| -count }.each_with_index do |(name, count), i|
         next unless i < top
 
         diff = ""
@@ -137,7 +137,8 @@ module Resqued
       end
     end
 
-    # Listener message: A listener finished booting, and is ready to start workers.
+    # Listener message: A listener finished booting, and is ready to
+    # start workers.
     #
     # Promotes a booting listener to be the current listener.
     def listener_running(listener)
@@ -158,10 +159,13 @@ module Resqued
     # The old one will be killed when the new one is ready for workers.
     def prepare_new_listener
       if @listeners.last_good
-        # The last good listener is still running because we got another HUP before the new listener finished booting.
-        # Keep the last_good_listener (where all the workers are) and kill the booting current_listener. We'll start a new one.
+        # The last good listener is still running because we got another
+        # HUP before the new listener finished booting.
+        # Keep the last_good_listener (where all the workers are) and
+        # kill the booting current_listener. We'll start a new one.
         kill_listener(:QUIT, @listeners.current)
-        # Indicate to `start_listener` that it should start a new listener.
+        # Indicate to `start_listener` that it should start a new
+        # listener.
         @listeners.clear_current!
       else
         @listeners.cycle_current

@@ -5,6 +5,11 @@ AllCops:
     - 'bin/*'
     - 'gemfiles/**/*'
 
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - "spec/**/*"
+
 Style/AndOr:
   EnforcedStyle: conditionals
 
