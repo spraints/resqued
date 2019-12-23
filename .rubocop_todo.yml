@@ -19,16 +19,6 @@ Lint/AssignmentInCondition:
     - 'lib/resqued/worker.rb'
 
 # Offense count: 1
-Lint/LiteralAsCondition:
-  Exclude:
-    - 'lib/resqued/master.rb'
-
-# Offense count: 1
-Lint/Loop:
-  Exclude:
-    - 'lib/resqued/master.rb'
-
-# Offense count: 1
 # Cop supports --auto-correct.
 Security/YAMLLoad:
   Exclude:
