@@ -30,12 +30,6 @@ Lint/Loop:
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Lint/RedundantRequireStatement:
-  Exclude:
-    - 'spec/resqued/sleepy_spec.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 Security/YAMLLoad:
   Exclude:
     - 'lib/resqued/exec_on_hup.rb'

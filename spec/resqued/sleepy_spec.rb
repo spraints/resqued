@@ -1,6 +1,5 @@
 require "spec_helper"
 require "resqued/sleepy"
-require "thread"
 
 describe Resqued::Sleepy do
   include Resqued::Sleepy
