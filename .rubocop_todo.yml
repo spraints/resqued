@@ -39,15 +39,6 @@ Lint/ShadowingOuterLocalVariable:
   Exclude:
     - 'exe/resqued'
 
-# Offense count: 4
-# Cop supports --auto-correct.
-# Configuration parameters: IgnoreEmptyBlocks, AllowUnusedKeywordArguments.
-Lint/UnusedBlockArgument:
-  Exclude:
-    - 'Guardfile'
-    - 'lib/resqued/config/worker.rb'
-    - 'lib/resqued/master.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 Security/YAMLLoad:
