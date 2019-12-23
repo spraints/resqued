@@ -10,6 +10,9 @@ Layout/LineLength:
   Exclude:
     - "spec/**/*"
 
+Lint/AssignmentInCondition:
+  Enabled: false
+
 Metrics/AbcSize:
   Max: 29
 

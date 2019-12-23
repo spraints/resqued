@@ -6,18 +6,6 @@
 # Note that changes in the inspected code, or installation of new
 # versions of RuboCop, may require this file to be generated again.
 
-# Offense count: 14
-# Configuration parameters: AllowSafeAssignment.
-Lint/AssignmentInCondition:
-  Exclude:
-    - 'lib/resqued/config/worker.rb'
-    - 'lib/resqued/exec_on_hup.rb'
-    - 'lib/resqued/listener.rb'
-    - 'lib/resqued/listener_proxy.rb'
-    - 'lib/resqued/logging.rb'
-    - 'lib/resqued/master.rb'
-    - 'lib/resqued/worker.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 Security/YAMLLoad:
