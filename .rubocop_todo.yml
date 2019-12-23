@@ -35,11 +35,6 @@ Lint/RedundantRequireStatement:
     - 'spec/resqued/sleepy_spec.rb'
 
 # Offense count: 1
-Lint/ShadowingOuterLocalVariable:
-  Exclude:
-    - 'exe/resqued'
-
-# Offense count: 1
 # Cop supports --auto-correct.
 Security/YAMLLoad:
   Exclude:

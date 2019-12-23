@@ -12,7 +12,7 @@ options = { exec_on_hup: true }
 daemonize = false
 test = false
 
-opts = OptionParser.new do |opts|
+opts = OptionParser.new do |opts| # rubocop: disable Lint/ShadowingOuterLocalVariable
   opts.banner = "Usage: resqued [options] resqued-config-files..."
 
   opts.on "-h", "--help", "Show this message" do
