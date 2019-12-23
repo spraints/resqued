@@ -12,6 +12,7 @@ module Resqued
         wr.close
         begin
           master_pid = rd.readpartial(16).to_i
+          puts "Found master: #{master_pid}"
           exit
         rescue EOFError
           puts "Master process failed to start!"

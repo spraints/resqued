@@ -135,7 +135,7 @@ module Resqued
 
     # Private: send a signal to all the workers.
     def kill_all(signal)
-      idle, running = partition_workers
+      running = running_workers
       log "kill -#{signal} #{running.map { |r| r.pid }.inspect}"
       running.each { |worker| worker.kill(signal) }
     end

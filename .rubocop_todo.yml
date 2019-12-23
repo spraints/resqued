@@ -48,12 +48,6 @@ Lint/UnusedBlockArgument:
     - 'lib/resqued/config/worker.rb'
     - 'lib/resqued/master.rb'
 
-# Offense count: 2
-Lint/UselessAssignment:
-  Exclude:
-    - 'lib/resqued/daemon.rb'
-    - 'lib/resqued/listener.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 Security/YAMLLoad:
