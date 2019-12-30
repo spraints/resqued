@@ -1,5 +1,11 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.10.0
+-------
+* Master process restarts itself (#51), so that it doesn't continue running stale code indefinitely. This will help with the rollout process when changes like #50 are introduced, so that the master process will catch up. The risk of this is that the master process might not be able to be restarted, which would lead to it crashing. The mostly likely way for that to happen is if you try to roll back your version of resqued to 0.9.0 or earlier. If you need to do that, ensure that your process monitor (systemd, god, etc.) is able to restart the master process. You can disable the new behavior by passing `--no-exec-on-hup`.
+* Added rubocop. (#52)
+* Changed supported (read: tested in CI) ruby versions from [2.0 .. 2.3] to [2.3 .. 2.6].
+
 v0.9.0
 ------
 * Avoid Errno::E2BIG on SIGHUP when there are lots of workers and lots of queues per worker. (#50) This changes the format of an env var that master passes to listener. Old and new versions won't crash, but they won't be able to communicate about currenly running workers.
