@@ -1,12 +1,12 @@
-require 'spec_helper'
-require 'resqued/config/after_fork'
-require 'resqued/config/before_fork'
-require 'resqued/runtime_info'
+require "spec_helper"
+require "resqued/config/after_fork"
+require "resqued/config/before_fork"
+require "resqued/runtime_info"
 
 describe do
   before { evaluator.apply(config) }
 
-  context 'after_fork' do
+  context "after_fork" do
     # Run the after_fork block.
     #
     #    after_fork do |resque_worker|
@@ -26,13 +26,13 @@ describe do
       end
     END_CONFIG
 
-    let(:evaluator) { Resqued::Config::AfterFork.new(:worker => worker) }
+    let(:evaluator) { Resqued::Config::AfterFork.new(worker: worker) }
     let(:worker) { FakeResqueWorker.new }
 
     it { expect(worker.token).to eq(:called) }
   end
 
-  context 'before_fork' do
+  context "before_fork" do
     # Run the before_fork block.
     #
     #    before_fork do
@@ -56,7 +56,7 @@ describe do
       end
     END_CONFIG
 
-    let(:evaluator) { $before_fork_called = false ; Resqued::Config::BeforeFork.new(:resqued => resqued) }
+    let(:evaluator) { $before_fork_called = false; Resqued::Config::BeforeFork.new(resqued: resqued) }
     let(:resqued) { Resqued::RuntimeInfo.new }
 
     it { expect($before_fork_called).to eq(true) }

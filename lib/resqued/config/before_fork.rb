@@ -1,4 +1,4 @@
-require 'resqued/config/base'
+require "resqued/config/base"
 
 module Resqued
   module Config

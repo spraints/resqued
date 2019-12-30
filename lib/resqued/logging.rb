@@ -1,4 +1,4 @@
-require 'mono_logger'
+require "mono_logger"
 
 module Resqued
   # Mixin for any class that wants to write messages to the log file.
@@ -18,27 +18,34 @@ module Resqued
 
       class ResquedLogFormatter < ::Logger::Formatter
         def call(severity, time, progname, msg)
-          "[%s#%6d] %5s %s -- %s\n" % [format_datetime(time), $$, severity, progname, msg2str(msg)]
+          sprintf "[%s#%6d] %5s %s -- %s\n",
+                  format_datetime(time),
+                  $$,
+                  severity,
+                  progname,
+                  msg2str(msg)
         end
       end
 
       # Private: Lets our logger reopen its logfile without monologger EVEN KNOWING.
       class ResquedLoggingIOWrapper
+        # rubocop: disable Style/MethodMissingSuper
         def method_missing(*args)
           ::Resqued::Logging.logging_io.send(*args)
         end
+        # rubocop: enable Style/MethodMissingSuper
 
-        def respond_to?(*args)
-          ::Resqued::Logging.logging_io.respond_to?(*args)
+        def respond_to_missing?(method, *)
+          ::Resqued::Logging.logging_io.respond_to?(method)
         end
       end
 
       # Private: Get an IO to write log messages to.
       def logging_io
-        @logging_io = nil if @logging_io && @logging_io.closed?
+        @logging_io = nil if @logging_io&.closed?
         @logging_io ||=
           if path = Resqued::Logging.log_file
-            File.open(path, 'a').tap do |f|
+            File.open(path, "a").tap do |f|
               f.sync = true
               f.close_on_exec = true
               # Make sure we're not holding onto a stale filehandle.
@@ -60,13 +67,13 @@ module Resqued
 
       # Public.
       def log_file=(path)
-        ENV['RESQUED_LOGFILE'] = File.expand_path(path)
+        ENV["RESQUED_LOGFILE"] = File.expand_path(path)
         close_log
       end
 
       # Public.
       def log_file
-        ENV['RESQUED_LOGFILE']
+        ENV["RESQUED_LOGFILE"]
       end
     end
 

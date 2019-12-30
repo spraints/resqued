@@ -1,5 +1,5 @@
-require 'resqued/config/base'
-require 'resqued/worker'
+require "resqued/config/base"
+require "resqued/worker"
 
 module Resqued
   module Config
@@ -21,9 +21,9 @@ module Resqued
       def worker(*queues)
         options = queues.last.is_a?(Hash) ? queues.pop.dup : {}
         queues = queues.flatten
-        queues = ['*'] if queues.empty?
+        queues = ["*"] if queues.empty?
         queues = queues.shuffle if options.delete(:shuffle_queues)
-        @workers << @worker_class.new(options.merge(@worker_options).merge(:queues => queues))
+        @workers << @worker_class.new(options.merge(@worker_options).merge(queues: queues))
       end
 
       # DSL: Set up a pool of workers. Define queues for the members of the pool with `queue`.
@@ -81,15 +81,16 @@ module Resqued
       # on the concurrency values established and the total number of workers.
       def build_pool_workers!
         return unless @pool_size
+
         queues = _fixed_concurrency_queues
         1.upto(@pool_size) do |worker_num|
-          queue_names = queues.
-            select { |name, concurrency| concurrency >= worker_num }.
-            map { |name, _| name }
+          queue_names = queues
+                        .select { |_name, concurrency| concurrency >= worker_num }
+                        .map { |name, _concurrency| name }
           if queue_names.any?
             worker(queue_names, @pool_options)
           else
-            worker('*', @pool_options)
+            worker("*", @pool_options)
           end
         end
       end
@@ -106,12 +107,11 @@ module Resqued
       # values (between 0.0 and 1.0). The value may also be nil, in which case the
       # maximum worker_processes value is returned.
       def _translate_concurrency_value(value)
-        case
-        when value.nil?
+        if value.nil?
           @pool_size
-        when value.is_a?(1.class)
+        elsif value.is_a?(1.class)
           value < @pool_size ? value : @pool_size
-        when value.is_a?(Float) && value >= 0.0 && value <= 1.0
+        elsif value.is_a?(Float) && value >= 0.0 && value <= 1.0
           (@pool_size * value).to_i
         else
           raise TypeError, "Unknown concurrency value: #{value.inspect}"

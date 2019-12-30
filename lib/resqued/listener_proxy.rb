@@ -1,8 +1,8 @@
-require 'fcntl'
-require 'socket'
+require "fcntl"
+require "socket"
 
-require 'resqued/listener'
-require 'resqued/logging'
+require "resqued/listener"
+require "resqued/logging"
 
 module Resqued
   # Controls a listener process from the master process.
@@ -37,6 +37,7 @@ module Resqued
     # Public: Start the listener process.
     def run
       return if pid
+
       listener_socket, master_socket = UNIXSocket.pair
       if @state.pid = fork
         # master
@@ -47,7 +48,7 @@ module Resqued
       else
         # listener
         master_socket.close
-        Master::TRAPS.each { |signal| trap(signal, 'DEFAULT') rescue nil }
+        Master::TRAPS.each { |signal| trap(signal, "DEFAULT") rescue nil }
         Listener.new(@state.options.merge(socket: listener_socket)).exec
         exit
       end
@@ -61,7 +62,7 @@ module Resqued
 
     # Public: Get the list of workers running from this listener.
     def running_workers
-      worker_pids.map { |pid, queue_key| { :pid => pid, :queue_key => queue_key } }
+      worker_pids.map { |pid, queue_key| { pid: pid, queue_key: queue_key } }
     end
 
     # Private: Map worker pids to queue names
@@ -77,13 +78,13 @@ module Resqued
         case line = @state.master_socket.readline
         when /^\+(\d+),(.*)$/
           worker_pids[$1] = $2
-          on_activity.worker_started($1) if on_activity
+          on_activity&.worker_started($1)
         when /^-(\d+)$/
           worker_pids.delete($1)
-          on_activity.worker_finished($1) if on_activity
+          on_activity&.worker_finished($1)
         when /^RUNNING/
-          on_activity.listener_running(self) if on_activity
-        when ''
+          on_activity&.listener_running(self)
+        when ""
           break
         else
           log "Malformed data from listener: #{line.inspect}"
@@ -97,6 +98,7 @@ module Resqued
     # Public: Tell the listener process that a worker finished.
     def worker_finished(pid)
       return if @state.master_socket.nil?
+
       @state.master_socket.puts(pid)
     rescue Errno::EPIPE
       @state.master_socket.close

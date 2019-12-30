@@ -1,11 +1,11 @@
-require 'resqued/backoff'
-require 'resqued/exec_on_hup'
-require 'resqued/listener_pool'
-require 'resqued/logging'
-require 'resqued/master_state'
-require 'resqued/pidfile'
-require 'resqued/procline_version'
-require 'resqued/sleepy'
+require "resqued/backoff"
+require "resqued/exec_on_hup"
+require "resqued/listener_pool"
+require "resqued/logging"
+require "resqued/master_state"
+require "resqued/pidfile"
+require "resqued/procline_version"
+require "resqued/sleepy"
 
 module Resqued
   # The master process.
@@ -92,14 +92,14 @@ module Resqued
       end
       top = 10
       log "#{total} objects. top #{top}:"
-      counts.sort_by { |name, count| count }.reverse.each_with_index do |(name, count), i|
-        if i < top
-          diff = ""
-          if last = @last_counts && @last_counts[name]
-            diff = " (#{'%+d' % (count - last)})"
-          end
-          log "   #{count} #{name}#{diff}"
+      counts.sort_by { |_, count| -count }.each_with_index do |(name, count), i|
+        next unless i < top
+
+        diff = ""
+        if last = @last_counts && @last_counts[name]
+          diff = sprintf(" (%+d)", (count - last))
         end
+        log "   #{count} #{name}#{diff}"
       end
       @last_counts = counts
       log GC.stat.inspect
@@ -109,38 +109,40 @@ module Resqued
 
     def start_listener
       return if @listeners.current || @listener_backoff.wait?
+
       listener = @listeners.start!
-      listener_status listener, 'start'
+      listener_status listener, "start"
       @listener_backoff.started
       write_procline
     end
 
     def read_listeners
       @listeners.each do |l|
-        l.read_worker_status(:on_activity => self)
+        l.read_worker_status(on_activity: self)
       end
     end
 
     # Listener message: A worker just started working.
     def worker_started(pid)
-      worker_status(pid, 'start')
+      worker_status(pid, "start")
     end
 
     # Listener message: A worker just stopped working.
     #
     # Forwards the message to the other listeners.
     def worker_finished(pid)
-      worker_status(pid, 'stop')
+      worker_status(pid, "stop")
       @listeners.each do |other|
         other.worker_finished(pid)
       end
     end
 
-    # Listener message: A listener finished booting, and is ready to start workers.
+    # Listener message: A listener finished booting, and is ready to
+    # start workers.
     #
     # Promotes a booting listener to be the current listener.
     def listener_running(listener)
-      listener_status(listener, 'ready')
+      listener_status(listener, "ready")
       if listener == @listeners.current
         kill_listener(:QUIT, @listeners.last_good)
         @listeners.clear_last_good!
@@ -157,10 +159,13 @@ module Resqued
     # The old one will be killed when the new one is ready for workers.
     def prepare_new_listener
       if @listeners.last_good
-        # The last good listener is still running because we got another HUP before the new listener finished booting.
-        # Keep the last_good_listener (where all the workers are) and kill the booting current_listener. We'll start a new one.
+        # The last good listener is still running because we got another
+        # HUP before the new listener finished booting.
+        # Keep the last_good_listener (where all the workers are) and
+        # kill the booting current_listener. We'll start a new one.
         kill_listener(:QUIT, @listeners.current)
-        # Indicate to `start_listener` that it should start a new listener.
+        # Indicate to `start_listener` that it should start a new
+        # listener.
         @listeners.clear_current!
       else
         @listeners.cycle_current
@@ -168,7 +173,7 @@ module Resqued
     end
 
     def kill_listener(signal, listener)
-      listener.kill(signal) if listener
+      listener&.kill(signal)
     end
 
     def kill_all_listeners(signal)
@@ -182,9 +187,11 @@ module Resqued
     end
 
     def reap_all_listeners(waitpid_flags = 0)
-      begin
-        lpid, status = Process.waitpid2(-1, waitpid_flags)
-        if lpid
+      loop do
+        begin
+          lpid, status = Process.waitpid2(-1, waitpid_flags)
+          return unless lpid
+
           log "Listener exited #{status}"
 
           if @listeners.current_pid == lpid
@@ -197,43 +204,39 @@ module Resqued
           end
 
           dead_listener = @listeners.delete(lpid)
-          listener_status dead_listener, 'stop'
+          listener_status dead_listener, "stop"
           dead_listener.dispose
           write_procline
-        else
+        rescue Errno::ECHILD
           return
         end
-      rescue Errno::ECHILD
-        return
-      end while true
+      end
     end
 
-    SIGNALS = [ :HUP, :INT, :USR2, :CONT, :TERM, :QUIT ]
-    OPTIONAL_SIGNALS = [ :INFO ]
-    OTHER_SIGNALS = [:CHLD, 'EXIT']
+    SIGNALS = [:HUP, :INT, :USR2, :CONT, :TERM, :QUIT].freeze
+    OPTIONAL_SIGNALS = [:INFO].freeze
+    OTHER_SIGNALS = [:CHLD, "EXIT"].freeze
     TRAPS = SIGNALS + OPTIONAL_SIGNALS + OTHER_SIGNALS
 
-    SIGNAL_QUEUE = []
+    SIGNAL_QUEUE = [] # rubocop: disable Style/MutableConstant
 
     def install_signal_handlers
       trap(:CHLD) { awake }
-      SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } }
-      OPTIONAL_SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal ; awake } rescue nil }
+      SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal; awake } }
+      OPTIONAL_SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal; awake } rescue nil }
     end
 
     def report_unexpected_exits
-      trap('EXIT') do
+      trap("EXIT") do
         log("EXIT #{$!.inspect}")
-        if $!
-          $!.backtrace.each do |line|
-            log(line)
-          end
+        $!&.backtrace&.each do |line|
+          log(line)
         end
       end
     end
 
     def no_more_unexpected_exits
-      trap('EXIT', 'DEFAULT')
+      trap("EXIT", "DEFAULT")
     end
 
     def yawn(duration)
@@ -245,19 +248,17 @@ module Resqued
     end
 
     def listener_status(listener, status)
-      if listener && listener.pid
-        status_message('listener', listener.pid, status)
+      if listener&.pid
+        status_message("listener", listener.pid, status)
       end
     end
 
     def worker_status(pid, status)
-      status_message('worker', pid, status)
+      status_message("worker", pid, status)
     end
 
     def status_message(type, pid, status)
-      if @status_pipe
-        @status_pipe.write("#{type},#{pid},#{status}\n")
-      end
+      @status_pipe&.write("#{type},#{pid},#{status}\n")
     end
   end
 end

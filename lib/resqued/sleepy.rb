@@ -1,9 +1,11 @@
-require 'fcntl'
-require 'kgio'
+require "fcntl"
+require "kgio"
 
 module Resqued
   module Sleepy
-    # Public: Like sleep, but the sleep is interrupted if input is detected on one of the provided IO objects, or if `awake` is called (e.g. from a signal handler).
+    # Public: Like sleep, but the sleep is interrupted if input is
+    # detected on one of the provided IO objects, or if `awake` is
+    # called (e.g. from a signal handler).
     def yawn(duration, *inputs)
       if duration > 0
         inputs = [self_pipe[0]] + [inputs].flatten.compact
@@ -14,7 +16,7 @@ module Resqued
 
     # Public: Break out of `yawn`.
     def awake
-      self_pipe[1].kgio_trywrite('.')
+      self_pipe[1].kgio_trywrite(".")
     end
 
     # Private.

@@ -1,0 +1,133 @@
+AllCops:
+  Exclude:
+    - 'bin/*'
+    - 'gemfiles/**/*'
+
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - "spec/**/*"
+
+Lint/AssignmentInCondition:
+  Enabled: false
+
+Metrics/AbcSize:
+  Max: 29
+
+Metrics/BlockLength:
+  Max: 144
+
+Metrics/ClassLength:
+  Max: 198
+
+Metrics/CyclomaticComplexity:
+  Max: 11
+
+Metrics/MethodLength:
+  Max: 34
+
+Metrics/PerceivedComplexity:
+  Max: 9
+
+Style/AndOr:
+  EnforcedStyle: conditionals
+
+Style/BlockDelimiters:
+  EnforcedStyle: semantic
+  IgnoredMethods:
+    - before
+    - each
+    - it
+    - let
+    - new
+    - watch
+  FunctionalMethods:
+    - trap
+
+# TODO - add docs to code.
+Style/Documentation:
+  Enabled: false
+  Exclude:
+    - 'spec/**/*'
+    - 'test/**/*'
+
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+
+Style/FormatString:
+  EnforcedStyle: sprintf
+
+# maybe eventually, if positional tokens become difficult to maintain.
+Style/FormatStringToken:
+  Enabled: false
+
+# TODO - figure out if frozen string literals will be ok.
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/GlobalVars:
+  Exclude:
+    # Config specs need to pass data back and forth, and globals are the way to do it.
+    # TODO - look into using a fixed name, to help avoid accidentally mistyping the var name.
+    - 'spec/resqued/config_spec.rb'
+    - 'spec/resqued/config/*'
+
+Style/GuardClause:
+  MinBodyLength: 4
+
+Style/HashSyntax:
+  Exclude:
+    - 'Rakefile'
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/NumericLiteralPrefix:
+  EnforcedOctalStyle: zero_only
+
+Style/NumericPredicate:
+  EnforcedStyle: comparison
+
+Style/ParallelAssignment:
+  Enabled: false
+
+Style/PerlBackrefs:
+  Enabled: false
+
+Style/RedundantReturn:
+  Enabled: false
+
+Style/RescueModifier:
+  # TODO - enable this check and restructure the affected code.
+  Enabled: false
+
+Style/RescueStandardError:
+  # TODO - enable this check and rescue the right types of things.
+  Enabled: false
+
+Style/Semicolon:
+  AllowAsExpressionSeparator: true
+
+Style/SpecialGlobalVars:
+  EnforcedStyle: use_perl_names
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+Style/SymbolProc:
+  Enabled: false
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/WordArray:
+  Enabled: false
+
+Style/YodaCondition:
+  Enabled: false

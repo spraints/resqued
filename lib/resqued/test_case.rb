@@ -1,5 +1,5 @@
-require 'resqued/config'
-require 'resqued/runtime_info'
+require "resqued/config"
+require "resqued/runtime_info"
 
 module Resqued
   module TestCase
@@ -17,7 +17,7 @@ module Resqued
         config = Resqued::Config.new(paths)
         config.before_fork(RuntimeInfo.new)
         config.build_workers
-        config.after_fork(Resque::Worker.new('*'))
+        config.after_fork(Resque::Worker.new("*"))
       end
     end
 
