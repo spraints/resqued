@@ -1,10 +1,10 @@
 require "resqued/backoff"
-require "resqued/exec_on_hup"
 require "resqued/listener_pool"
 require "resqued/logging"
 require "resqued/master_state"
 require "resqued/pidfile"
 require "resqued/procline_version"
+require "resqued/replace_master"
 require "resqued/sleepy"
 
 module Resqued
@@ -57,7 +57,7 @@ module Resqued
         when :HUP
           if @state.exec_on_hup
             log "Execing a new master"
-            ExecOnHUP.exec!(@state)
+            ReplaceMaster.exec!(@state)
           end
           reopen_logs
           log "Restarting listener with new configuration and application."

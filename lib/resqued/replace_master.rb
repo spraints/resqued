@@ -2,7 +2,7 @@ require "tempfile"
 require "yaml"
 
 module Resqued
-  class ExecOnHUP
+  class ReplaceMaster
     # Public: Replace the current master process with a new one, while preserving state.
     def self.exec!(state)
       exec Resqued::START_CTX["$0"], "--replace", store_state(state), exec_opts(state)

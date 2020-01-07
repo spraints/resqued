@@ -84,7 +84,7 @@ else
   state = Resqued::MasterState.new
   if options[:master_state]
     Resqued::Logging.logger.info "Resuming master from #{options[:master_state]}"
-    Resqued::ExecOnHUP.restore_state(state, options[:master_state])
+    Resqued::ReplaceMaster.restore_state(state, options[:master_state])
   else
     require_config_paths! options, opts
     Resqued.capture_start_ctx!
