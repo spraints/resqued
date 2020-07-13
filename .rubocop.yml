@@ -12,22 +12,24 @@ Lint/AssignmentInCondition:
   Enabled: false
 
 Metrics/AbcSize:
-  Max: 29
+  Max: 29 # default is 15!
 
 Metrics/BlockLength:
-  Max: 144
+  Max: 32 # default is 25!
+  Exclude:
+    - "spec/**/*"
 
 Metrics/ClassLength:
-  Max: 198
+  Max: 201 # default is 100!
 
 Metrics/CyclomaticComplexity:
-  Max: 11
+  Max: 11 # default is 6!
 
 Metrics/MethodLength:
-  Max: 34
+  Max: 34 # default is 10!
 
 Metrics/PerceivedComplexity:
-  Max: 9
+  Max: 9 # default is 7!
 
 Style/AndOr:
   EnforcedStyle: conditionals

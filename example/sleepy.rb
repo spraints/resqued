@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Push a job:
 #   bundle exec ruby example/sleepy.rb
 # Work queued jobs:
@@ -10,7 +12,7 @@ if $0 == __FILE__
   port = ENV["REDIS_PORT"] || 6379
   Resque.redis = Redis.new(host: host, port: port)
   puts "Pushing a #{QUEUE} job!"
-  Resque.push(QUEUE, class: "SleepyJob", :args => [])
+  Resque.push(QUEUE, class: "SleepyJob", args: [])
   exit 0
 end
 
