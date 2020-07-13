@@ -120,9 +120,15 @@ module Resqued
       loop do
         check_for_expired_workers
         write_procline("shutdown")
-        SIGNAL_QUEUE.clear
 
         break if :no_child == reap_workers(Process::WNOHANG)
+
+        while updated_signal = SIGNAL_QUEUE.shift
+          case updated_signal
+          when :INT, :TERM, :QUIT
+            signal = updated_signal
+          end
+        end
 
         kill_all(signal)
 

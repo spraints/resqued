@@ -72,7 +72,7 @@ module Resqued
           @state.paused = false
           kill_all_listeners(:CONT)
         when :INT, :TERM, :QUIT
-          log "Shutting down..."
+          log "Shutting down with #{signal}..."
           kill_all_listeners(signal)
           wait_for_workers unless @state.fast_exit
           break
@@ -183,7 +183,17 @@ module Resqued
     end
 
     def wait_for_workers
-      reap_all_listeners
+      until reap_all_listeners(Process::WNOHANG) == :no_child
+        @listeners.each { |l| l.read_worker_status({}) }
+
+        case signal = SIGNAL_QUEUE.shift
+        when nil
+          yawn(5.0)
+        when :INT, :TERM, :QUIT
+          log "Shutting down again with #{signal}..."
+          kill_all_listeners(signal)
+        end
+      end
     end
 
     def reap_all_listeners(waitpid_flags = 0)
@@ -208,7 +218,7 @@ module Resqued
           dead_listener.dispose
           write_procline
         rescue Errno::ECHILD
-          return
+          return :no_child
         end
       end
     end
