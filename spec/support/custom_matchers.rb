@@ -11,6 +11,10 @@ module CustomMatchers
       @epsilon = 0.01
     end
 
+    def supports_block_expectations?
+      true
+    end
+
     def within(epsilon)
       @epsilon = epsilon
       self
@@ -24,8 +28,12 @@ module CustomMatchers
       @epsilon >= diff
     end
 
-    def failure_message_for_should
+    def failure_message
       "Expected block to run for #{@expected_duration} +/-#{@epsilon} seconds, but it ran for #{@actual_duration} seconds."
+    end
+
+    def failure_message_when_negated
+      "Expected block not to run for #{@expected_duration} +/-#{@epsilon} seconds, but it ran for #{@actual_duration} seconds."
     end
   end
 end

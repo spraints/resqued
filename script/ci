@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+set -o nounset
+
+dcarg=
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --ruby)
+      dcarg="$dcarg --build-arg RUBY_VERSION=$2"
+      shift; shift;;
+    *)
+      echo 'Usage: script/ci [--ruby VERSION]'
+      exit 1
+      ;;
+  esac
+done
+
+docker-compose build --force-rm $dcarg
+exec docker-compose run --rm test
