@@ -99,7 +99,10 @@ module Resqued
     def worker_finished(pid)
       return if @state.master_socket.nil?
 
-      @state.master_socket.puts(pid)
+      @state.master_socket.write_nonblock("#{pid}\n")
+    rescue IO::WaitWritable
+      log "Couldn't tell #{@state.pid} that #{pid} exited!"
+      # Ignore it, maybe the next time it'll work.
     rescue Errno::EPIPE
       @state.master_socket.close
       @state.master_socket = nil
