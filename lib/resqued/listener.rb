@@ -85,6 +85,8 @@ module Resqued
 
       write_procline("shutdown")
       burn_down_workers(exit_signal || :QUIT)
+      @socket.close
+      @socket = nil
     end
 
     # Private.
