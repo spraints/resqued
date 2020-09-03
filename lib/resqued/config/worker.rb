@@ -112,7 +112,7 @@ module Resqued
         elsif value.is_a?(1.class)
           value < @pool_size ? value : @pool_size
         elsif value.is_a?(Float) && value >= 0.0 && value <= 1.0
-          (@pool_size * value).to_i
+          [(@pool_size * value).to_i, 1].max
         else
           raise TypeError, "Unknown concurrency value: #{value.inspect}"
         end

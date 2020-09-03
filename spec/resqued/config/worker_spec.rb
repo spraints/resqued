@@ -55,6 +55,17 @@ describe Resqued::Config::Worker do
     end
   end
 
+  context "small pool with percent" do
+    let(:config) { <<-END_CONFIG }
+      worker_pool 2
+      queue "a"
+      queue "b", :percent => 45
+    END_CONFIG
+    it { expect(result.size).to eq(2) }
+    it { expect(result[0]).to eq(queues: ["a", "b"]) }
+    it { expect(result[1]).to eq(queues: ["a"]) }
+  end
+
   context "pool (hash for concurrency)" do
     let(:config) { <<-END_CONFIG }
       before_fork { }
