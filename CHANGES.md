@@ -2,6 +2,7 @@ Starting with version 0.6.1, resqued uses semantic versioning to indicate incomp
 
 v0.10.1
 -------
+* Avoid deadlock if a listener stops responding. (#58)
 * When using 'percent' for a queue in a worker pool, always assign at least one worker. (#57)
 
 v0.10.0
