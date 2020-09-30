@@ -2,10 +2,11 @@ require "spec_helper"
 require "timeout"
 
 describe "Resqued master with an extra child process" do
+  include ResquedPath
+
   # Starts resqued with an extra child process.
   def start_resqued_with_extra_child
     shim_path = File.expand_path("../support/extra-child-shim", File.dirname(__FILE__))
-    resqued_path = File.expand_path("../../bin/resqued", File.dirname(__FILE__))
 
     config_path = File.join(SPEC_TEMPDIR, "config.rb")
     File.write(config_path, <<-CONFIG)

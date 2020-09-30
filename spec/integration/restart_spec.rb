@@ -1,6 +1,8 @@
 require "spec_helper"
 
 describe "Resqued can restart" do
+  include ResquedPath
+
   it "expect to be able to restart" do
     start_resqued
     expect_running listener: "listener #1"
@@ -33,11 +35,6 @@ describe "Resqued can restart" do
     # Don't configure any workers. That way, we don't need to have redis running.
     config_path = File.join(SPEC_TEMPDIR, "config.rb")
     File.write(config_path, "")
-
-    resqued_path = File.expand_path("../../gemfiles/bin/resqued", File.dirname(__FILE__))
-    unless File.executable?(resqued_path)
-      resqued_path = File.expand_path("../../bin/resqued", File.dirname(__FILE__))
-    end
 
     logfile = File.join(SPEC_TEMPDIR, "resqued.log")
     File.write(logfile, "") # truncate it
