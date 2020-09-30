@@ -25,6 +25,11 @@ module Resqued
       @listener_proxies.size
     end
 
+    # Public: Are the listeners all gone?
+    def empty?
+      @listener_proxies.empty?
+    end
+
     # Public: Initialize a new listener, run it, and record it as the current listener. Returns its ListenerProxy.
     def start!
       listener_state = ListenerState.new

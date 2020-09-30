@@ -187,7 +187,7 @@ module Resqued
     end
 
     def reap_all_listeners(waitpid_flags = 0)
-      loop do
+      until @listeners.empty?
         begin
           lpid, status = Process.waitpid2(-1, waitpid_flags)
           return unless lpid
@@ -203,9 +203,11 @@ module Resqued
             @state.clear_last_good!
           end
 
-          dead_listener = @listeners.delete(lpid)
-          listener_status dead_listener, "stop"
-          dead_listener.dispose
+          if dead_listener = @listeners.delete(lpid)
+            listener_status dead_listener, "stop"
+            dead_listener.dispose
+          end
+
           write_procline
         rescue Errno::ECHILD
           return
