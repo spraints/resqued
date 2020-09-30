@@ -50,6 +50,7 @@ describe "Resqued can restart" do
 
   def stop_resqued
     Process.kill(:TERM, @pid)
+    sleep 1.0
   end
 
   def list_processes
