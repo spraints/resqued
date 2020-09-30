@@ -1,5 +1,9 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.10.2
+-------
+* Shut down cleanly even if there are other stray child processes of the master. (#59)
+
 v0.10.1
 -------
 * Avoid deadlock if a listener stops responding. (#58)
