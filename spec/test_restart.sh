@@ -37,7 +37,7 @@ start_resqued() {
   sleep 1
   echo expect to find the master process and the first listener
   running # set -e will make the test fail if it's not running
-  ps axo pid,args -H | grep [r]esqued-
+  ps axo pid,args | grep [r]esqued-
   ps axo pid,args | grep [r]esqued- | grep -q 'listener #1.*running'
 }
 
@@ -47,7 +47,7 @@ restart_resqued() {
   sleep 1
   echo expect to find the master process and the second listener
   running
-  ps axo pid,args -H | grep [r]esqued-
+  ps axo pid,args | grep [r]esqued-
   ps axo pid,args | grep [r]esqued- | grep -qv 'listener #1'
   ps axo pid,args | grep [r]esqued- | grep -q 'listener #2.*running'
 }
@@ -61,7 +61,7 @@ stop_resqued() {
     echo "expected resqued to be stopped"
     false
   fi
-  ps axo pid,args -H | grep [r]esqued- || true
+  ps axo pid,args | grep [r]esqued- || true
   test -z "$(ps axo pid,args | grep [r]esqued-)"
 }
 
