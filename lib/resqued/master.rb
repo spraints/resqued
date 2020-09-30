@@ -209,6 +209,8 @@ module Resqued
           end
 
           write_procline
+
+          return if @listeners.empty?
         rescue Errno::ECHILD
           return
         end
