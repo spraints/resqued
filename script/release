@@ -98,6 +98,10 @@ commit_if_dirty() {
   fi
 }
 
+if [ "${dry_run}" != "no" ]; then
+  echo 'DRY RUN! run with --force to really publish the release.'
+fi
+
 step Committing ${tagname}
 run set_gem_version
 run git add lib/resqued/version.rb
