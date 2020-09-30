@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+extra_child_pid = fork { sleep(100); exit! }
+File.write(ENV["EXTRA_CHILD_PIDFILE"], extra_child_pid.to_s)
+
+exec(*ARGV)
