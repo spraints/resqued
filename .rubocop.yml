@@ -14,7 +14,7 @@ Lint/AssignmentInCondition:
 
 Lint/SuppressedException:
   Exclude:
-    - "spec/integration/master_inherits_child_spec.rb"
+    - "spec/integration/**/*"
 
 Metrics/AbcSize:
   Max: 29

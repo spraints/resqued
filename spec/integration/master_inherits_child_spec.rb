@@ -6,16 +6,21 @@ describe "Resqued master with an extra child process" do
   def start_resqued_with_extra_child
     shim_path = File.expand_path("../support/extra-child-shim", File.dirname(__FILE__))
     resqued_path = File.expand_path("../../bin/resqued", File.dirname(__FILE__))
+
     config_path = File.join(SPEC_TEMPDIR, "config.rb")
     File.write(config_path, <<-CONFIG)
       before_fork { File.write(ENV["LISTENER_PIDFILE"], $$.to_s) }
     CONFIG
+
+    logfile = File.join(SPEC_TEMPDIR, "resqued.log")
+    File.write(logfile, "") # truncate it
+
     env = {
       "LISTENER_PIDFILE" => listener_pidfile,
       "EXTRA_CHILD_PIDFILE" => extra_child_pidfile,
     }
-    redir = ENV["VERBOSE"] ? {} : { out: "/dev/null", err: "/dev/null" }
-    pid = spawn(env, shim_path, resqued_path, config_path, redir)
+
+    pid = spawn(env, shim_path, resqued_path, "--logfile", logfile, config_path)
     sleep 1.0
     pid
   end
