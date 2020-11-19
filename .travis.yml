@@ -11,3 +11,4 @@ bundler_args: "--binstubs bin"
 gemfile:
   - gemfiles/resque-min
   - gemfiles/resque-latest
+  - gemfiles/resque-2
