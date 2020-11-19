@@ -4,7 +4,7 @@ describe "Listener still starting on SIGHUP" do
   include ResquedIntegrationHelpers
 
   it "expect master not to crash" do
-    start_resqued config: <<-CONFIG, debug: true
+    start_resqued config: <<-CONFIG
       before_fork do
         sleep 1
       end

@@ -200,7 +200,7 @@ module Resqued
           end
 
           if @listeners.last_good_pid == lpid
-            @state.clear_last_good!
+            @listeners.clear_last_good!
           end
 
           if dead_listener = @listeners.delete(lpid)
