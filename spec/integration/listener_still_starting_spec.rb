@@ -1,15 +1,17 @@
 require "spec_helper"
 
-describe "Resqued can restart" do
+describe "Listener still starting on SIGHUP" do
   include ResquedIntegrationHelpers
 
-  it "expect to be able to restart" do
-    start_resqued
+  it "expect master not to crash" do
+    start_resqued config: <<-CONFIG, debug: true
+      before_fork do
+        sleep 1
+      end
+    CONFIG
     expect_running listener: "listener #1"
     restart_resqued
     expect_running listener: "listener #2"
-    stop_resqued
-    expect_not_running
   end
 
   after do
@@ -18,5 +20,4 @@ describe "Resqued can restart" do
     rescue Errno::ESRCH
     end
   end
-
 end
