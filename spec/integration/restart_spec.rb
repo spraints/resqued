@@ -18,5 +18,4 @@ describe "Resqued can restart" do
     rescue Errno::ESRCH
     end
   end
-
 end
