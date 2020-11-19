@@ -9,8 +9,11 @@ while [ $# -gt 0 ]; do
     --ruby)
       dcarg="$dcarg --build-arg RUBY_VERSION=$2"
       shift; shift;;
+    --gemfile)
+      dcarg="$dcarg --build-arg CI_GEMFILE=$2"
+      shift; shift;;
     *)
-      echo 'Usage: script/ci [--ruby VERSION]'
+      echo 'Usage: script/ci [--ruby VERSION] [--gemfile GEMFILE]'
       exit 1
       ;;
   esac
