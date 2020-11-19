@@ -22,7 +22,7 @@ describe "Resqued master with an extra child process" do
     }
 
     pid = spawn(env, shim_path, resqued_path, "--logfile", logfile, config_path)
-    sleep 1.0
+    sleep 2.0
     pid
   end
 
