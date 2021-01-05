@@ -69,7 +69,7 @@ module Resqued
 
     # Public: Run the main loop.
     def run
-      trap(:HUP) { } # ignore this, in case it trickles in from the master.
+      trap(:HUP) {} # ignore this, in case it trickles in from the master.
       trap(:CHLD) { awake }
       SIGNALS.each { |signal| trap(signal) { SIGNAL_QUEUE << signal; awake } }
       @socket.close_on_exec = true

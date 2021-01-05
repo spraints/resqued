@@ -86,7 +86,7 @@ run() {
 set_gem_version() {
   cat >lib/resqued/version.rb <<V
 module Resqued
-  VERSION = '${version}'
+  VERSION = "${version}".freeze
 end
 V
 }

@@ -92,7 +92,7 @@ module Resqued
         # In case we get a signal before resque is ready for it.
         Resqued::Listener::ALL_SIGNALS.each { |signal| trap(signal, "DEFAULT") }
         # Continue ignoring SIGHUP, though.
-        trap(:HUP) { }
+        trap(:HUP) {}
         # If we get a QUIT during boot, just spin back down.
         trap(:QUIT) { exit! 0 }
 
