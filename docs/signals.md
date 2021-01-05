@@ -34,6 +34,8 @@ The Listener process forwards `SIGCONT` to all of its workers.
 
 The Listener process handles `SIGINT`, `SIGTERM`, and `SIGQUIT`. When it receives one of these signals, it goes into shutdown mode. It sends the received signal to all of its workers. When all workers have exited, the Listener process exits.
 
+The Listener process handles `SIGHUP` and does nothing. This makes it easier to reload resqued in a docker container, since many container platforms will send a requested signal to all processes in the container.
+
 ## Worker
 
 The Worker process uses resque's signal handling. Resque 1.23.0 handles the following signals:
@@ -44,3 +46,5 @@ The Worker process uses resque's signal handling. Resque 1.23.0 handles the foll
 * `USR1`: Kill the forked child immediately, continue processing jobs.
 * `USR2`: Don't process any new jobs
 * `CONT`: Start processing jobs again after a USR2
+
+Resqued leaves a handler for `HUP` in place that does nothing. This makes it easier to reload resqued in a docker container, since many container platforms will send a requested signal to all processes in the container.
