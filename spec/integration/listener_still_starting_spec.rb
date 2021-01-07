@@ -11,6 +11,7 @@ describe "Listener still starting on SIGHUP" do
     CONFIG
     expect_running listener: "listener #1"
     restart_resqued
+    sleep 2
     expect_running listener: "listener #2"
   end
 
