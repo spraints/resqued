@@ -125,17 +125,17 @@ describe Resqued::Config::Worker do
 
   context "pool, with shuffled queues" do
     let(:config) { <<-END_CONFIG }
-      worker_pool 20, :shuffle_queues => true
-      queue 'a', :count => 10
-      queue 'b', :count => 15
+      worker_pool 200, :shuffle_queues => true
+      queue 'a', :count => 100
+      queue 'b', :count => 150
     END_CONFIG
-    it { expect(result.size).to eq(20) }
-    it { (0..9).each { |i| expect(result[i][:queues].sort).to eq(["a", "b"]) } }
-    it { (10..14).each { |i| expect(result[i][:queues]).to eq(["b"]) } }
-    it { (15..19).each { |i| expect(result[i][:queues]).to eq(["*"]) } }
+    it { expect(result.size).to eq(200) }
+    it { (0..99).each { |i| expect(result[i][:queues].sort).to eq(["a", "b"]) } }
+    it { (100..149).each { |i| expect(result[i][:queues]).to eq(["b"]) } }
+    it { (150..199).each { |i| expect(result[i][:queues]).to eq(["*"]) } }
     it { result.each { |x| expect(x).not_to have_key(:shuffle_queues) } }
     it do
-      shuffled_queues = result.take(10).map { |x| x[:queues] }
+      shuffled_queues = result.take(100).map { |x| x[:queues] }
       expect(shuffled_queues.sort.uniq).to eq([["a", "b"], ["b", "a"]]) # Some of the queues should be shuffled
     end
   end
