@@ -19,14 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby-version: ['2.6', '2.7']
+        ruby-version: ['2.6', '2.7', '3.0', 'head']
         gemfile:
         - resque-min
         - resque-latest
         - resque-2
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}
-        
+
     steps:
     - uses: actions/checkout@v2
     - name: Set up Ruby

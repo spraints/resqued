@@ -34,7 +34,7 @@ module Resqued
 
     # Internal: Restore the master's state, and remove the state file.
     def self.restore_state(state, path)
-      data = YAML.safe_load(File.read(path), [Symbol], [], true)
+      data = YAML.safe_load(File.read(path), permitted_classes: [Symbol], aliases: true)
       Resqued::START_CTX.replace(data[:start_ctx] || {})
       state.restore(data[:state])
       File.unlink(path) rescue nil
