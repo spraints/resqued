@@ -1,7 +1,12 @@
 require "rspec/core/rake_task"
 
-RSpec::Core::RakeTask.new(:spec) do |spec|
+RSpec::Core::RakeTask.new(:spec => "bin/resqued") do |spec|
   spec.rspec_opts = "-f doc"
+end
+
+desc "Generate binstubs for resqued"
+file "bin/resqued" do
+  sh "bundle", "binstubs", "resqued"
 end
 
 desc "Run all tests"

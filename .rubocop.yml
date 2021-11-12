@@ -3,6 +3,7 @@ AllCops:
     - 'bin/*'
     - 'gemfiles/**/*'
     - 'tmp/**/*'
+    - 'vendor/**/*'
 
 Layout/LineLength:
   Max: 120
