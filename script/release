@@ -109,7 +109,7 @@ run commit_if_dirty -m "${tagname}"
 
 step Pushing ${tagname}
 run git tag "${tagname}"
-run git push origin HEAD:master refs/tags/${tagname}
+run git push origin HEAD:main refs/tags/${tagname}
 
 step Building ${tagname}
 run gem build resqued.gemspec
