@@ -29,8 +29,7 @@ namespace :rubocop do
 end
 
 def rubocop(*args)
-  sh "cat", ".rubocop.yml"
   sh "rubocop", "-c", ".rubocop.yml", *args
 end
 
-task :default => [:tests, "rubocop:fast"]
+task :default => [:tests, :rubocop]
