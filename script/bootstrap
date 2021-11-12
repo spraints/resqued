@@ -1,3 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
-bundle install --path .bundle "$@"
+bundle config --local path $(pwd)/vendor/bundle
+bundle install

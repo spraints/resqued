@@ -5,7 +5,7 @@ RSpec::Core::RakeTask.new(:spec => "bin/resqued") do |spec|
 end
 
 desc "Generate binstubs for resqued"
-file "bin/resqued" do |spec|
+file "bin/resqued" do
   sh "bundle", "binstubs", "resqued"
 end
 
@@ -29,7 +29,8 @@ namespace :rubocop do
 end
 
 def rubocop(*args)
+  sh "cat", ".rubocop.yml"
   sh "rubocop", "-c", ".rubocop.yml", *args
 end
 
-task :default => [:tests, :rubocop]
+task :default => [:tests, "rubocop:fast"]
