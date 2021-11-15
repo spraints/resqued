@@ -1,5 +1,10 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.11.2
+-------
+* Add compatibility with Ruby 3.1. (#63)
+* Switch to GitHub Actions for CI. (#64)
+
 v0.11.1
 -------
 * Fix a crash during shutdown. (#62)
