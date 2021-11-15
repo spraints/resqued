@@ -1,5 +1,14 @@
+# Don't lock dependencies.
+.ruby-version
 Gemfile.lock
+
+# Don't check in bundler's local things.
 .bundle/
-vendor/cache/
+vendor/
 bin/
+
+# The tests generate some tmp files.
 tmp/
+
+# Ignore releases.
+*.gem
