@@ -17,7 +17,6 @@ module Resqued
         config = Resqued::Config.new(paths)
         config.before_fork(RuntimeInfo.new)
         config.build_workers
-        config.after_fork(Resque::Worker.new("*"))
       end
     end
 
