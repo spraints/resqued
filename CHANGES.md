@@ -1,5 +1,11 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.12.1
+-------
+* Fixed Resqued::TestCase. v0.12.0 introduced a regression that stopped
+  `after_fork` blocks from being tested. This fixes some other problems in CI,
+  too. (#66)
+
 v0.12.0
 -------
 * Drop "resque" as a dependency. Apps that use Resqued with a different job
