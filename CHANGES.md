@@ -1,5 +1,12 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.12.0
+-------
+* Drop "resque" as a dependency. Apps that use Resqued with a different job
+  system will no longer also have a transitive dependency on resque. Apps that
+  rely on resqued's resque dependency will need to add `gem "resque"` to their
+  `Gemfile`. (#65)
+
 v0.11.2
 -------
 * Add compatibility with Ruby 3.1. (#63)
