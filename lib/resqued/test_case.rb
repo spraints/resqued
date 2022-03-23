@@ -17,11 +17,17 @@ module Resqued
         config = Resqued::Config.new(paths)
         config.before_fork(RuntimeInfo.new)
         config.build_workers
+        config.after_fork(FakeWorker.new)
       end
     end
 
     Default = LoadConfig
 
     include Default
+
+    class FakeWorker
+      def initialize
+      end
+    end
   end
 end
