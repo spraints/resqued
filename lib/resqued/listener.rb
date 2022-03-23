@@ -96,6 +96,8 @@ module Resqued
       if Resque.respond_to?("logger=")
         Resque.logger = Resqued::Logging.build_logger
       end
+    rescue LoadError
+      # Skip this step.
     end
 
     # Private.

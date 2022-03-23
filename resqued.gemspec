@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   ]
   s.add_dependency "kgio", "~> 2.6"
   s.add_dependency "mono_logger", "~> 1.0"
-  s.add_dependency "resque", ">= 1.9.1"
+  s.add_development_dependency "resque", ">= 1.9.1"
   s.add_development_dependency "rake", "13.0.1"
   s.add_development_dependency "rspec", "3.9.0"
   s.add_development_dependency "rubocop", "0.78.0"
