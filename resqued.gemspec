@@ -18,5 +18,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake", "13.0.1"
   s.add_development_dependency "resque", ">= 1.9.1"
   s.add_development_dependency "rspec", "3.9.0"
-  s.add_development_dependency "rubocop", "0.78.0"
+  s.add_development_dependency "rubocop", "0.79.0"
 end
