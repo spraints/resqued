@@ -103,6 +103,12 @@ Style/ParallelAssignment:
 Style/PerlBackrefs:
   Enabled: false
 
+Style/RedundantBegin:
+  # Ruby 3.0 changed some block syntax and 'begin' is sometimes optional now.
+  # Leave this disabled until Resqued only supports Rubies where there's one
+  # way to do it.
+  Enabled: false
+
 Style/RedundantReturn:
   Enabled: false
 

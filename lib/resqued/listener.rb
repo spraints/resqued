@@ -96,7 +96,7 @@ module Resqued
       if Resque.respond_to?("logger=")
         Resque.logger = Resqued::Logging.build_logger
       end
-    rescue LoadError
+    rescue LoadError # rubocop: disable Lint/SuppressedException
       # Skip this step.
     end
 
