@@ -1,20 +1,25 @@
 module ResquedIntegrationHelpers
   include ResquedPath
 
-  def start_resqued(config: "", debug: false)
-    # Don't configure any workers. That way, we don't need to have redis running.
+  def start_resqued(config: "", debug: false, pidfile: nil)
+    # Don't configure any workers by default. That way, we don't need to have
+    # redis running.
     config_path = File.join(SPEC_TEMPDIR, "config.rb")
     File.write(config_path, config)
 
-    @pid =
-      if debug
-        spawn resqued_path, config_path
-      else
-        logfile = File.join(SPEC_TEMPDIR, "resqued.log")
-        File.write(logfile, "") # truncate it
+    cmd = [resqued_path]
+    if pidfile
+      cmd += ["--pidfile", pidfile]
+    end
+    unless debug
+      logfile = File.join(SPEC_TEMPDIR, "resqued.log")
+      File.write(logfile, "") # truncate it
+      cmd += ["--logfile", logfile]
+    end
+    cmd += [config_path]
 
-        spawn resqued_path, "--logfile", logfile, config_path
-      end
+    @pid = spawn(*cmd)
+
     sleep 1.0
   end
 
