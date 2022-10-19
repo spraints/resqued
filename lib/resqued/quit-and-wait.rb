@@ -3,7 +3,7 @@ require "optparse"
 module Resqued
   class QuitAndWait
     def self.exec!(argv)
-      grace_seconds = 30
+      options = {grace_seconds: 30}
 
       opts = OptionParser.new do |opts|
         opts.banner = <<USAGE
@@ -27,8 +27,7 @@ USAGE
         end
 
         opts.on "--grace-period SECONDS", Numeric, "If resqued does not exit within SECONDS (default 15) seconds, exit with an error" do |v|
-          grace_period = v
-          grace_second = v
+          options[:grace_seconds] = v
         end
       end
 
@@ -37,9 +36,9 @@ USAGE
         puts opts
         exit 1
       end
-      pidfile = argv.shift
+      options[:pidfile] = argv.shift
 
-      new(grace_seconds: grace_seconds, pidfile: pidfile).exec!
+      new(**options).exec!
     end
 
     def initialize(grace_seconds:, pidfile:)
