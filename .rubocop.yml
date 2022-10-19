@@ -37,6 +37,10 @@ Metrics/MethodLength:
 Metrics/PerceivedComplexity:
   Max: 9
 
+Naming/FileName:
+  Exclude:
+    - lib/resqued/quit-and-wait.rb
+
 Style/AndOr:
   EnforcedStyle: conditionals
 
