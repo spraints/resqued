@@ -22,7 +22,7 @@ describe "quit-and-wait gracefully stops resqued" do
     end
 
     Timeout.timeout(15) do
-      expect(system resqued_path, "quit-and-wait", pidfile, "--grace-period", "10").to be true
+      expect(system(resqued_path, "quit-and-wait", pidfile, "--grace-period", "10")).to be true
     end
 
     expect_not_running

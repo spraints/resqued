@@ -3,17 +3,17 @@ require "optparse"
 module Resqued
   class QuitAndWait
     def self.exec!(argv)
-      options = {grace_seconds: 30}
+      options = { grace_seconds: 30 }
 
-      opts = OptionParser.new do |opts|
-        opts.banner = <<USAGE
-Usage: resqued quit-and-wait PIDFILE [--grace-period SECONDS]
+      opts = OptionParser.new do |opts| # rubocop: disable Lint/ShadowingOuterLocalVariable
+        opts.banner = <<~USAGE
+          Usage: resqued quit-and-wait PIDFILE [--grace-period SECONDS]
 
-Use this as a preStop script in kubernetes. This script will send a SIGQUIT to
-resqued immediately, and then sleep until either resqued exits or until the
-grace period is nearing expiration. This script exits 0 if resqued exited and
-99 otherwise.
-USAGE
+          Use this as a preStop script in kubernetes. This script will send a SIGQUIT to
+          resqued immediately, and then sleep until either resqued exits or until the
+          grace period is nearing expiration. This script exits 0 if resqued exited and
+          99 otherwise.
+        USAGE
 
         opts.on "-h", "--help", "Show this message" do
           puts opts
@@ -77,7 +77,8 @@ USAGE
 
     def log(message)
       return if quiet
-      puts "#{Time.now.strftime("%H:%M:%S.%L")} #{message}"
+
+      puts "#{Time.now.strftime('%H:%M:%S.%L')} #{message}"
     end
   end
 end
