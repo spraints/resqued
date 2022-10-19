@@ -11,8 +11,8 @@ Usage: resqued quit-and-wait PIDFILE [--grace-period SECONDS]
 
 Use this as a preStop script in kubernetes. This script will send a SIGQUIT to
 resqued immediately, and then sleep until either resqued exits or until the
-grace period is approximately 5 seconds from expiration. This script exits 0 if
-resqued exited and 99 otherwise.
+grace period is nearing expiration. This script exits 0 if resqued exited and
+99 otherwise.
 USAGE
 
         opts.on "-h", "--help", "Show this message" do
@@ -26,7 +26,7 @@ USAGE
           exit
         end
 
-        opts.on "--grace-period SECONDS", Numeric, "If resqued does not exit within SECONDS (default 15) seconds, exit with an error" do |v|
+        opts.on "--grace-period SECONDS", Numeric, "Grace period provided to container runtime (default 30)" do |v|
           options[:grace_seconds] = v
         end
 
