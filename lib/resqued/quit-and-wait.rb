@@ -29,6 +29,10 @@ USAGE
         opts.on "--grace-period SECONDS", Numeric, "If resqued does not exit within SECONDS (default 15) seconds, exit with an error" do |v|
           options[:grace_seconds] = v
         end
+
+        opts.on "--quiet" do
+          options[:quiet] = true
+        end
       end
 
       argv = opts.parse(argv)
@@ -41,12 +45,13 @@ USAGE
       new(**options).exec!
     end
 
-    def initialize(grace_seconds:, pidfile:)
+    def initialize(grace_seconds:, pidfile:, quiet: false)
       @grace_seconds = grace_seconds
       @pidfile = pidfile
+      @quiet = quiet
     end
 
-    attr_reader :grace_seconds, :pidfile
+    attr_reader :grace_seconds, :pidfile, :quiet
 
     def exec!
       start = Time.now
@@ -71,6 +76,7 @@ USAGE
     end
 
     def log(message)
+      return if quiet
       puts "#{Time.now.strftime("%H:%M:%S.%L")} #{message}"
     end
   end
