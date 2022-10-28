@@ -64,6 +64,9 @@ module Resqued
         @pid = nil
         @backoff.died unless @killed
       elsif !process_status.nil? && @self_started
+        alive_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - @start_time
+        @config.after_exit(WorkerSummary.new(alive_time))
+
         log :debug, "#{summary} I exited: #{process_status}"
         @pid = nil
         @backoff.died unless @killed
@@ -84,6 +87,9 @@ module Resqued
       @backoff.started
       @self_started = true
       @killed = false
+
+      @start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
       if @pid = fork
         @pids << @pid
         # still in the listener
@@ -110,6 +116,17 @@ module Resqued
       @killed = true
     rescue Errno::ESRCH => e
       log "Can't kill #{pid}: #{e}"
+    end
+  end
+
+  # Metadata for an exited listener worker.
+  class WorkerSummary
+    def initialize(alive_time_sec)
+      @alive_time_sec = alive_time_sec
+    end
+
+    def alive_time_sec
+      @alive_time_sec
     end
   end
 end

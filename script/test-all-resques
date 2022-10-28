@@ -19,6 +19,9 @@ end
 after_fork do
   File.open('$OUTPUT', 'a') { |f| f.puts Gem.loaded_specs['resque'].version.to_s }
 end
+after_exit do |worker_summary|
+  puts "#{worker_summary.alive_time_sec}"
+end
 worker 'example-queue'
 END_CONFIG
 

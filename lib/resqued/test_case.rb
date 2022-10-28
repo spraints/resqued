@@ -18,6 +18,7 @@ module Resqued
         config.before_fork(RuntimeInfo.new)
         config.build_workers
         config.after_fork(FakeWorker.new)
+        config.after_exit(Resqued::WorkerSummary.new(1.0))
       end
     end
 

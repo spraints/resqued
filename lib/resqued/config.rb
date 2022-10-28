@@ -1,5 +1,6 @@
 require "resqued/config/after_fork"
 require "resqued/config/before_fork"
+require "resqued/config/after_exit"
 require "resqued/config/worker"
 
 module Resqued
@@ -25,6 +26,11 @@ module Resqued
       # Public: Performs the `after_fork` action from the config.
       def after_fork(worker)
         Resqued::Config::AfterFork.new(worker: worker).apply_all(@config_data)
+      end
+
+      # Public: Perform the `after_exit` action from the config.
+      def after_exit(worker_summary)
+        Resqued::Config::AfterExit.new(worker_summary: worker_summary).apply_all(@config_data)
       end
 
       # Public: Builds the workers specified in the config.
