@@ -18,7 +18,7 @@ module Resqued
         config.before_fork(RuntimeInfo.new)
         config.build_workers
         config.after_fork(FakeWorker.new)
-        config.after_exit(Resqued::WorkerSummary.new(1.0))
+        config.after_exit(Resqued::WorkerSummary.new(alive_time_sec: 1.0, process_status: Process::Status.allocate))
       end
     end
 

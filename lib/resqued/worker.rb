@@ -64,8 +64,8 @@ module Resqued
         @pid = nil
         @backoff.died unless @killed
       elsif !process_status.nil? && @self_started
-        alive_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) - @start_time
-        @config.after_exit(WorkerSummary.new(alive_time))
+        alive_time_sec = Process.clock_gettime(Process::CLOCK_MONOTONIC) - @start_time
+        @config.after_exit(WorkerSummary.new(alive_time_sec: alive_time_sec, process_status: process_status))
 
         log :debug, "#{summary} I exited: #{process_status}"
         @pid = nil
@@ -121,12 +121,12 @@ module Resqued
 
   # Metadata for an exited listener worker.
   class WorkerSummary
-    def initialize(alive_time_sec)
-      @alive_time_sec = alive_time_sec
-    end
 
-    def alive_time_sec
-      @alive_time_sec
+    attr_reader :alive_time_sec, :process_status
+
+    def initialize(alive_time_sec: , process_status:)
+      @alive_time_sec = alive_time_sec
+      @process_status = process_status
     end
   end
 end

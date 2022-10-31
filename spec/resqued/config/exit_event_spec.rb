@@ -22,13 +22,15 @@ describe do
       after_exit do |worker_summary|
         $after_exit_called = true
         $worker_alive_time_sec = worker_summary.alive_time_sec
+        $exit_status = worker_summary.process_status.exitstatus
       end
     END_CONFIG
 
-    let(:evaluator) { Resqued::Config::AfterExit.new(worker_summary: Resqued::WorkerSummary.new(1)) }
+    let(:evaluator) { Resqued::Config::AfterExit.new(worker_summary: Resqued::WorkerSummary.new(alive_time_sec: 1, process_status: Process::Status.allocate)) }
 
     it { expect($after_exit_called).to eq(true) }
     it { expect($worker_alive_time_sec > 0).to eq(true) }
+    it { expect($exit_status).to eq(0) }
   end
 end
 
