@@ -87,7 +87,6 @@ module Resqued
       @backoff.started
       @self_started = true
       @killed = false
-
       @start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
       if @pid = fork
@@ -121,7 +120,6 @@ module Resqued
 
   # Metadata for an exited listener worker.
   class WorkerSummary
-
     attr_reader :alive_time_sec, :process_status
 
     def initialize(alive_time_sec: , process_status:)
