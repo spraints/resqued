@@ -26,7 +26,11 @@ describe do
       end
     END_CONFIG
 
-    let(:evaluator) { Resqued::Config::AfterExit.new(worker_summary: Resqued::WorkerSummary.new(alive_time_sec: 1, process_status: Process::Status.allocate)) }
+    let(:evaluator) {
+      fork { 0 }
+      status = Process.waitpid2[1]
+      Resqued::Config::AfterExit.new(worker_summary: Resqued::WorkerSummary.new(alive_time_sec: 1, process_status: status))
+    }
 
     it { expect($after_exit_called).to eq(true) }
     it { expect($worker_alive_time_sec > 0).to eq(true) }
