@@ -122,7 +122,7 @@ module Resqued
   class WorkerSummary
     attr_reader :alive_time_sec, :process_status
 
-    def initialize(alive_time_sec: , process_status:)
+    def initialize(alive_time_sec:, process_status:)
       @alive_time_sec = alive_time_sec
       @process_status = process_status
     end
