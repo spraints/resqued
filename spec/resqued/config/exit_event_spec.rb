@@ -30,7 +30,7 @@ describe do
       # In ruby versions < 3, Process::Status evaluates $? regardless of what status is returned by
       # exitcode for a status created with Process::Status.allocate
       fork do
-        0
+        exit!
       end
       status = Process.waitpid2[1]
       Resqued::Config::AfterExit.new(worker_summary: Resqued::WorkerSummary.new(alive_time_sec: 1, process_status: status))
