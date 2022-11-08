@@ -32,7 +32,7 @@ describe do
       fork do
         exit!
       end
-      status = Process.waitpid2[1]
+      _, status = Process.waitpid2
       Resqued::Config::AfterExit.new(worker_summary: Resqued::WorkerSummary.new(alive_time_sec: 1, process_status: status))
     }
 
