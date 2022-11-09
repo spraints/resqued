@@ -152,6 +152,11 @@ You can configure the Resque worker in the `after_fork` block
       worker.term_timeout = 1.minute
     end
 
+    after_exit do |worker_summary|
+        puts "Worker was alive for #{worker_summary.alive_time_sec}"
+        puts "Process::Status of exited worker: #{worker_summary.process_status.inspect}"
+    end
+
 In this example, a Rails application is being set up with 7 workers:
 * high
 * low (interval = 30)

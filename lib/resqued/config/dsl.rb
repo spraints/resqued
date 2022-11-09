@@ -12,6 +12,10 @@ module Resqued
       def after_fork(&block)
       end
 
+      # Public: Define a block to be run once after each worker exits.
+      def after_exit(&block)
+      end
+
       # Public: Define a worker that will work on a queue.
       def worker(*queues)
       end
