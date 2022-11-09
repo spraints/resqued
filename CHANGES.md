@@ -1,5 +1,9 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.12.3
+-------
+* Add `after_exit` that provides a `WorkerSummary` about each exited worker.
+
 v0.12.2
 -------
 * Added lifecycle hook for container runtimes. (#67)
