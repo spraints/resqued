@@ -1,6 +1,7 @@
 version: "3.7"
 
 services:
+  # Usage: script/ci [--ruby 3.0.0] [--gemfile gemfiles/GEMFILE]
   test:
     build:
       context: .

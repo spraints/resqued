@@ -1,4 +1,6 @@
 #!/bin/bash
+#/ Usage: script/ci [--ruby 3.0.0] [--gemfile gemfiles/GEMFILE]
+#/ Run tests in a container, similar to one of the build matrix configurations.
 
 set -e
 set -o nounset
