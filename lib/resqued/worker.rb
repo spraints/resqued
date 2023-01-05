@@ -13,7 +13,11 @@ module Resqued
       resque_worker = Resque::Worker.new(*queues)
       resque_worker.term_child = true if resque_worker.respond_to?("term_child=")
       redis_client = Resque.redis.respond_to?(:_client) ? Resque.redis._client : Resque.redis.client
-      redis_client.reconnect
+      if redis_client.respond_to?(:reconnect)
+        redis_client.reconnect
+      else
+        redis_client.close
+      end
       resque_worker
     }
 
