@@ -1,0 +1,26 @@
+version: "3.7"
+
+# Run an example resqued config with a redis server. This is a simple smoke
+# test.
+#
+# Build like this:
+# $ docker-compose -f docker-compose.example.yml build --build-arg CI_GEMFILE=gemfiles/X resqued
+#
+# Run like this:
+# $ docker-compose -f docker-compose.example.yml up
+
+services:
+  resqued:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      REDIS_HOST: "redis"
+    command:
+      - bundle
+      - exec
+      - resqued
+      - example/pool.rb
+
+  redis:
+    image: "redis:5"

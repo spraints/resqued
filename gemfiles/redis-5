@@ -1,0 +1,4 @@
+source 'https://rubygems.org/'
+gemspec :path => '..', :development_group => :ci
+gem 'resque'
+gem 'redis', '5.0.5'

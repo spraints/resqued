@@ -1,4 +1,6 @@
 #!/bin/bash
+#/ Usage: script/ci [--ruby 3.0.0] [--gemfile gemfiles/GEMFILE]
+#/ Run tests in a container, similar to one of the build matrix configurations.
 
 set -e
 set -o nounset
@@ -19,5 +21,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-docker-compose build --force-rm $dcarg
-exec docker-compose run --rm test
+dc="docker-compose -f docker-compose.ci.yml"
+
+$dc build --force-rm $dcarg
+exec $dc run --rm test
