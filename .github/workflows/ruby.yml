@@ -24,6 +24,8 @@ jobs:
         - resque-min
         - resque-latest
         - resque-2
+        - redis-5
+        - redis-4
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}
 
