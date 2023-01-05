@@ -21,5 +21,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-docker-compose build --force-rm $dcarg
-exec docker-compose run --rm test
+dc="docker-compose -f docker-compose.ci.yml"
+
+$dc build --force-rm $dcarg
+exec $dc run --rm test
