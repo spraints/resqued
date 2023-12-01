@@ -57,7 +57,11 @@ This time, you'd end up with something similar to this:
 
 ## Launching in production.
 
-Resqued restarts when its master process receives `SIGHUP`. It restarts by re-execing the command that you initially ran. There are two main recommendations for running in production.
+Resqued consists of three types of processes: master, listener, and worker. The master process only loads code from the resqued gem, and it tries to converge on running exactly one listener. The listener process loads your app's code (via the `before_fork` hook) and launches the workers you've configured. Each worker is a single process.
+
+Resqued restarts on SIGHUP by starting a new listener, and then replacing workers from the old pool with workers in the new pool. Note that this means that if you change the version of Resqued in your bundle, the master and listener processes will be using different versions. This is completely safe (except as noted in CHANGES.md). But, to help with transitions between versions, you can use `kill -USR1` to tell the master process to re-exec itself, which will get the master and listener processes in sync again.
+
+There are two main recommendations for running in production:
 
 * If you use bundler to install resqued, tell it to generate a binstub for resqued. Invoke this binstub (e.g. `bin/resqued`) when you start resqued.
 
@@ -71,18 +75,17 @@ If your application is running from a symlinked dir (for example, [capistrano's 
 
 * If you're invoking resqued from something that resolves symlinks in `pwd`, you'll also want to explicitly set the `PWD` environment variable.
 
-Rolling all of the above advice together, here's a sample that you could use in an upstart script for resqued:
+Putting all of the above advice together, here's a sample that you could use as a systemd unit:
 
 ```
-# fragment of /etc/init/resqued.conf
+# fragment of resqued.service
 
-kill signal QUIT
+[Service]
+Type=simple
 
-env BUNDLE_GEMFILE=/opt/app/current/Gemfile
-env PWD=/opt/app/current
-chdir /opt/app/current
-
-exec bin/resqued -c config/resqued.rb -p /opt/app/shared/tmp/pids/resqued.pid
+WorkingDirectory=/opt/app/current
+ExecStart=bin/resqued config/resqued.rb
+ExecReload=/bin/kill -HUP $MAINPID
 ```
 
 ## Compatibility with Resque
