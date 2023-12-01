@@ -1,5 +1,15 @@
 Starting with version 0.6.1, resqued uses semantic versioning to indicate incompatibilities between the master process, listener process, and configuration.
 
+v0.13.0
+-------
+* Re-exec on SIGUSR1 instead of SIGHUP. There should be no compatibility
+  problem between 0.12 and 0.13, but the behavior will be different. If you
+  start 0.12 and then upgrade to 0.13, resqued will re-exec on HUP until it
+  hits 0.13. If you downgrade to 0.12, resqued's master will stay at 0.13 even
+  though the listener changes to 0.12; `kill -USR1 $pid` to get the 0.13 master
+  to roll back to 0.12, too. Note: take care not to `kill -USR1` a 0.12
+  resqued, as that will cause it to shut down. (#71)
+
 v0.12.4
 -------
 * Add support for redis client gem version 5. (#70)
