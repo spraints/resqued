@@ -1,10 +1,10 @@
 require "resqued/backoff"
-require "resqued/exec_on_hup"
 require "resqued/listener_pool"
 require "resqued/logging"
 require "resqued/master_state"
 require "resqued/pidfile"
 require "resqued/procline_version"
+require "resqued/replace_master"
 require "resqued/sleepy"
 
 module Resqued
@@ -55,13 +55,12 @@ module Resqued
         when :INFO
           dump_object_counts
         when :HUP
-          if @state.exec_on_hup
-            log "Execing a new master"
-            ExecOnHUP.exec!(@state)
-          end
           reopen_logs
           log "Restarting listener with new configuration and application."
           prepare_new_listener
+        when :USR1
+          log "Execing a new master"
+          ReplaceMaster.exec!(@state)
         when :USR2
           log "Pause job processing"
           @state.paused = true
@@ -215,7 +214,7 @@ module Resqued
       end
     end
 
-    SIGNALS = [:HUP, :INT, :USR2, :CONT, :TERM, :QUIT].freeze
+    SIGNALS = [:HUP, :INT, :USR1, :USR2, :CONT, :TERM, :QUIT].freeze
     OPTIONAL_SIGNALS = [:INFO].freeze
     OTHER_SIGNALS = [:CHLD, "EXIT"].freeze
     TRAPS = SIGNALS + OPTIONAL_SIGNALS + OTHER_SIGNALS

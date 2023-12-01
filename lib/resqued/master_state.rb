@@ -1,11 +1,14 @@
 module Resqued
+  # Tracks state from the master process. On re-exec, this object will
+  # be serialized and passed to the new master.
   class MasterState
     def initialize
       @listeners_created = 0
       @listener_states = {}
     end
 
-    # Public: When starting fresh, from command-line options, assign the initial values.
+    # Public: When starting fresh, from command-line options, assign the
+    # initial values.
     def init(options)
       @config_paths = options.fetch(:config_paths)
       @exec_on_hup  = options.fetch(:exec_on_hup, false)
@@ -55,19 +58,45 @@ module Resqued
       }
     end
 
-    # Public: Return an array of open sockets or other file handles that should be forwarded to a new master.
+    # Public: Return an array of open sockets or other file handles that
+    # should be forwarded to a new master.
     def sockets
       @listener_states.values.map { |l| l.master_socket }.compact
     end
 
+    # Paths of app's resqued configuration files. The paths are passed
+    # to the listener, and the listener reads the config so that it
+    # knows which workers to create.
     attr_reader :config_paths
+
+    # The PID of the newest listener. This is the one listener that
+    # should continue running.
     attr_accessor :current_listener_pid
+
+    # (Deprecated.) If true, on SIGHUP re-exec the master process before
+    # starting a new listener.
     attr_reader :exec_on_hup
+
+    # If true, on SIGTERM/SIGQUIT/SIGINT, don't wait for listeners to
+    # exit before the master exits.
     attr_reader :fast_exit
+
+    # The PID of the newest listener that booted successfully. This
+    # listener won't be stopped until a newer listener boots
+    # successfully.
     attr_accessor :last_good_listener_pid
+
+    # The number of listeners that have been created by this master.
     attr_accessor :listeners_created
+
+    # A hash of pid => ListenerState for all running listeners.
     attr_reader :listener_states
+
+    # Set to true when this master is paused and should not be running
+    # any listeners.
     attr_accessor :paused
+
+    # If set, the master's PID will be written to this file.
     attr_reader :pidfile
   end
 end

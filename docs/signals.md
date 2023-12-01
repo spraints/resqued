@@ -8,6 +8,7 @@ Here is a summary of how signals get passed between resqued's processes:
                   master    listener    worker
                   ------    --------    ------
 restart            HUP   -> QUIT     -> QUIT
+reexec master     USR1   -> QUIT     -> QUIT
 exit now           INT   ->  INT     ->  INT
 exit now          TERM   -> TERM     -> TERM
 exit when ready   QUIT   -> QUIT     -> QUIT
@@ -23,6 +24,7 @@ Read on for more information about what the signals mean.
 The Master process handles several signals.
 
 * `HUP`: Start a new listener. After it boots, kill the previous listener with `SIGQUIT`.
+* `USR1`: Re-exec the master process, preserving the current state. Also exec a new listener.
 * `USR2`: Pause processing. Kills the current listener, and does not start a replacement.
 * `CONT`: Resume processing. If there is no listener, start one. If there is a listener, send it `SIGCONT`.
 * `QUIT`, `INT`, or `TERM`: Kill the listener with the same signal and wait for it to exit. If `--fast-exit` was specified, the master exits immediately without waiting for the listener to exit.

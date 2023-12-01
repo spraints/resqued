@@ -13,7 +13,7 @@ end
 
 require "optparse"
 
-options = { exec_on_hup: true }
+options = {}
 daemonize = false
 test = false
 
@@ -52,10 +52,6 @@ opts = OptionParser.new do |opts| # rubocop: disable Lint/ShadowingOuterLocalVar
     daemonize = true
   end
 
-  opts.on "--no-exec-on-hup", "Do not re-exec the master process on SIGHUP" do
-    options[:exec_on_hup] = false
-  end
-
   opts.on "--replace FILE", "(internal)" do |v|
     options[:master_state] = v
   end
@@ -84,7 +80,7 @@ else
   state = Resqued::MasterState.new
   if options[:master_state]
     Resqued::Logging.logger.info "Resuming master from #{options[:master_state]}"
-    Resqued::ExecOnHUP.restore_state(state, options[:master_state])
+    Resqued::ReplaceMaster.restore_state(state, options[:master_state])
   else
     require_config_paths! options, opts
     Resqued.capture_start_ctx!

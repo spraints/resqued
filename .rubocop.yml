@@ -57,12 +57,24 @@ Style/BlockDelimiters:
   FunctionalMethods:
     - trap
 
-# TODO - add docs to code.
 Style/Documentation:
-  Enabled: false
   Exclude:
     - 'spec/**/*'
     - 'test/**/*'
+    # TODO - add docs to these:
+    - 'lib/resqued.rb'
+    - 'lib/resqued/backoff.rb'
+    - 'lib/resqued/config.rb'
+    - 'lib/resqued/daemon.rb'
+    - 'lib/resqued/listener_pool.rb'
+    - 'lib/resqued/listener_state.rb'
+    - 'lib/resqued/logging.rb'
+    - 'lib/resqued/procline_version.rb'
+    - 'lib/resqued/quit-and-wait.rb'
+    - 'lib/resqued/replace_master.rb'
+    - 'lib/resqued/runtime_info.rb'
+    - 'lib/resqued/sleepy.rb'
+    - 'lib/resqued/test_case.rb'
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
